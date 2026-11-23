@@ -14,7 +14,10 @@ BI_GOLD_TABLES: tuple[str, ...] = (
     "mart_inteligencia_mercado_municipal",
     "mart_clusters_setoriais_uf",
     "mart_pulso_consumo_macro",
+    "fct_populacao_municipal",
+    "fct_ipca_mensal",
     "dim_geografia",
+    "dim_cnae",
 )
 
 
@@ -36,7 +39,7 @@ def export_gold_for_bi(
             )
 
         lf = pl.scan_delta(str(delta_path))
-        if table_name == "dim_geografia":
+        if table_name in ("dim_geografia", "dim_cnae"):
             lf = lf.filter(pl.col("is_current"))
         drop_audit = [c for c in lf.collect_schema().names() if c.startswith("_")]
         if drop_audit:

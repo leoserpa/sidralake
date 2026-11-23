@@ -103,6 +103,62 @@ def _seed_gold_delta_tables(gold_dir: Path) -> None:
         source_url="test://dim_geo",
     )
 
+    fct_pop = pl.DataFrame(
+        {
+            "codigo_ibge_municipio": [3550308],
+            "ano_referencia": [2024],
+            "populacao_residente": [12_000_000],
+            "area_km2": [1521.1],
+            "densidade_demografica": [7889.0],
+            "origem_dado": ["ESTIMATIVA_IBGE"],
+            "is_interpolado": [False],
+        }
+    )
+    writer.write_full_overwrite(
+        fct_pop,
+        "fct_populacao_municipal",
+        ingestion_id="seed-1",
+        source_url="test://fct_pop",
+    )
+
+    fct_ipca = pl.DataFrame(
+        {
+            "ano_mes": ["202412"],
+            "ano_referencia": [2024],
+            "mes_referencia": [12],
+            "data_referencia": ["2024-12-01"],
+            "numero_indice_ipca": [7000.0],
+            "variacao_mensal_pct": [0.5],
+            "variacao_acum_3m_pct": [1.4],
+            "variacao_acum_6m_pct": [2.5],
+            "variacao_acum_ano_pct": [4.8],
+            "variacao_acum_12m_pct": [4.8],
+            "ano_mes_base_deflator": ["202412"],
+            "fator_deflator_base_atual": [1.0],
+        }
+    )
+    writer.write_full_overwrite(
+        fct_ipca,
+        "fct_ipca_mensal",
+        ingestion_id="seed-1",
+        source_url="test://fct_ipca",
+    )
+
+    dim_cnae = pl.DataFrame(
+        {
+            "codigo_secao": ["A", "A"],
+            "descricao_secao": ["AGRO ANTIGO", "AGRICULTURA"],
+            "categoria_sidra_12762_id": [117897, 117897],
+            "is_current": [False, True],
+        }
+    )
+    writer.write_full_overwrite(
+        dim_cnae,
+        "dim_cnae",
+        ingestion_id="seed-1",
+        source_url="test://dim_cnae",
+    )
+
 
 def test_build_market_insights_and_uf_filter(tmp_path: Path) -> None:
     gold_dir = tmp_path / "gold"

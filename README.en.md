@@ -14,6 +14,7 @@ The project implements a **Local-First Modern Data Stack** focused on reliabilit
 - **Analytical Engine, Contracts & Semantic Layer**: DuckDB + `dbt-duckdb` 1.12 (`delta_scan()`, Staging, Intermediate, SCD Type 2 via `dbt snapshot`, Gold Star Schema + 3 OBT Marts with **Enforced Model Contracts** across 100% of Gold models, **dbt Semantic Layer** with 3 semantic models, 12 governed metrics, and `time_spine_daily`, **10 SQL dbt Unit Tests**, and singular accounting tests)
 - **Ingestion & Lazy Analytics**: Python `>=3.12,<3.14` (`uv`), asynchronous `httpx` with semaphore concurrency and adaptive UF/semester chunking, `tenacity` exponential backoff with jitter, `Pydantic v2`, **Polars Lazy API** (`scan_delta` + deterministic Arrow IPC hashing), `Pandera[polars]`
 - **Orchestration & Lineage**: Dagster (`dagster-dbt`, annual static partitions, blocking Asset Checks, **Declarative Automation `AutomationCondition.eager()`**, partition-guarded IBGE API Freshness Sensor, and Schedules)
+- **BI as Code Layer**: **Evidence.dev** (`dashboard/`) in SQL + Markdown compiled to static **DuckDB-WASM** and deployed automatically to **GitHub Pages** (`https://leoserpa.github.io/sidralake/`) via `.github/workflows/pages.yml`
 - **Quality & Observability**: `structlog` JSON logging, `ruff`, `mypy --strict`, `sqlfluff`, `pytest` (`>85%` coverage) + `respx`, GitHub Actions CI
 
 ---
@@ -116,6 +117,7 @@ uv sync --dev                        # Creates .venv via uv and installs depende
 uv run sidralake run --mode smoke    # Fast smoke run (SP/MT) Bronze -> Silver -> Gold + Delta
 uv run sidralake run --mode full     # Full Brazil load (5,571 municipalities, 2018-2026)
 uv run sidralake insights --top 10   # Instant market rankings via Polars Lazy API (scan_delta)
+uv run sidralake export-bi           # Exports Gold Marts as Snappy Parquet for Evidence.dev BI
 uv run sidralake inspect             # Full sanity check against DuckDB and Gold Delta Lake
 uv run sidralake test                # Runs ruff, mypy, pytest (unit + E2E), and 10 dbt unit tests
 make dagster-dev                     # Starts Dagster UI (assets, partitions, blocking checks)

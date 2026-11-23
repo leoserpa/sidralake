@@ -24,6 +24,12 @@ dbt_project/.user.yml
 .dagster/
 dagster_home/
 
+# Evidence.dev BI dashboard build & local Parquet data
+dashboard/node_modules/
+dashboard/build/
+dashboard/.evidence/
+dashboard/sources/sidralake/data/
+
 # Environment & OS
 .env
 .env.local

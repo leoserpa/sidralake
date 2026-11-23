@@ -1,0 +1,94 @@
+name: Deploy SidraLake BI (Evidence.dev -> GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "dashboard/**"
+      - "dbt_project/**"
+      - "src/ibge_market_intel/**"
+      - ".github/workflows/pages.yml"
+  schedule:
+    # Atualiza mensalmente no dia 16 as 11:00 UTC (08:00 BRT), apos divulgacao IPCA/PMC
+    - cron: "0 11 16 * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Modo de materializacao IBGE (full = 5.571 municipios, smoke = SP/MT)"
+        required: true
+        default: "full"
+        type: choice
+        options:
+          - full
+          - smoke
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup uv & Python 3.12
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install Python & dbt dependencies
+        run: |
+          uv sync --dev
+          uv run dbt deps --project-dir dbt_project --profiles-dir dbt_project
+
+      - name: Materialize SidraLake Medallion Pipeline (IBGE -> Bronze -> Silver -> Gold)
+        env:
+          SIDRALAKE_MODE: ${{ github.event.inputs.mode || 'full' }}
+        run: |
+          uv run sidralake run --mode "$SIDRALAKE_MODE"
+          uv run sidralake export-bi
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Evidence.dev dependencies & build static BI
+        working-directory: dashboard
+        run: |
+          npm install
+          npm run sources
+          npm run build
+          touch build/.nojekyll
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

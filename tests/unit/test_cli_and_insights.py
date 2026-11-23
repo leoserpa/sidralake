@@ -9,6 +9,7 @@ import polars as pl
 import pytest
 
 from ibge_market_intel import cli
+from ibge_market_intel.analytics.bi_export import BI_GOLD_TABLES, export_gold_for_bi
 from ibge_market_intel.analytics.insights import build_market_insights, format_insights_report
 from ibge_market_intel.config import PipelineSettings
 from ibge_market_intel.ingestion.delta_writer import DeltaLakeWriter
@@ -78,6 +79,28 @@ def _seed_gold_delta_tables(gold_dir: Path) -> None:
         "mart_pulso_consumo_macro",
         ingestion_id="seed-1",
         source_url="test://mart_pulso",
+    )
+
+    dim_geo = pl.DataFrame(
+        {
+            "codigo_ibge_municipio": [3550308, 3550308],
+            "nome_municipio": ["São Paulo (Antigo)", "São Paulo"],
+            "codigo_uf": [35, 35],
+            "sigla_uf": ["SP", "SP"],
+            "nome_uf": ["São Paulo", "São Paulo"],
+            "codigo_regiao": [3, 3],
+            "sigla_regiao": ["SE", "SE"],
+            "nome_regiao": ["Sudeste", "Sudeste"],
+            "nome_regiao_imediata": ["São Paulo", "São Paulo"],
+            "nome_regiao_intermediaria": ["São Paulo", "São Paulo"],
+            "is_current": [False, True],
+        }
+    )
+    writer.write_full_overwrite(
+        dim_geo,
+        "dim_geografia",
+        ingestion_id="seed-1",
+        source_url="test://dim_geo",
     )
 
 
@@ -211,3 +234,30 @@ def test_cli_inspect_gold_runs_against_duckdb_warehouse(
     assert "TOP 15 MUNICIPIOS POR SCORE IMS" in out
     assert "Boa Esperança do Norte" in out
     assert "gold/mart_inteligencia_mercado_municipal" in out
+
+
+def test_export_gold_for_bi_and_cli_dispatch(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    settings = PipelineSettings(data_dir=tmp_path)
+    settings.ensure_directories()
+    _seed_gold_delta_tables(settings.resolved_gold_dir)
+
+    out_dir = tmp_path / "bi_parquet"
+    summary = export_gold_for_bi(settings.resolved_gold_dir, out_dir)
+    assert set(summary.keys()) == set(BI_GOLD_TABLES)
+    # dim_geografia deve filtrar apenas is_current=True e remover colunas de auditoria _*
+    geo_df = pl.read_parquet(out_dir / "dim_geografia.parquet")
+    assert geo_df.height == 1
+    assert geo_df["nome_municipio"].to_list() == ["São Paulo"]
+    assert not any(c.startswith("_") for c in geo_df.columns)
+
+    monkeypatch.setattr(cli, "get_settings", lambda: settings)
+    cli.main(["export-bi", "--output-dir", str(out_dir)])
+    printed = capsys.readouterr().out
+    assert "bi/mart_inteligencia_mercado_municipal.parquet" in printed
+
+    with pytest.raises(FileNotFoundError, match="nao encontrada"):
+        export_gold_for_bi(tmp_path / "empty_gold", out_dir)

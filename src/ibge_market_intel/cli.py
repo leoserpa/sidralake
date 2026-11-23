@@ -9,10 +9,12 @@ import subprocess
 import time
 import uuid
 from collections.abc import Sequence
+from pathlib import Path
 
 import duckdb
 from deltalake import DeltaTable
 
+from ibge_market_intel.analytics.bi_export import export_gold_for_bi
 from ibge_market_intel.analytics.insights import build_market_insights, format_insights_report
 from ibge_market_intel.config import PipelineSettings, get_settings
 from ibge_market_intel.ingestion.catalogs import (
@@ -343,6 +345,16 @@ def show_insights(*, top_n: int = 10, uf: str | None = None, year: int | None = 
     print(format_insights_report(report))
 
 
+def export_bi(*, output_dir: Path | None = None) -> None:
+    """Exporta marts Gold Delta Lake para Parquet Snappy pronto para o dashboard Evidence.dev."""
+    settings = get_settings()
+    configure_logging(settings.log_level, log_format="console")
+    target = output_dir or (settings.project_root / "dashboard" / "sources" / "sidralake" / "data")
+    summary = export_gold_for_bi(settings.resolved_gold_dir, target)
+    for table_name, meta in summary.items():
+        print(f"  bi/{table_name}.parquet: rows={meta['rows']} | size_kb={meta['size_kb']}")
+
+
 def main(argv: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="SidraLake — IBGE Market Intelligence 360 Medallion CLI"
@@ -365,6 +377,16 @@ def main(argv: Sequence[str] | None = None) -> None:
         "--uf", type=str, default=None, help="Filtra por sigla da UF (ex: SP)"
     )
     insights_cmd.add_argument("--year", type=int, default=None, help="Filtra por ano de referencia")
+    bi_cmd = sub.add_parser(
+        "export-bi",
+        help="Exporta tabelas Gold Delta para Parquet Snappy do dashboard Evidence.dev",
+    )
+    bi_cmd.add_argument(
+        "--output-dir",
+        type=Path,
+        default=None,
+        help="Diretorio de destino dos arquivos Parquet (padrao: dashboard/sources/sidralake/data)",
+    )
     sub.add_parser(
         "test", help="Executa toda a bateria de testes e qualidade (ruff, mypy, pytest, dbt)"
     )
@@ -378,6 +400,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         inspect_gold()
     elif args.command == "insights":
         show_insights(top_n=args.top, uf=args.uf, year=args.year)
+    elif args.command == "export-bi":
+        export_bi(output_dir=args.output_dir)
     elif args.command == "test":
         run_quality_suite()
 

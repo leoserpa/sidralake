@@ -1,0 +1,4 @@
+name: sidralake
+type: duckdb
+options:
+  filename: ":memory:"

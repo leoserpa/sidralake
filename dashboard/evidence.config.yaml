@@ -1,0 +1,56 @@
+deployment:
+  basePath: /sidralake
+
+appearance:
+  default: system
+  switcher: true
+
+theme:
+  colorPalettes:
+    default:
+      light:
+        - "#0f4c81"
+        - "#1f7a8c"
+        - "#2a9d8f"
+        - "#e9c46a"
+        - "#f4a261"
+        - "#e76f51"
+        - "#457b9d"
+        - "#6d597a"
+      dark:
+        - "#38bdf8"
+        - "#2dd4bf"
+        - "#34d399"
+        - "#fbbf24"
+        - "#fb923c"
+        - "#f87171"
+        - "#818cf8"
+        - "#c084fc"
+  colors:
+    primary:
+      light: "#0f4c81"
+      dark: "#38bdf8"
+    accent:
+      light: "#0d9488"
+      dark: "#2dd4bf"
+    base:
+      light: "#ffffff"
+      dark: "#09090b"
+    info:
+      light: "#0284c7"
+      dark: "#38bdf8"
+    positive:
+      light: "#16a34a"
+      dark: "#4ade80"
+    warning:
+      light: "#d97706"
+      dark: "#fbbf24"
+    negative:
+      light: "#dc2626"
+      dark: "#f87171"
+
+plugins:
+  components:
+    "@evidence-dev/core-components": {}
+  datasources:
+    "@evidence-dev/duckdb": {}

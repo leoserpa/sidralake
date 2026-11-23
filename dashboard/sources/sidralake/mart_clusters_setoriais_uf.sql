@@ -1,0 +1,20 @@
+select
+    codigo_uf,
+    sigla_uf,
+    nome_uf,
+    sigla_regiao,
+    nome_regiao,
+    codigo_secao_cnae,
+    descricao_secao_cnae,
+    ano_referencia,
+    num_empresas,
+    pessoal_ocupado_total,
+    pessoal_ocupado_assalariado,
+    massa_salarial_real_mil_brl,
+    has_sigilo_estatistico,
+    quociente_locacional_emprego,
+    quociente_locacional_massa_salarial,
+    market_share_uf_no_setor_pct,
+    crescimento_emprego_setor_yoy_pct,
+    perfil_especializacao
+from read_parquet('sources/sidralake/data/mart_clusters_setoriais_uf.parquet')

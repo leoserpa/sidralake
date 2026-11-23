@@ -116,9 +116,11 @@ order by pos asc
         swapXY=true
         sort=false
         labels=true
+        stackTotalLabel=false
         labelPosition=outside
         showAllLabels=true
         labelFmt="0.0"
+        rightPadding=24
         legend=false
         yGridlines=false
         xGridlines=false
@@ -126,7 +128,7 @@ order by pos asc
         yBaseline=false
         seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
         title="Quais municípios lideram o Score IMS?"
-        subtitle="Índice de Mercado SidraLake (0–100) · Líder em destaque"
+        subtitle="Top 12 (0–100) · Líder em azul"
     />
     <BarChart
         data={top_12_pib}
@@ -137,17 +139,19 @@ order by pos asc
         swapXY=true
         sort=false
         labels=true
+        stackTotalLabel=false
         labelPosition=outside
         showAllLabels=true
         labelFmt="#,##0.0"
+        rightPadding=28
         legend=false
         yGridlines=false
         xGridlines=false
         yAxisLabels=false
         yBaseline=false
         seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Quais municípios concentram maior PIB real?"
-        subtitle="PIB real a preços constantes (R$ Bilhões) · Líder em destaque"
+        title="Quais municípios têm maior PIB real?"
+        subtitle="PIB real (R$ Bi) · Líder em azul"
     />
 </Grid>
 
@@ -222,17 +226,19 @@ order by pos asc
         swapXY=true
         sort=false
         labels=true
+        stackTotalLabel=false
         labelPosition=outside
         showAllLabels=true
         labelFmt="#,##0.0"
+        rightPadding=32
         legend=false
         yGridlines=false
         xGridlines=false
         yAxisLabels=false
         yBaseline=false
         seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Onde se concentra o PIB real por Tier?"
-        subtitle="PIB real acumulado (R$ Bilhões) por Tier estratégico"
+        title="Onde se concentra o PIB por Tier?"
+        subtitle="PIB real acumulado (R$ Bi)"
     />
     <BarChart
         data={pib_por_regiao}
@@ -243,17 +249,19 @@ order by pos asc
         swapXY=true
         sort=false
         labels=true
+        stackTotalLabel=false
         labelPosition=outside
         showAllLabels=true
         labelFmt="#,##0.0"
+        rightPadding=32
         legend=false
         yGridlines=false
         xGridlines=false
         yAxisLabels=false
         yBaseline=false
         seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Como o PIB real se distribui por Grande Região?"
-        subtitle="PIB real acumulado (R$ Bilhões) · Região líder em destaque"
+        title="PIB real por Grande Região?"
+        subtitle="PIB real acumulado (R$ Bi)"
     />
 </Grid>
 

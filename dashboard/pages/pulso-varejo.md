@@ -86,17 +86,19 @@ order by pos asc
     swapXY=true
     sort=false
     labels=true
+    stackTotalLabel=false
     labelPosition=outside
     showAllLabels=true
     labelFmt="#,##0"
+    rightPadding=24
     legend=false
     yGridlines=false
     xGridlines=false
     yAxisLabels=false
     yBaseline=false
     seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-    title="Como o varejo nacional está distribuído por regime de consumo?"
-    subtitle="Séries UF × Atividade na última competência · Regime predominante em destaque"
+    title="Como o varejo está distribuído por regime?"
+    subtitle="Séries UF × Atividade na última competência"
 />
 
 <DataTable data={regimes_ultimo_mes} />

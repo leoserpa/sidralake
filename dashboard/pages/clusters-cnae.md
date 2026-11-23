@@ -103,17 +103,19 @@ order by pos asc
         swapXY=true
         sort=false
         labels=true
+        stackTotalLabel=false
         labelPosition=outside
         showAllLabels=true
         labelFmt="0.0"
+        rightPadding=24
         legend=false
         yGridlines=false
         xGridlines=false
         yAxisLabels=false
         yBaseline=false
         seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Quais estados concentram maior fatia setorial?"
-        subtitle="Participação estadual (%) no emprego nacional do setor · Líder em destaque"
+        title="Quais UFs lideram o share setorial?"
+        subtitle="Participação (%) no emprego do setor"
     />
     <BarChart
         data={emprego_por_secao}
@@ -124,17 +126,19 @@ order by pos asc
         swapXY=true
         sort=false
         labels=true
+        stackTotalLabel=false
         labelPosition=outside
         showAllLabels=true
         labelFmt="0.00"
+        rightPadding=26
         legend=false
         yGridlines=false
         xGridlines=false
         yAxisLabels=false
         yBaseline=false
         seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Quais seções CNAE empregam mais no recorte?"
-        subtitle="Pessoal ocupado formal (milhões) · Maior empregador em destaque"
+        title="Quais seções CNAE mais empregam?"
+        subtitle="Pessoal ocupado formal (milhões)"
     />
 </Grid>
 

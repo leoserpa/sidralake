@@ -52,6 +52,7 @@ order by pos asc
 ```sql vab_por_regiao
 with agg as (
     select
+        max(ano_referencia) as ano_vab,
         nome_regiao as regiao,
         round(avg(share_vab_agropecuaria) * 100, 1) as agropecuaria_pct,
         round(avg(share_vab_industria) * 100, 1) as industria_pct,
@@ -59,9 +60,13 @@ with agg as (
         round(avg(share_vab_adm_publica) * 100, 1) as adm_publica_pct,
         round(avg(indice_diversificacao_setorial), 3) as diversificacao_media
     from sidralake.mart_inteligencia_mercado_municipal
-    where is_ultimo_ano_completo
+    where ano_referencia = (
+        select max(ano_referencia)
+        from sidralake.mart_inteligencia_mercado_municipal
+        where indice_diversificacao_setorial is not null
+    )
       and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
-    group by 1
+    group by 2
 ),
 ranked as (
     select
@@ -70,6 +75,7 @@ ranked as (
     from agg
 )
 select
+    ano_vab,
     regiao,
     agropecuaria_pct,
     industria_pct,
@@ -91,17 +97,19 @@ order by pos asc
         swapXY=true
         sort=false
         labels=true
+        stackTotalLabel=false
         labelPosition=outside
         showAllLabels=true
         labelFmt="0.0"
+        rightPadding=24
         legend=false
         yGridlines=false
         xGridlines=false
         yAxisLabels=false
         yBaseline=false
         seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Quais municípios mais cresceram em PIB real?"
-        subtitle="CAGR real 3 anos (%) · População >= 50 mil · Líder em destaque"
+        title="Quais municípios mais cresceram?"
+        subtitle="CAGR real 3 anos (%) · Pop >= 50 mil"
     />
     <BarChart
         data={vab_por_regiao}
@@ -112,9 +120,11 @@ order by pos asc
         swapXY=true
         sort=false
         labels=true
+        stackTotalLabel=false
         labelPosition=outside
         showAllLabels=true
         labelFmt="0.000"
+        rightPadding=28
         legend=false
         yGridlines=false
         xGridlines=false
@@ -122,7 +132,7 @@ order by pos asc
         yBaseline=false
         seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
         title="Quais regiões são mais diversificadas?"
-        subtitle="Índice médio de diversificação produtiva (1 − HHI) · Líder em destaque"
+        subtitle="Média (1 − HHI) · Último VAB IBGE (2021)"
     />
 </Grid>
 

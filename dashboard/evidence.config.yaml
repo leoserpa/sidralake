@@ -2,40 +2,36 @@ deployment:
   basePath: /sidralake
 
 appearance:
-  default: system
+  default: dark
   switcher: true
 
 theme:
   colorPalettes:
     default:
       light:
-        - "#0f4c81"
-        - "#1f7a8c"
-        - "#2a9d8f"
-        - "#e9c46a"
-        - "#f4a261"
-        - "#e76f51"
-        - "#457b9d"
-        - "#6d597a"
+        - "#2563eb"
+        - "#9ca3af"
+        - "#6b7280"
+        - "#0d9488"
+        - "#d97706"
+        - "#dc2626"
       dark:
-        - "#38bdf8"
+        - "#3b82f6"
+        - "#525866"
+        - "#6b7280"
         - "#2dd4bf"
-        - "#34d399"
         - "#fbbf24"
-        - "#fb923c"
         - "#f87171"
-        - "#818cf8"
-        - "#c084fc"
   colors:
     primary:
-      light: "#0f4c81"
-      dark: "#38bdf8"
+      light: "#2563eb"
+      dark: "#3b82f6"
     accent:
-      light: "#0d9488"
-      dark: "#2dd4bf"
+      light: "#1d4ed8"
+      dark: "#60a5fa"
     base:
       light: "#ffffff"
-      dark: "#09090b"
+      dark: "#0d1117"
     info:
       light: "#0284c7"
       dark: "#38bdf8"

@@ -2,7 +2,7 @@
 title: Clusters Setoriais por UF (CNAE 2.0 / CEMPRE)
 ---
 
-Mapeamento do emprego formal e da massa salarial real por **Unidade da Federação e Seção CNAE 2.0** (tabela SIDRA `9418`). Quando o IBGE suprime células por sigilo estatístico (`X`), o pipeline preserva o indicador `has_sigilo_estatistico` e evita distorções nos denominadores de Quociente Locacional.
+Mapeamento do emprego formal e da massa salarial real por **UF e Seção CNAE 2.0** (SIDRA `9418`). Quando o IBGE suprime células por sigilo estatístico (`X`), o pipeline preserva o indicador `has_sigilo_estatistico` e evita distorções nos denominadores de Quociente Locacional.
 
 ```sql ufs_cnae
 select 'TODAS' as sigla_uf, 0 as ordem
@@ -43,36 +43,100 @@ where ano_referencia = (select max(ano_referencia) from sidralake.mart_clusters_
 
 ---
 
-## Maiores Participações Estaduais no Emprego Nacional por Setor
-
 ```sql top_shares_setoriais
+with base as (
+    select
+        sigla_uf || ' · ' || codigo_secao_cnae as uf_setor,
+        round(market_share_uf_no_setor_pct, 1) as share_br_pct,
+        row_number() over (order by market_share_uf_no_setor_pct desc) as pos
+    from sidralake.mart_clusters_setoriais_uf
+    where ano_referencia = (select max(ano_referencia) from sidralake.mart_clusters_setoriais_uf)
+      and market_share_uf_no_setor_pct is not null
+      and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+      and ('${inputs.cnae.value}' = 'TODAS' or codigo_secao_cnae = '${inputs.cnae.value}')
+    order by pos asc
+    limit 12
+)
 select
-    sigla_uf || ' · ' || codigo_secao_cnae as uf_setor,
-    sigla_uf as uf,
-    codigo_secao_cnae as cnae,
-    descricao_secao_cnae as setor,
-    pessoal_ocupado_total as emprego,
-    round(market_share_uf_no_setor_pct, 2) as share_br_pct,
-    round(massa_salarial_real_mil_brl / 1e6, 2) as massa_real_bi,
-    round(crescimento_emprego_setor_yoy_pct, 2) as cresc_yoy_pct
-from sidralake.mart_clusters_setoriais_uf
-where ano_referencia = (select max(ano_referencia) from sidralake.mart_clusters_setoriais_uf)
-  and market_share_uf_no_setor_pct is not null
-  and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
-  and ('${inputs.cnae.value}' = 'TODAS' or codigo_secao_cnae = '${inputs.cnae.value}')
-order by market_share_uf_no_setor_pct desc
-limit 20
+    uf_setor,
+    share_br_pct,
+    case when pos = 1 then 'Destaque' else 'Demais' end as destaque
+from base
+order by pos asc
 ```
 
-<BarChart
-    data={top_shares_setoriais}
-    x=uf_setor
-    y=share_br_pct
-    swapXY=true
-    sort=false
-    title="Participação Estadual no Emprego Brasileiro do Setor (%)"
-    yAxisTitle="Share no Brasil (%)"
-/>
+```sql emprego_por_secao
+with agg as (
+    select
+        codigo_secao_cnae || ' · ' || left(descricao_secao_cnae, 26) as setor,
+        round(sum(pessoal_ocupado_total) / 1e6, 2) as emprego_mi
+    from sidralake.mart_clusters_setoriais_uf
+    where ano_referencia = (select max(ano_referencia) from sidralake.mart_clusters_setoriais_uf)
+      and pessoal_ocupado_total is not null
+      and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+      and ('${inputs.cnae.value}' = 'TODAS' or codigo_secao_cnae = '${inputs.cnae.value}')
+    group by 1
+),
+ranked as (
+    select
+        *,
+        row_number() over (order by emprego_mi desc) as pos
+    from agg
+    order by pos asc
+    limit 12
+)
+select
+    setor,
+    emprego_mi,
+    case when pos = 1 then 'Destaque' else 'Demais' end as destaque
+from ranked
+order by pos asc
+```
+
+<Grid cols=2>
+    <BarChart
+        data={top_shares_setoriais}
+        x=uf_setor
+        y=share_br_pct
+        series=destaque
+        type=stacked
+        swapXY=true
+        sort=false
+        labels=true
+        labelPosition=outside
+        showAllLabels=true
+        labelFmt="0.0"
+        legend=false
+        yGridlines=false
+        xGridlines=false
+        yAxisLabels=false
+        yBaseline=false
+        seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+        title="Quais estados concentram maior fatia setorial?"
+        subtitle="Participação estadual (%) no emprego nacional do setor · Líder em destaque"
+    />
+    <BarChart
+        data={emprego_por_secao}
+        x=setor
+        y=emprego_mi
+        series=destaque
+        type=stacked
+        swapXY=true
+        sort=false
+        labels=true
+        labelPosition=outside
+        showAllLabels=true
+        labelFmt="0.00"
+        legend=false
+        yGridlines=false
+        xGridlines=false
+        yAxisLabels=false
+        yBaseline=false
+        seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+        title="Quais seções CNAE empregam mais no recorte?"
+        subtitle="Pessoal ocupado formal (milhões) · Maior empregador em destaque"
+    />
+</Grid>
 
 ---
 

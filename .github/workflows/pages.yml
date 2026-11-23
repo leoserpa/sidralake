@@ -58,6 +58,18 @@ jobs:
           uv run sidralake run --mode "$SIDRALAKE_MODE"
           uv run sidralake export-bi
 
+      - name: Pre-build BI Quality Gate (static contracts + 52 SQL queries with DuckDB-WASM DOUBLE emulation)
+        env:
+          SIDRALAKE_MODE: ${{ github.event.inputs.mode || 'full' }}
+          SIDRALAKE_REQUIRE_BI_DATA: "1"
+        run: |
+          if [ "$SIDRALAKE_MODE" = "full" ]; then
+            uv run sidralake validate-bi
+          else
+            uv run sidralake validate-bi --allow-empty
+          fi
+          uv run pytest tests/unit/test_dashboard_integrity.py tests/integration/test_dashboard_live_data.py -v
+
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -67,9 +79,24 @@ jobs:
         working-directory: dashboard
         run: |
           npm install
-          npm run sources
+          npm run sources:strict
           npm run build
           touch build/.nojekyll
+
+      - name: Post-build Artifact & Headless Chromium E2E Smoke Test (all 7 pages)
+        env:
+          SIDRALAKE_MODE: ${{ github.event.inputs.mode || 'full' }}
+        run: |
+          if [ "$SIDRALAKE_MODE" = "full" ]; then
+            uv run sidralake validate-bi --check-build
+          else
+            uv run sidralake validate-bi --check-build --allow-empty
+          fi
+          CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$CHROME_PATH" ]; then
+            (cd dashboard && npx playwright-core install --with-deps chromium)
+          fi
+          CHROME_PATH="$CHROME_PATH" npm --prefix dashboard run test:e2e
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

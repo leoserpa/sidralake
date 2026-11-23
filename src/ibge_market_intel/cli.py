@@ -47,6 +47,11 @@ from ibge_market_intel.quality.contracts import (
     validate_localidades_contract,
     validate_sidra_contract,
 )
+from ibge_market_intel.quality.dashboard_guard import (
+    validate_built_dashboard,
+    validate_dashboard_queries,
+    validate_dashboard_static_contracts,
+)
 
 logger = get_logger(__name__)
 
@@ -355,6 +360,47 @@ def export_bi(*, output_dir: Path | None = None) -> None:
         print(f"  bi/{table_name}.parquet: rows={meta['rows']} | size_kb={meta['size_kb']}")
 
 
+def validate_bi(
+    *,
+    parquet_dir: Path | None = None,
+    check_build: bool = False,
+    build_dir: Path | None = None,
+    allow_empty: bool = False,
+) -> None:
+    """Valida contratos estaticos, queries SQL (emulando DuckDB-WASM) e artefatos de build BI."""
+    settings = get_settings()
+    root = settings.project_root
+    target_parquet = parquet_dir or (root / "dashboard" / "parquet_data")
+
+    issues = validate_dashboard_static_contracts(root)
+    query_count = 0
+    if target_parquet.exists():
+        query_count, query_issues = validate_dashboard_queries(
+            root,
+            target_parquet,
+            emulate_evidence_double=True,
+            require_non_empty=not allow_empty,
+        )
+        issues.extend(query_issues)
+    elif parquet_dir is not None or not check_build:
+        raise FileNotFoundError(
+            f"Diretorio Parquet BI nao encontrado em {target_parquet}. "
+            "Execute 'uv run sidralake export-bi' antes de validar."
+        )
+
+    if check_build:
+        issues.extend(validate_built_dashboard(root, build_dir=build_dir))
+
+    if issues:
+        details = "\n".join(f"  - [{i.rule}] {i.file}: {i.message}" for i in issues)
+        raise SystemExit(f"FALHA na validacao do dashboard BI ({len(issues)} erro(s)):\n{details}")
+
+    print(
+        f"OK: dashboard BI validado ({query_count} queries SQL verificadas em modo "
+        f"default/SSR/edge-cases; check_build={check_build})."
+    )
+
+
 def main(argv: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="SidraLake — IBGE Market Intelligence 360 Medallion CLI"
@@ -387,6 +433,32 @@ def main(argv: Sequence[str] | None = None) -> None:
         default=None,
         help="Diretorio de destino dos arquivos Parquet (padrao: dashboard/parquet_data)",
     )
+    val_bi_cmd = sub.add_parser(
+        "validate-bi",
+        help="Valida contratos estaticos, queries SQL (DuckDB-WASM) e build do dashboard Evidence",
+    )
+    val_bi_cmd.add_argument(
+        "--parquet-dir",
+        type=Path,
+        default=None,
+        help="Diretorio dos arquivos Parquet BI (padrao: dashboard/parquet_data)",
+    )
+    val_bi_cmd.add_argument(
+        "--check-build",
+        action="store_true",
+        help="Tambem valida o artefato estatico gerado em dashboard/build",
+    )
+    val_bi_cmd.add_argument(
+        "--build-dir",
+        type=Path,
+        default=None,
+        help="Diretorio de build estatico (padrao: dashboard/build)",
+    )
+    val_bi_cmd.add_argument(
+        "--allow-empty",
+        action="store_true",
+        help="Permite queries com 0 linhas (util em execucoes parciais --mode smoke)",
+    )
     sub.add_parser(
         "test", help="Executa toda a bateria de testes e qualidade (ruff, mypy, pytest, dbt)"
     )
@@ -402,6 +474,13 @@ def main(argv: Sequence[str] | None = None) -> None:
         show_insights(top_n=args.top, uf=args.uf, year=args.year)
     elif args.command == "export-bi":
         export_bi(output_dir=args.output_dir)
+    elif args.command == "validate-bi":
+        validate_bi(
+            parquet_dir=args.parquet_dir,
+            check_build=args.check_build,
+            build_dir=args.build_dir,
+            allow_empty=args.allow_empty,
+        )
     elif args.command == "test":
         run_quality_suite()
 

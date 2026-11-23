@@ -9,7 +9,8 @@
     "sources:strict": "evidence sources --strict",
     "build": "evidence build",
     "build:strict": "evidence build:strict",
-    "preview": "evidence preview"
+    "preview": "evidence preview",
+    "test:e2e": "node scripts/smoke_test_build.mjs"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -21,6 +22,7 @@
     "@evidence-dev/evidence": "^40.1.8"
   },
   "devDependencies": {
+    "playwright-core": "^1.52.0",
     "typescript": "^5.8.3"
   },
   "overrides": {

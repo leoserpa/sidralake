@@ -7,6 +7,7 @@ import polars as pl
 from dagster import (
     AssetExecutionContext,
     AssetKey,
+    AutomationCondition,
     MaterializeResult,
     MetadataValue,
     OpExecutionContext,
@@ -90,7 +91,8 @@ def export_duckdb_tables_to_delta(
     name="silver_delta_export",
     deps=[AssetKey(["silver", t]) for t in SILVER_EXPORT_TABLES],
     group_name="lakehouse_export",
-    kinds={"duckdb", "deltalake"},
+    kinds={"duckdb", "deltalake", "polars"},
+    automation_condition=AutomationCondition.eager(),
     description="Exporta modelos Silver curados do DuckDB para formato aberto Delta Lake.",
 )
 def silver_delta_export(
@@ -119,7 +121,8 @@ def silver_delta_export(
     name="gold_delta_export",
     deps=[AssetKey(["gold", t]) for t in GOLD_EXPORT_TABLES],
     group_name="lakehouse_export",
-    kinds={"duckdb", "deltalake"},
+    kinds={"duckdb", "deltalake", "polars"},
+    automation_condition=AutomationCondition.eager(),
     description="Exporta Star Schema e Marts OBT Gold do DuckDB para Delta Lake ACID.",
 )
 def gold_delta_export(
@@ -156,7 +159,7 @@ def maintain_delta_lakehouse_op(
         ("gold", pipeline.gold_writer()),
     )
     for layer_name, writer in writers:
-        base_dir = writer.table_path(".").parent
+        base_dir = writer.base_dir
         if not base_dir.exists():
             continue
         for child in sorted(base_dir.iterdir()):

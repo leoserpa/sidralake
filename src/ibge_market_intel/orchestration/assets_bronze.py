@@ -142,7 +142,7 @@ def _to_materialize_result(metrics: dict[str, Any]) -> MaterializeResult[Any]:
     key_prefix=["bronze"],
     name="localidades",
     group_name="bronze",
-    kinds={"python", "deltalake"},
+    kinds={"python", "polars", "deltalake"},
     description="Cadastro completo de municipios brasileiros (/api/v1/localidades/municipios).",
 )
 def bronze_localidades(
@@ -178,7 +178,7 @@ def bronze_localidades(
     key_prefix=["bronze"],
     name="cnae_secoes",
     group_name="bronze",
-    kinds={"python", "deltalake"},
+    kinds={"python", "polars", "deltalake"},
     description="21 secoes oficiais da CNAE 2.0 (/api/v2/cnae/secoes) + mapeamento SIDRA 12762.",
 )
 def bronze_cnae_secoes(
@@ -213,7 +213,7 @@ def bronze_cnae_secoes(
     name="pib_municipal",
     partitions_def=PIB_PARTITIONS,
     group_name="bronze",
-    kinds={"python", "deltalake"},
+    kinds={"python", "polars", "deltalake"},
     description="SIDRA 5938: PIB Municipal e VAB por setor com chunking assincrono por UF.",
 )
 def bronze_pib_municipal(
@@ -231,7 +231,7 @@ def bronze_pib_municipal(
     name="censo_populacao",
     partitions_def=CENSO_PARTITIONS,
     group_name="bronze",
-    kinds={"python", "deltalake"},
+    kinds={"python", "polars", "deltalake"},
     description="SIDRA 4714: Censo Demografico 2022 (populacao, area km2 e densidade).",
 )
 def bronze_censo_populacao(
@@ -251,7 +251,7 @@ def bronze_censo_populacao(
     name="estimativa_populacao",
     partitions_def=ESTIMATIVA_POP_PARTITIONS,
     group_name="bronze",
-    kinds={"python", "deltalake"},
+    kinds={"python", "polars", "deltalake"},
     description="SIDRA 6579: Estimativas anuais de populacao residente municipal.",
 )
 def bronze_estimativa_populacao(
@@ -271,7 +271,7 @@ def bronze_estimativa_populacao(
     name="cempre_municipal",
     partitions_def=CEMPRE_PARTITIONS,
     group_name="bronze",
-    kinds={"python", "deltalake"},
+    kinds={"python", "polars", "deltalake"},
     description="SIDRA 9509 (nova serie 2022+): empresas, emprego e salarios por municipio.",
 )
 def bronze_cempre_municipal(
@@ -291,7 +291,7 @@ def bronze_cempre_municipal(
     name="cempre_setorial_uf",
     partitions_def=CEMPRE_PARTITIONS,
     group_name="bronze",
-    kinds={"python", "deltalake"},
+    kinds={"python", "polars", "deltalake"},
     description="SIDRA 9418 (nova serie 2022+): CEMPRE por UF e 21 secoes CNAE 2.0.",
 )
 def bronze_cempre_setorial_uf(
@@ -311,7 +311,7 @@ def bronze_cempre_setorial_uf(
     name="ipca_mensal",
     partitions_def=IPCA_PARTITIONS,
     group_name="bronze",
-    kinds={"python", "deltalake"},
+    kinds={"python", "polars", "deltalake"},
     description="SIDRA 1737: Serie historica mensal do IPCA Brasil.",
 )
 def bronze_ipca_mensal(
@@ -329,7 +329,7 @@ def bronze_ipca_mensal(
     name="pmc_varejo_uf",
     partitions_def=PMC_PARTITIONS,
     group_name="bronze",
-    kinds={"python", "deltalake"},
+    kinds={"python", "polars", "deltalake"},
     description="SIDRA 8883: PMC varejo ampliado por UF, receita/volume e 14 atividades.",
 )
 def bronze_pmc_varejo_uf(

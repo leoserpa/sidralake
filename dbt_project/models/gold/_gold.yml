@@ -94,6 +94,19 @@ models:
         data_type: boolean
         tests: [not_null]
 
+  - name: time_spine_daily
+    description: "Espinha dorsal temporal diaria (2018-2026) exigida pelo dbt Semantic Layer / MetricFlow."
+    time_spine:
+      standard_granularity_column: date_day
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: date_day
+        data_type: date
+        granularity: day
+        tests: [unique, not_null]
+
   - name: dim_cnae
     description: "Dimensao das 21 secoes CNAE 2.0 (SCD Type 2) mapeadas para a classificacao SIDRA 12762."
     config:
@@ -425,20 +438,157 @@ models:
       - name: var_acum_12m_volume_pct
         data_type: double
 
-  # ==================== GOLD DATA MARTS / OBTs ====================
+  # ==================== GOLD DATA MARTS / OBTs (CONTRACTS + SEMANTIC LAYER) ====================
   - name: mart_inteligencia_mercado_municipal
     description: >
       OBT 360 graus de Inteligencia de Mercado Municipal combinando Demografia, PIB Real,
       Diversificacao Produtiva (1 - HHI), Tecido Empresarial (CEMPRE) e Score composto IMS (0-100)
       com rankings nacional/estadual/regional e classificacao em Tiers estrategicos.
+    config:
+      contract:
+        enforced: true
+    semantic_model:
+      enabled: true
+    agg_time_dimension: data_referencia_anual
+    derived_semantics:
+      dimensions:
+        - name: data_referencia_anual
+          type: time
+          granularity: year
+          expr: "make_date(ano_referencia, 1, 1)"
+          label: "Ano de Referencia"
     columns:
       - name: sk_inteligencia_municipal
+        data_type: varchar
+        entity:
+          type: primary
+          name: inteligencia_municipal
         tests: [unique, not_null]
+      - name: sk_municipio
+        data_type: varchar
+        entity:
+          type: foreign
+          name: municipio
       - name: codigo_ibge_municipio
+        data_type: integer
         tests: [not_null]
       - name: ano_referencia
+        data_type: integer
         tests: [not_null]
+      - name: is_ultimo_ano_completo
+        data_type: boolean
+        dimension:
+          type: categorical
+      - name: nome_municipio
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: codigo_uf
+        data_type: integer
+      - name: sigla_uf
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: nome_uf
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: sigla_regiao
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: nome_regiao
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: nome_regiao_imediata
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: nome_regiao_intermediaria
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: populacao_residente
+        data_type: bigint
+      - name: area_km2
+        data_type: double
+      - name: densidade_demografica
+        data_type: double
+      - name: origem_populacao
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: is_populacao_interpolada
+        data_type: boolean
+        dimension:
+          type: categorical
+      - name: ano_mes_base_deflator
+        data_type: varchar
+      - name: pib_nominal_mil_brl
+        data_type: double
+      - name: pib_real_mil_brl
+        data_type: double
+      - name: pib_per_capita_real_brl
+        data_type: double
+      - name: share_vab_agropecuaria
+        data_type: double
+      - name: share_vab_industria
+        data_type: double
+      - name: share_vab_servicos_privados
+        data_type: double
+      - name: share_vab_adm_publica
+        data_type: double
+      - name: hhi_setorial
+        data_type: double
+      - name: indice_diversificacao_setorial
+        data_type: double
+      - name: crescimento_pib_real_yoy_pct
+        data_type: double
+      - name: cagr_pib_real_3a_pct
+        data_type: double
+      - name: num_unidades_locais
+        data_type: integer
+      - name: num_empresas_atuantes
+        data_type: integer
+      - name: pessoal_ocupado_total
+        data_type: integer
+      - name: pessoal_ocupado_assalariado
+        data_type: integer
+      - name: massa_salarial_real_mil_brl
+        data_type: double
+      - name: salario_medio_real_brl
+        data_type: double
+      - name: salario_medio_sm
+        data_type: double
+      - name: taxa_assalariamento_formal
+        data_type: double
+      - name: empresas_por_1000_hab
+        data_type: double
+      - name: crescimento_empresas_yoy_pct
+        data_type: double
+      - name: crescimento_emprego_yoy_pct
+        data_type: double
+      - name: score_tamanho_mercado
+        data_type: double
+      - name: score_poder_compra
+        data_type: double
+      - name: score_dinamismo
+        data_type: double
+      - name: score_maturidade_empresarial
+        data_type: double
+      - name: ims_score_0_100
+        data_type: double
+      - name: rank_nacional_ims
+        data_type: integer
+      - name: rank_estadual_ims
+        data_type: integer
+      - name: rank_regional_ims
+        data_type: integer
       - name: tier_mercado
+        data_type: varchar
+        dimension:
+          type: categorical
         tests:
           - not_null
           - accepted_values:
@@ -449,15 +599,124 @@ models:
                   - "Tier 3 - Emergente"
                   - "Tier 4 - Local / Nicho"
                   - "SEM_CLASSIFICACAO"
+    metrics:
+      - name: pib_real_total_mil_brl
+        type: simple
+        label: "PIB Real Total (Mil BRL)"
+        description: "Soma do PIB municipal a precos constantes (deflacionado pelo IPCA)."
+        agg: sum
+        expr: pib_real_mil_brl
+      - name: populacao_residente_total
+        type: simple
+        label: "Populacao Residente Total"
+        description: "Soma da populacao residente nos municipios filtrados."
+        agg: sum
+        expr: populacao_residente
+      - name: massa_salarial_real_total_mil_brl
+        type: simple
+        label: "Massa Salarial Real Total (Mil BRL)"
+        description: "Soma da massa salarial formal deflacionada pelo IPCA."
+        agg: sum
+        expr: massa_salarial_real_mil_brl
+      - name: empresas_atuantes_total
+        type: simple
+        label: "Empresas Atuantes (CEMPRE)"
+        description: "Total de empresas formalmente atuantes registradas no CEMPRE."
+        agg: sum
+        expr: num_empresas_atuantes
+      - name: ims_score_medio
+        type: simple
+        label: "Score IMS Medio (0-100)"
+        description: "Media do Indice de Mercado SidraLake (IMS) no recorte geografico."
+        agg: average
+        expr: ims_score_0_100
+      - name: pib_real_per_capita_agregado_brl
+        type: derived
+        label: "PIB Real Per Capita Agregado (BRL)"
+        description: "Razao governada entre PIB real total (em BRL) e populacao residente total."
+        expr: "(pib_real_mil * 1000.0) / pop_total"
+        input_metrics:
+          - name: pib_real_total_mil_brl
+            alias: pib_real_mil
+          - name: populacao_residente_total
+            alias: pop_total
 
   - name: mart_clusters_setoriais_uf
     description: >
       Data Mart de Inteligencia Setorial por UF e Secao CNAE 2.0 com calculo de Quociente Locacional (QL)
       de emprego e massa salarial para identificacao objetiva de clusters produtivos especializados.
+    config:
+      contract:
+        enforced: true
+    semantic_model:
+      enabled: true
+    agg_time_dimension: data_referencia_anual_cnae
+    derived_semantics:
+      dimensions:
+        - name: data_referencia_anual_cnae
+          type: time
+          granularity: year
+          expr: "make_date(ano_referencia, 1, 1)"
+          label: "Ano de Referencia Setorial"
     columns:
       - name: sk_cluster_setorial
+        data_type: varchar
+        entity:
+          type: primary
+          name: cluster_setorial
         tests: [unique, not_null]
+      - name: codigo_uf
+        data_type: integer
+      - name: sigla_uf
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: nome_uf
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: sigla_regiao
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: nome_regiao
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: codigo_secao_cnae
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: descricao_secao_cnae
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: ano_referencia
+        data_type: integer
+      - name: num_empresas
+        data_type: integer
+      - name: pessoal_ocupado_total
+        data_type: integer
+      - name: pessoal_ocupado_assalariado
+        data_type: integer
+      - name: massa_salarial_real_mil_brl
+        data_type: double
+      - name: has_sigilo_estatistico
+        data_type: boolean
+        dimension:
+          type: categorical
+      - name: quociente_locacional_emprego
+        data_type: double
+      - name: quociente_locacional_massa_salarial
+        data_type: double
+      - name: market_share_uf_no_setor_pct
+        data_type: double
+      - name: crescimento_emprego_setor_yoy_pct
+        data_type: double
       - name: perfil_especializacao
+        data_type: varchar
+        dimension:
+          type: categorical
         tests:
           - not_null
           - accepted_values:
@@ -468,20 +727,134 @@ models:
                   - "EQUILIBRADO_MEDIA_NACIONAL"
                   - "SUB_REPRESENTADO"
                   - "SIGILO_OU_INDISPONIVEL"
+    metrics:
+      - name: emprego_setorial_total
+        type: simple
+        label: "Emprego Setorial Total (CEMPRE UF)"
+        description: "Pessoal ocupado total por UF e secao CNAE 2.0."
+        agg: sum
+        expr: pessoal_ocupado_total
+      - name: massa_salarial_setorial_real_mil_brl
+        type: simple
+        label: "Massa Salarial Setorial Real (Mil BRL)"
+        description: "Massa salarial real acumulada por UF e secao CNAE 2.0."
+        agg: sum
+        expr: massa_salarial_real_mil_brl
+      - name: ql_emprego_medio
+        type: simple
+        label: "Quociente Locacional Medio de Emprego"
+        description: "Media do Quociente Locacional (QL) de emprego no recorte."
+        agg: average
+        expr: quociente_locacional_emprego
 
   - name: mart_pulso_consumo_macro
     description: >
       Data Mart mensal de pulso do varejo ampliado (PMC) cruzado com IPCA, medindo spread preco vs volume,
       medias moveis 3m/12m e regime de consumo por UF e atividade comercial.
+    config:
+      contract:
+        enforced: true
+    semantic_model:
+      enabled: true
+    agg_time_dimension: data_referencia
     columns:
       - name: sk_pulso_consumo
+        data_type: varchar
+        entity:
+          type: primary
+          name: pulso_consumo
         tests: [unique, not_null]
+      - name: codigo_uf
+        data_type: integer
+      - name: sigla_uf
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: nome_uf
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: sigla_regiao
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: codigo_atividade_pmc
+        data_type: integer
+      - name: nome_atividade_pmc
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: grupo_consumo
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: ano_mes
+        data_type: varchar
+        dimension:
+          type: categorical
+      - name: ano_referencia
+        data_type: integer
+      - name: mes_referencia
+        data_type: integer
+      - name: data_referencia
+        data_type: date
+        granularity: month
+        dimension:
+          type: time
+      - name: indice_receita_nominal
+        data_type: double
+      - name: indice_volume_vendas
+        data_type: double
+      - name: indice_volume_vendas_sa
+        data_type: double
+      - name: var_mom_sa_volume_pct
+        data_type: double
+      - name: var_yoy_receita_nominal_pct
+        data_type: double
+      - name: var_yoy_volume_pct
+        data_type: double
+      - name: var_acum_12m_volume_pct
+        data_type: double
+      - name: ipca_variacao_mensal_pct
+        data_type: double
+      - name: ipca_variacao_acum_12m_pct
+        data_type: double
+      - name: spread_preco_vs_volume_yoy_pp
+        data_type: double
+      - name: spread_volume_vs_ipca_12m_pp
+        data_type: double
+      - name: media_movel_3m_volume
+        data_type: double
+      - name: media_movel_12m_volume
+        data_type: double
       - name: regime_consumo
+        data_type: varchar
+        dimension:
+          type: categorical
         tests:
           - not_null
           - accepted_values:
               arguments:
                 values: ["EXPANSAO_REAL", "PRESSAO_INFLACIONARIA", "ESTABILIDADE", "RETRACAO", "SEM_DADO"]
+    metrics:
+      - name: volume_varejo_medio
+        type: simple
+        label: "Indice Medio de Volume do Varejo (PMC)"
+        description: "Media do indice de volume de vendas do varejo ampliado."
+        agg: average
+        expr: indice_volume_vendas
+      - name: var_yoy_volume_media_pct
+        type: simple
+        label: "Variacao YoY Media do Volume (%)"
+        description: "Variacao interanual media do volume real de vendas no varejo."
+        agg: average
+        expr: var_yoy_volume_pct
+      - name: spread_preco_volume_medio_pp
+        type: simple
+        label: "Spread Medio Preco vs Volume (p.p.)"
+        description: "Diferenca media entre receita nominal YoY e volume real YoY em pontos percentuais."
+        agg: average
+        expr: spread_preco_vs_volume_yoy_pp
 
 unit_tests:
   - name: test_quociente_locacional_cluster_especializado
@@ -557,3 +930,88 @@ unit_tests:
         select md5('51-A-2024'), 51::integer, 'MT'::varchar, 'Mato Grosso'::varchar, 'CO'::varchar, 'Centro-Oeste'::varchar, 'A'::varchar, 'Agricultura'::varchar, 2024::integer, 2::integer, null::integer, null::integer, null::double, true::boolean, null::double, null::double, null::double, null::double, 'SIGILO_OU_INDISPONIVEL'::varchar
         union all
         select md5('51-C-2024'), 51::integer, 'MT'::varchar, 'Mato Grosso'::varchar, 'CO'::varchar, 'Centro-Oeste'::varchar, 'C'::varchar, 'Industria'::varchar, 2024::integer, 10::integer, 100::integer, 90::integer, 100.0::double, false::boolean, null::double, null::double, 50.0::double, null::double, 'SIGILO_OU_INDISPONIVEL'::varchar
+
+  - name: test_pulso_consumo_regimes_e_spread
+    description: "Valida spread preco vs volume, spread volume vs IPCA 12m, media movel 3m e classificacao de todos os regimes de consumo."
+    model: mart_pulso_consumo_macro
+    given:
+      - input: ref('dim_geografia')
+        format: sql
+        rows: |
+          select 35::integer as codigo_uf, 'SP'::varchar as sigla_uf, 'São Paulo'::varchar as nome_uf, 'SE'::varchar as sigla_regiao, 'Sudeste'::varchar as nome_regiao, true::boolean as is_current
+      - input: ref('dim_atividade_varejo')
+        format: sql
+        rows: |
+          select 103154::integer as codigo_atividade_pmc, 'Comercio varejista'::varchar as nome_atividade_pmc, 'Varejo Total'::varchar as grupo_consumo
+      - input: ref('fct_ipca_mensal')
+        format: sql
+        rows: |
+          select '202401'::varchar as ano_mes, 0.5::double as variacao_mensal_pct, 4.5::double as variacao_acum_12m_pct
+          union all select '202402'::varchar, 0.4::double, 4.5::double
+          union all select '202403'::varchar, 0.3::double, 4.0::double
+          union all select '202404'::varchar, 0.2::double, 3.8::double
+          union all select '202405'::varchar, 0.2::double, 3.9::double
+      - input: ref('fct_pmc_varejo_mensal')
+        format: sql
+        rows: |
+          select 35::integer as codigo_uf, 103154::integer as codigo_atividade_pmc, '202401'::varchar as ano_mes, 2024::integer as ano_referencia, 1::integer as mes_referencia, date '2024-01-01' as data_referencia, 110.0::double as indice_receita_nominal, 100.0::double as indice_volume_vendas, 100.0::double as indice_volume_vendas_sa, 1.0::double as var_mom_sa_volume_pct, 8.0::double as var_yoy_receita_nominal_pct, 5.0::double as var_yoy_volume_pct, 6.0::double as var_acum_12m_receita_pct, 6.5::double as var_acum_12m_volume_pct
+          union all select 35::integer, 103154::integer, '202402'::varchar, 2024::integer, 2::integer, date '2024-02-01', 115.0::double, 102.0::double, 101.0::double, 1.0::double, 6.0::double, 1.0::double, 5.5::double, 2.0::double
+          union all select 35::integer, 103154::integer, '202403'::varchar, 2024::integer, 3::integer, date '2024-03-01', 112.0::double, 104.0::double, 102.0::double, 0.5::double, 1.5::double, 0.5::double, 2.0::double, 1.0::double
+          union all select 35::integer, 103154::integer, '202404'::varchar, 2024::integer, 4::integer, date '2024-04-01', 105.0::double, 94.0::double, 95.0::double, -2.0::double, -1.0::double, -3.5::double, 0.5::double, -2.0::double
+          union all select 35::integer, 103154::integer, '202405'::varchar, 2024::integer, 5::integer, date '2024-05-01', null::double, null::double, null::double, null::double, null::double, null::double, null::double, null::double
+    expect:
+      format: sql
+      rows: |
+        select md5('35-103154-202401') as sk_pulso_consumo, 35::integer as codigo_uf, 'SP'::varchar as sigla_uf, 'São Paulo'::varchar as nome_uf, 'SE'::varchar as sigla_regiao, 103154::integer as codigo_atividade_pmc, 'Comercio varejista'::varchar as nome_atividade_pmc, 'Varejo Total'::varchar as grupo_consumo, '202401'::varchar as ano_mes, 2024::integer as ano_referencia, 1::integer as mes_referencia, date '2024-01-01' as data_referencia, 110.0::double as indice_receita_nominal, 100.0::double as indice_volume_vendas, 100.0::double as indice_volume_vendas_sa, 1.0::double as var_mom_sa_volume_pct, 8.0::double as var_yoy_receita_nominal_pct, 5.0::double as var_yoy_volume_pct, 6.5::double as var_acum_12m_volume_pct, 0.5::double as ipca_variacao_mensal_pct, 4.5::double as ipca_variacao_acum_12m_pct, 3.0::double as spread_preco_vs_volume_yoy_pp, 2.0::double as spread_volume_vs_ipca_12m_pp, 100.0::double as media_movel_3m_volume, 100.0::double as media_movel_12m_volume, 'EXPANSAO_REAL'::varchar as regime_consumo
+        union all select md5('35-103154-202402'), 35::integer, 'SP'::varchar, 'São Paulo'::varchar, 'SE'::varchar, 103154::integer, 'Comercio varejista'::varchar, 'Varejo Total'::varchar, '202402'::varchar, 2024::integer, 2::integer, date '2024-02-01', 115.0::double, 102.0::double, 101.0::double, 1.0::double, 6.0::double, 1.0::double, 2.0::double, 0.4::double, 4.5::double, 5.0::double, -2.5::double, 101.0::double, 101.0::double, 'PRESSAO_INFLACIONARIA'::varchar
+        union all select md5('35-103154-202403'), 35::integer, 'SP'::varchar, 'São Paulo'::varchar, 'SE'::varchar, 103154::integer, 'Comercio varejista'::varchar, 'Varejo Total'::varchar, '202403'::varchar, 2024::integer, 3::integer, date '2024-03-01', 112.0::double, 104.0::double, 102.0::double, 0.5::double, 1.5::double, 0.5::double, 1.0::double, 0.3::double, 4.0::double, 1.0::double, -3.0::double, 102.0::double, 102.0::double, 'ESTABILIDADE'::varchar
+        union all select md5('35-103154-202404'), 35::integer, 'SP'::varchar, 'São Paulo'::varchar, 'SE'::varchar, 103154::integer, 'Comercio varejista'::varchar, 'Varejo Total'::varchar, '202404'::varchar, 2024::integer, 4::integer, date '2024-04-01', 105.0::double, 94.0::double, 95.0::double, -2.0::double, -1.0::double, -3.5::double, -2.0::double, 0.2::double, 3.8::double, 2.5::double, -5.8::double, 100.0::double, 100.0::double, 'RETRACAO'::varchar
+        union all select md5('35-103154-202405'), 35::integer, 'SP'::varchar, 'São Paulo'::varchar, 'SE'::varchar, 103154::integer, 'Comercio varejista'::varchar, 'Varejo Total'::varchar, '202405'::varchar, 2024::integer, 5::integer, date '2024-05-01', null::double, null::double, null::double, null::double, null::double, null::double, null::double, 0.2::double, 3.9::double, null::double, null::double, 99.0::double, 100.0::double, 'SEM_DADO'::varchar
+
+  - name: test_ims_score_tiers_e_ranking
+    description: "Valida score IMS (0-100), ranking nacional/estadual, marcacao de ultimo ano completo e fallback para SEM_CLASSIFICACAO quando pilares sao nulos."
+    model: mart_inteligencia_mercado_municipal
+    given:
+      - input: ref('dim_geografia')
+        format: sql
+        rows: |
+          select 'sk_sp'::varchar as sk_municipio, 3550308::integer as codigo_ibge_municipio, 'São Paulo'::varchar as nome_municipio, 35::integer as codigo_uf, 'SP'::varchar as sigla_uf, 'São Paulo'::varchar as nome_uf, 'SE'::varchar as sigla_regiao, 'Sudeste'::varchar as nome_regiao, 'São Paulo'::varchar as nome_regiao_imediata, 'São Paulo'::varchar as nome_regiao_intermediaria, true::boolean as is_current
+          union all select 'sk_small'::varchar, 3500105::integer, 'Adamantina'::varchar, 35::integer, 'SP'::varchar, 'São Paulo'::varchar, 'SE'::varchar, 'Sudeste'::varchar, 'Adamantina'::varchar, 'Presidente Prudente'::varchar, true::boolean
+          union all select 'sk_null'::varchar, 5101837::integer, 'Boa Esperanca do Norte'::varchar, 51::integer, 'MT'::varchar, 'Mato Grosso'::varchar, 'CO'::varchar, 'Centro-Oeste'::varchar, 'Sorriso'::varchar, 'Sinop'::varchar, true::boolean
+      - input: ref('fct_populacao_municipal')
+        format: sql
+        rows: |
+          select 3550308::integer as codigo_ibge_municipio, 2023::integer as ano_referencia, 12000000::bigint as populacao_residente, 1521.0::double as area_km2, 7889.5::double as densidade_demografica, 'INTERPOLADO'::varchar as origem_dado, true::boolean as is_interpolado
+          union all select 3500105::integer, 2023::integer, 35000::bigint, 411.0::double, 85.1::double, 'INTERPOLADO'::varchar, true::boolean
+      - input: ref('fct_pib_municipal')
+        format: sql
+        rows: |
+          select 3550308::integer as codigo_ibge_municipio, 2023::integer as ano_referencia, '202412'::varchar as ano_mes_base_deflator, 900000000.0::double as pib_nominal_mil_brl, 900000000.0::double as pib_real_mil_brl, 0.01::double as share_vab_agropecuaria, 0.14::double as share_vab_industria, 0.75::double as share_vab_servicos_privados, 0.10::double as share_vab_adm_publica, 0.59::double as hhi_setorial, 0.41::double as indice_diversificacao_setorial, 4.0::double as crescimento_pib_real_yoy_pct, 3.5::double as cagr_pib_real_3a_pct
+          union all select 3500105::integer, 2023::integer, '202412'::varchar, 1500000.0::double, 1500000.0::double, 0.20::double, 0.15::double, 0.45::double, 0.20::double, 0.305::double, 0.695::double, 1.0::double, 1.0::double
+      - input: ref('fct_cempre_municipal')
+        format: sql
+        rows: |
+          select 3550308::integer as codigo_ibge_municipio, 2023::integer as ano_referencia, 800000::integer as num_unidades_locais, 700000::integer as num_empresas_atuantes, 6000000::integer as pessoal_ocupado_total, 5000000::integer as pessoal_ocupado_assalariado, 300000000.0::double as massa_salarial_real_mil_brl, 5500.0::double as salario_medio_real_brl, 4.2::double as salario_medio_sm, 0.83::double as taxa_assalariamento_formal, 5.0::double as crescimento_empresas_yoy_pct, 4.0::double as crescimento_emprego_yoy_pct
+          union all select 3500105::integer, 2023::integer, 1500::integer, 1200::integer, 10000::integer, 7500::integer, 300000.0::double, 2800.0::double, 2.1::double, 0.75::double, 1.0::double, 0.5::double
+          union all select 5101837::integer, 2023::integer, null::integer, null::integer, null::integer, null::integer, null::double, null::double, null::double, null::double, null::double, null::double
+    expect:
+      format: dict
+      rows:
+        - codigo_ibge_municipio: 3550308
+          ano_referencia: 2023
+          is_ultimo_ano_completo: true
+          rank_nacional_ims: 1
+          rank_estadual_ims: 1
+          tier_mercado: "Tier 1 - Polo Nacional"
+        - codigo_ibge_municipio: 3500105
+          ano_referencia: 2023
+          is_ultimo_ano_completo: true
+          rank_nacional_ims: 2
+          rank_estadual_ims: 2
+          tier_mercado: "Tier 4 - Local / Nicho"
+        - codigo_ibge_municipio: 5101837
+          ano_referencia: 2023
+          is_ultimo_ano_completo: true
+          rank_nacional_ims: 3
+          rank_estadual_ims: 1
+          tier_mercado: "SEM_CLASSIFICACAO"

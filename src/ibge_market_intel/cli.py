@@ -13,6 +13,7 @@ from collections.abc import Sequence
 import duckdb
 from deltalake import DeltaTable
 
+from ibge_market_intel.analytics.insights import build_market_insights, format_insights_report
 from ibge_market_intel.config import PipelineSettings, get_settings
 from ibge_market_intel.ingestion.catalogs import (
     CEMPRE_MUNICIPAL_SPEC,
@@ -330,6 +331,18 @@ def run_quality_suite() -> None:
         subprocess.run(cmd, check=True)
 
 
+def show_insights(*, top_n: int = 10, uf: str | None = None, year: int | None = None) -> None:
+    """Executa consultas analiticas em Polars Lazy (scan_delta) sobre os marts Gold."""
+    settings = get_settings()
+    report = build_market_insights(
+        settings.resolved_gold_dir,
+        top_n=top_n,
+        uf=uf,
+        year=year,
+    )
+    print(format_insights_report(report))
+
+
 def main(argv: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="SidraLake — IBGE Market Intelligence 360 Medallion CLI"
@@ -340,7 +353,18 @@ def main(argv: Sequence[str] | None = None) -> None:
     run_cmd.add_argument("--mode", choices=("smoke", "full"), default="full")
 
     sub.add_parser("maintain", help="Executa OPTIMIZE e VACUUM nas tabelas Delta Lake")
-    sub.add_parser("inspect", help="Imprime metricas de sanity check da camada Gold")
+    sub.add_parser("inspect", help="Imprime metricas de sanity check da camada Gold (DuckDB)")
+    insights_cmd = sub.add_parser(
+        "insights",
+        help="Gera rankings de mercado via Polars Lazy API (scan_delta) na camada Gold",
+    )
+    insights_cmd.add_argument(
+        "--top", type=int, default=10, help="Quantidade de linhas por ranking"
+    )
+    insights_cmd.add_argument(
+        "--uf", type=str, default=None, help="Filtra por sigla da UF (ex: SP)"
+    )
+    insights_cmd.add_argument("--year", type=int, default=None, help="Filtra por ano de referencia")
     sub.add_parser(
         "test", help="Executa toda a bateria de testes e qualidade (ruff, mypy, pytest, dbt)"
     )
@@ -352,6 +376,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         maintain_lakehouse()
     elif args.command == "inspect":
         inspect_gold()
+    elif args.command == "insights":
+        show_insights(top_n=args.top, uf=args.uf, year=args.year)
     elif args.command == "test":
         run_quality_suite()
 

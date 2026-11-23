@@ -6,19 +6,21 @@ Especificação técnica dos comandos CLI, alvos do `Makefile`, variáveis de am
 
 ---
 
-## 1. CLI `ibge-pipeline`
+## 1. CLI `sidralake` (e alias `ibge-pipeline`)
 
 Definida em `src/ibge_market_intel/cli.py` e exposta via `pyproject.toml` (`[project.scripts]`).
 
 ```bash
-uv run ibge-pipeline <subcomando> [opcoes]
+uv run sidralake <subcomando> [opcoes]
 ```
 
 | Comando | Opções | Comportamento |
 | :--- | :--- | :--- |
-| `ibge-pipeline run` | `--mode {smoke,full}` (padrão: `full`) | Executa o ciclo completo: ingestão assíncrona IBGE + validação Pandera → Delta Bronze → `dbt build` → exportação ACID Silver e Gold para Delta Lake. Em `--mode smoke`, limita `uf_filter` para `[35, 51]` (se `IBGE_UF_FILTER` não estiver definida) e usa janela anual reduzida. |
-| `ibge-pipeline maintain` | — | Percorre `data/bronze/`, `data/silver/` e `data/gold/` e executa `OPTIMIZE` (`compact()`) e `VACUUM` (`retention_hours=168`, `dry_run=False`) em cada tabela Delta Lake. |
-| `ibge-pipeline inspect` | — | Executa 6 consultas analíticas de verificação diretamente no DuckDB e no Delta Lake Gold (Top 15 Score IMS, distribuição por Tier, validação de *Boa Esperança do Norte*, Top 10 Clusters CNAE por QL, pulso PMC × IPCA e versões `_delta_log`). |
+| `sidralake run` | `--mode {smoke,full}` (padrão: `full`) | Executa o ciclo completo: ingestão assíncrona IBGE + validação Pandera → Delta Bronze → `dbt build` → exportação ACID Silver e Gold para Delta Lake. Em `--mode smoke`, limita `uf_filter` para `[35, 51]` (se `IBGE_UF_FILTER` não estiver definida) e usa janela anual reduzida. |
+| `sidralake maintain` | — | Percorre `data/bronze/`, `data/silver/` e `data/gold/` e executa `OPTIMIZE` (`compact()`) e `VACUUM` (`retention_hours=168`, `dry_run=False`) em cada tabela Delta Lake. |
+| `sidralake inspect` | — | Executa 6 consultas analíticas de verificação diretamente no DuckDB e no Delta Lake Gold (Top 15 Score IMS, distribuição por Tier, validação de *Boa Esperança do Norte*, Top 10 Clusters CNAE por QL, pulso PMC × IPCA e versões `_delta_log`). |
+| `sidralake insights` | `--top N`, `--uf SIGLA`, `--year ANO` | Executa consultas analíticas *one-shot* via **Polars Lazy API (`pl.scan_delta`)** diretamente nos Data Marts Delta Gold (Top municípios por IMS, maior CAGR real em 3 anos, liderança setorial CNAE e pulso do varejo por regime de consumo). |
+| `sidralake test` | — | Roda toda a bateria de qualidade localmente (`ruff`, `mypy --strict`, `pytest` unitário + E2E, `dbt parse` e os 10 testes unitários SQL do dbt). |
 
 ---
 

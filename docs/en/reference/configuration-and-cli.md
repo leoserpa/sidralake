@@ -6,19 +6,21 @@ Technical specification of the CLI commands, `Makefile` targets, environment var
 
 ---
 
-## 1. `ibge-pipeline` CLI
+## 1. `sidralake` CLI (and `ibge-pipeline` alias)
 
 Defined in `src/ibge_market_intel/cli.py` and registered via `pyproject.toml` (`[project.scripts]`).
 
 ```bash
-uv run ibge-pipeline <subcommand> [options]
+uv run sidralake <subcommand> [options]
 ```
 
 | Command | Options | Behavior |
 | :--- | :--- | :--- |
-| `ibge-pipeline run` | `--mode {smoke,full}` (default: `full`) | Runs the full pipeline: async IBGE ingestion + Pandera validation → Bronze Delta → `dbt build` → ACID Silver & Gold Delta Lake export. In `--mode smoke`, defaults `uf_filter` to `[35, 51]` (unless `IBGE_UF_FILTER` is set) and uses a compact year range. |
-| `ibge-pipeline maintain` | — | Iterates over `data/bronze/`, `data/silver/`, and `data/gold/`, running `OPTIMIZE` (`compact()`) and `VACUUM` (`retention_hours=168`, `dry_run=False`) on every Delta table. |
-| `ibge-pipeline inspect` | — | Runs 6 analytical sanity-check queries against DuckDB and Gold Delta Lake (Top 15 IMS Score, Tier distribution, *Boa Esperança do Norte* verification, Top 10 CNAE clusters by LQ, PMC × IPCA pulse, and `_delta_log` table versions). |
+| `sidralake run` | `--mode {smoke,full}` (default: `full`) | Runs the full pipeline: async IBGE ingestion + Pandera validation → Bronze Delta → `dbt build` → ACID Silver & Gold Delta Lake export. In `--mode smoke`, defaults `uf_filter` to `[35, 51]` (unless `IBGE_UF_FILTER` is set) and uses a compact year range. |
+| `sidralake maintain` | — | Iterates over `data/bronze/`, `data/silver/`, and `data/gold/`, running `OPTIMIZE` (`compact()`) and `VACUUM` (`retention_hours=168`, `dry_run=False`) on every Delta table. |
+| `sidralake inspect` | — | Runs 6 analytical sanity-check queries against DuckDB and Gold Delta Lake (Top 15 IMS Score, Tier distribution, *Boa Esperança do Norte* verification, Top 10 CNAE clusters by LQ, PMC × IPCA pulse, and `_delta_log` table versions). |
+| `sidralake insights` | `--top N`, `--uf CODE`, `--year YEAR` | Runs one-shot analytical queries via **Polars Lazy API (`pl.scan_delta`)** directly over Gold Delta Lake Marts (Top municipalities by IMS, fastest 3-year real GDP CAGR, state CNAE clusters, and retail consumption pulse by regime). |
+| `sidralake test` | — | Runs the full local quality suite (`ruff`, `mypy --strict`, `pytest` unit + E2E, `dbt parse`, and all 10 dbt SQL unit tests). |
 
 ---
 

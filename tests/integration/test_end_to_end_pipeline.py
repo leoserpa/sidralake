@@ -648,4 +648,4 @@ def test_full_medallion_pipeline_scd2_and_idempotency(
     # 12. Prova integridade do grafo Dagster unificado
     ag = defs.resolve_asset_graph()
     assert len(ag.external_asset_keys) == 0
-    assert len(ag.materializable_asset_keys) == 39
+    assert len(ag.materializable_asset_keys) == 40

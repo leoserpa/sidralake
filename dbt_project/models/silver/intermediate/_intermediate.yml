@@ -230,3 +230,70 @@ unit_tests:
           (1.0 - (3.0 * power(100.0 / 300.0, 2)))::double as indice_diversificacao_setorial,
           null::double as crescimento_pib_real_yoy_pct,
           null::double as cagr_pib_real_3a_pct
+
+  - name: test_cempre_deflacao_e_yoy
+    description: "Valida deflacao IPCA da massa salarial e salario medio, taxa de assalariamento formal e crescimento YoY de empresas/emprego."
+    model: int_cempre_municipal_deflacionado
+    given:
+      - input: ref('stg_ibge__cempre_municipal')
+        format: sql
+        rows: |
+          select 3550308::integer as codigo_ibge_municipio, 2022::integer as ano_referencia, 706::integer as variavel_id, 120.0::double as valor_numerico
+          union all select 3550308::integer, 2022::integer, 367::integer, 100.0::double
+          union all select 3550308::integer, 2022::integer, 707::integer, 500.0::double
+          union all select 3550308::integer, 2022::integer, 708::integer, 400.0::double
+          union all select 3550308::integer, 2022::integer, 5944::integer, 390.0::double
+          union all select 3550308::integer, 2022::integer, 662::integer, 1000.0::double
+          union all select 3550308::integer, 2022::integer, 1606::integer, 3.0::double
+          union all select 3550308::integer, 2022::integer, 10143::integer, 3600.0::double
+          union all select 3550308::integer, 2023::integer, 706::integer, 132.0::double
+          union all select 3550308::integer, 2023::integer, 367::integer, 110.0::double
+          union all select 3550308::integer, 2023::integer, 707::integer, 600.0::double
+          union all select 3550308::integer, 2023::integer, 708::integer, 450.0::double
+          union all select 3550308::integer, 2023::integer, 5944::integer, 440.0::double
+          union all select 3550308::integer, 2023::integer, 662::integer, 1200.0::double
+          union all select 3550308::integer, 2023::integer, 1606::integer, 3.2::double
+          union all select 3550308::integer, 2023::integer, 10143::integer, 4000.0::double
+      - input: ref('int_ipca_deflator_anual')
+        format: sql
+        rows: |
+          select 2022::integer as ano_referencia, '202412'::varchar as ano_mes_base_deflator, 1.25::double as fator_deflator_anual
+          union all select 2023::integer, '202412'::varchar, 1.05::double
+    expect:
+      format: sql
+      rows: |
+        select
+          3550308::integer as codigo_ibge_municipio,
+          2022::integer as ano_referencia,
+          '202412'::varchar as ano_mes_base_deflator,
+          120::integer as num_unidades_locais,
+          100::integer as num_empresas_atuantes,
+          500::integer as pessoal_ocupado_total,
+          400::integer as pessoal_ocupado_assalariado,
+          390::integer as pessoal_assalariado_medio,
+          1000.0::double as massa_salarial_nominal_mil_brl,
+          1250.0::double as massa_salarial_real_mil_brl,
+          3.0::double as salario_medio_sm,
+          3600.0::double as salario_medio_nominal_brl,
+          4500.0::double as salario_medio_real_brl,
+          0.8::double as taxa_assalariamento_formal,
+          null::double as crescimento_empresas_yoy_pct,
+          null::double as crescimento_emprego_yoy_pct
+        union all
+        select
+          3550308::integer,
+          2023::integer,
+          '202412'::varchar,
+          132::integer,
+          110::integer,
+          600::integer,
+          450::integer,
+          440::integer,
+          1200.0::double,
+          (1200.0 * 1.05)::double,
+          3.2::double,
+          4000.0::double,
+          (4000.0 * 1.05)::double,
+          0.75::double,
+          ((110.0 / 100.0) - 1.0) * 100.0,
+          ((600.0 / 500.0) - 1.0) * 100.0

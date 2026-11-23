@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -30,16 +31,16 @@ class DeltaWriteResult:
 
 
 def compute_dataframe_hash(df: pl.DataFrame) -> str:
-    """Computa hash SHA-256 deterministico do conteudo tabular (excluindo colunas _*)."""
+    """Computa hash SHA-256 deterministico via Polars Lazy API e Arrow IPC binario."""
     business_cols = sorted(c for c in df.columns if not c.startswith("_"))
     if df.height == 0 or not business_cols:
         return hashlib.sha256(b"empty").hexdigest()
 
-    sorted_df = df.select(business_cols).sort(business_cols)
+    sorted_df = df.lazy().select(business_cols).sort(business_cols, nulls_last=True).collect()
+    buf = io.BytesIO()
+    sorted_df.write_ipc(buf)
     hasher = hashlib.sha256()
-    # Serializa em IPC/CSV deterministico em memoria para hash rapido e reproduzivel
-    hasher.update(",".join(business_cols).encode("utf-8"))
-    hasher.update(sorted_df.write_csv().encode("utf-8"))
+    hasher.update(buf.getvalue())
     return hasher.hexdigest()
 
 
@@ -51,14 +52,18 @@ def attach_audit_columns(
     payload_hash: str | None = None,
     ingested_at_utc: datetime | None = None,
 ) -> tuple[pl.DataFrame, str]:
-    """Adiciona colunas imutaveis de auditoria e linhagem na camada Bronze."""
+    """Adiciona colunas imutaveis de auditoria e linhagem na camada Bronze via Lazy API."""
     resolved_hash = payload_hash or compute_dataframe_hash(df)
     ts = (ingested_at_utc or datetime.now(UTC)).isoformat()
-    enriched = df.with_columns(
-        pl.lit(ingestion_id).cast(pl.String()).alias("_ingestion_id"),
-        pl.lit(ts).cast(pl.String()).alias("_ingested_at_utc"),
-        pl.lit(source_url).cast(pl.String()).alias("_source_url"),
-        pl.lit(resolved_hash).cast(pl.String()).alias("_payload_hash"),
+    enriched = (
+        df.lazy()
+        .with_columns(
+            pl.lit(ingestion_id).cast(pl.String()).alias("_ingestion_id"),
+            pl.lit(ts).cast(pl.String()).alias("_ingested_at_utc"),
+            pl.lit(source_url).cast(pl.String()).alias("_source_url"),
+            pl.lit(resolved_hash).cast(pl.String()).alias("_payload_hash"),
+        )
+        .collect()
     )
     return enriched, resolved_hash
 
@@ -76,6 +81,10 @@ class DeltaLakeWriter:
     def __init__(self, base_dir: Path) -> None:
         self._base_dir = base_dir.resolve()
         self._base_dir.mkdir(parents=True, exist_ok=True)
+
+    @property
+    def base_dir(self) -> Path:
+        return self._base_dir
 
     def table_path(self, table_name: str) -> Path:
         return self._base_dir / table_name

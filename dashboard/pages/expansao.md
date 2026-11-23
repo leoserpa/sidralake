@@ -101,7 +101,7 @@ limit 300
 		yGridlines=false
 		xGridlines=false
 		seriesColors={{'Tier 1 · Polo': '#3b82f6', 'Tier 2 · Expansão': '#94a3b8', 'Demais Tiers': '#475569'}}
-		echartsOptions={{ backgroundColor: 'transparent', grid: { containLabel: true } }}
+		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, legend: { textStyle: { color: '#f8fafc' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f8fafc' }, nameTextStyle: { color: '#cbd5e1' }, axisLine: { lineStyle: { color: '#334155' } } }, yAxis: { axisLabel: { color: '#f8fafc' }, nameTextStyle: { color: '#cbd5e1' } } }}
 		title="Onde cruzar alto crescimento real com poder de compra?"
 		subtitle="Eixo X: CAGR 3a (%) · Eixo Y: PIB Per Capita (R$) · Bolha: População · Tier 1 em destaque azul"
 		xAxisTitle="CAGR PIB Real 3 Anos (%)"

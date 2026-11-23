@@ -115,7 +115,7 @@ order by pos asc
 			yGridlines=false
 			xGridlines=false
 			colorPalette={['#3b82f6']}
-			echartsOptions={{ backgroundColor: 'transparent', grid: { containLabel: true }, xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, grid: { containLabel: true }, xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1, axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } }, yAxis: { axisLabel: { color: '#f8fafc' }, nameTextStyle: { color: '#cbd5e1' } } }}
 			title="Evolução do PIB Real (2018–2023)"
 			subtitle="Valores constantes (R$ Bi · IPCA) · Linha limpa sem preenchimento"
 			yAxisTitle="R$ Bilhões"
@@ -144,7 +144,7 @@ order by pos asc
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-			echartsOptions={{ backgroundColor: 'transparent' }}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } } }}
 			title="Onde a cidade é mais forte no IMS?"
 			subtitle="4 Pilares normalizados (0–100) · Pilar líder em azul"
 		/>
@@ -230,7 +230,7 @@ order by ano_referencia desc
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-			echartsOptions={{ backgroundColor: 'transparent' }}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } } }}
 			title="Qual é a vocação produtiva (VAB)?"
 			subtitle="Participação no Valor Adicionado Bruto (%) · Último VAB IBGE (2021)"
 		/>
@@ -296,7 +296,7 @@ limit 12
 			yGridlines=false
 			xGridlines=false
 			colorPalette={['#3b82f6']}
-			echartsOptions={{ backgroundColor: 'transparent', grid: { left: 16, containLabel: true }, xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, grid: { left: 16, containLabel: true }, xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1, axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } }, yAxis: { axisLabel: { color: '#f8fafc' }, nameTextStyle: { color: '#cbd5e1' } } }}
 			title="Curva Demográfica (2018–2026)"
 			subtitle="Censo 2022 + Estimativas IBGE · Série contínua sem área sombreada"
 			yAxisTitle="Habitantes"
@@ -324,7 +324,7 @@ limit 12
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Cidade Selecionada': '#3b82f6', 'Vizinhos': '#525866'}}
-			echartsOptions={{ backgroundColor: 'transparent' }}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } } }}
 			title="Benchmarking na Mesma Região Imediata"
 			subtitle="Score IMS (0–100) · Cidade selecionada em azul pré-atentivo"
 		/>

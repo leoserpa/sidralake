@@ -94,7 +94,7 @@ order by regiao asc
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-			echartsOptions={{ backgroundColor: 'transparent' }}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } } }}
 			title="Quais municípios mais cresceram?"
 			subtitle="CAGR real 3 anos (IPCA) · Líder em azul pré-atentivo"
 		/>
@@ -114,7 +114,7 @@ order by regiao asc
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Serviços': '#3b82f6', 'Indústria': '#94a3b8', 'Agro': '#64748b', 'Adm. Púb.': '#334155'}}
-			echartsOptions={{ backgroundColor: 'transparent' }}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, legend: { textStyle: { color: '#f8fafc' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } } }}
 			title="Composição setorial do VAB por Região"
 			subtitle="Proporção 100% · Serviços em destaque azul · Último VAB IBGE (2021)"
 		/>
@@ -151,7 +151,7 @@ limit 500
 		yGridlines=false
 		xGridlines=false
 		seriesColors={{'Tier 1 · Polo': '#3b82f6', 'Demais Municípios': '#525866'}}
-		echartsOptions={{ backgroundColor: 'transparent', grid: { left: 20, right: 24, top: 44, bottom: 40, containLabel: true } }}
+		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, legend: { textStyle: { color: '#f8fafc' } }, grid: { left: 20, right: 24, top: 44, bottom: 40, containLabel: true }, xAxis: { axisLabel: { color: '#f8fafc' }, nameTextStyle: { color: '#cbd5e1' }, axisLine: { lineStyle: { color: '#334155' } } }, yAxis: { axisLabel: { color: '#f8fafc' }, nameTextStyle: { color: '#cbd5e1' } } }}
 		title="Polos Nacionais (Tier 1) concentram alto poder de compra e Score IMS"
 		subtitle="Dispersão PIB Per Capita Real (R$) × Score IMS · Polos Tier 1 em azul"
 		xAxisTitle="PIB Per Capita Real (R$)"

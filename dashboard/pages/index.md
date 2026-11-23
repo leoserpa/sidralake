@@ -156,7 +156,7 @@ order by pos asc
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-			echartsOptions={{ backgroundColor: 'transparent' }}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } } }}
 			title="Quais municípios lideram o Score IMS?"
 			subtitle="Top 10 no recorte (0–100) · Líder em azul pré-atentivo"
 		/>
@@ -245,7 +245,7 @@ order by pos asc
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-			echartsOptions={{ backgroundColor: 'transparent' }}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } } }}
 			title="Quais municípios têm maior PIB real?"
 			subtitle="Top 8 no recorte (R$ Bilhões) · Valores constantes IPCA"
 		/>
@@ -272,7 +272,7 @@ order by pos asc
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-			echartsOptions={{ backgroundColor: 'transparent' }}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } } }}
 			title="Qual regime domina o varejo nacional (PMC × IPCA)?"
 			subtitle="Participação das séries UF × Atividade (PMC × IPCA) · Líder em azul"
 		/>

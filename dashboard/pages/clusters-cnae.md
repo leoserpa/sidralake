@@ -2,8 +2,6 @@
 title: Clusters Setoriais & Emprego Formal (CNAE 2.0 / CEMPRE)
 ---
 
-Análise setorial do **Cadastro Central de Empresas (CEMPRE — SIDRA 9418)** por **Unidade da Federação e 21 Seções CNAE 2.0** (série 2022–2024). Células suprimidas pelo IBGE por sigilo estatístico (`X`) são sinalizadas de forma transparente sem distorcer os denominadores nacionais.
-
 ```sql anos_cempre
 select distinct ano_referencia
 from sidralake.mart_clusters_setoriais_uf
@@ -26,9 +24,17 @@ from sidralake.mart_clusters_setoriais_uf
 order by ordem, codigo_secao_cnae
 ```
 
-<Dropdown data={anos_cempre} name=ano value=ano_referencia title="Ano CEMPRE" defaultValue={2024} />
-<Dropdown data={ufs_cnae} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
-<Dropdown data={secoes_cnae} name=cnae value=codigo_secao_cnae title="Seção CNAE 2.0" defaultValue="TODAS" />
+<header class="sl-page-header">
+	<div class="sl-page-heading">
+		<h1 class="sl-page-title">Clusters Setoriais &amp; Emprego Formal (CNAE 2.0)</h1>
+		<p class="sl-page-subtitle">Cadastro Central de Empresas (CEMPRE · SIDRA 9418) por UF e 21 Seções CNAE · Sigilo estatístico IBGE (X) sinalizado</p>
+	</div>
+	<div class="sl-filter-bar">
+		<Dropdown data={anos_cempre} name=ano value=ano_referencia title="Ano" defaultValue={2024} />
+		<Dropdown data={ufs_cnae} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
+		<Dropdown data={secoes_cnae} name=cnae value=codigo_secao_cnae title="CNAE" defaultValue="TODAS" />
+	</div>
+</header>
 
 ```sql kpis_cnae
 select
@@ -43,13 +49,13 @@ where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2024
   and ('${inputs.cnae.value}' = 'TODAS' or codigo_secao_cnae = '${inputs.cnae.value}')
 ```
 
-<BigValue data={kpis_cnae} value=emprego_total title="Pessoal Ocupado" fmt="#,##0" />
-<BigValue data={kpis_cnae} value=assalariados_total title="Assalariados Formais" fmt="#,##0" />
-<BigValue data={kpis_cnae} value=empresas_total title="Empresas" fmt="#,##0" />
-<BigValue data={kpis_cnae} value=massa_real_bi title="Massa Salarial (R$ Bi)" fmt="#,##0.00" />
-<BigValue data={kpis_cnae} value=celulas_sigilo_x title="Células Sigilo IBGE (X)" fmt="#,##0" />
-
----
+<div class="sl-kpi-grid-5">
+	<KpiCard data={kpis_cnae} value="emprego_total" title="Pessoal Ocupado" fmt="pop_mi" icon="users" subtitle="Vínculos + sócios ativos" />
+	<KpiCard data={kpis_cnae} value="assalariados_total" title="Assalariados Formais" fmt="pop_mi" icon="briefcase" subtitle="Carteira assinada / estatutários" />
+	<KpiCard data={kpis_cnae} value="empresas_total" title="Empresas Atuantes" fmt="pop_mi" icon="building" subtitle="Unidades cadastradas CEMPRE" />
+	<KpiCard data={kpis_cnae} value="massa_real_bi" title="Massa Salarial Real" fmt="brl_bi" icon="wallet" subtitle="Valores constantes IPCA" />
+	<KpiCard data={kpis_cnae} value="celulas_sigilo_x" title="Células Sigilo IBGE (X)" fmt="int" icon="shield" subtitle="Suprimidas sem distorcer totais" />
+</div>
 
 ```sql top_shares_setoriais
 with base as (
@@ -63,7 +69,7 @@ with base as (
       and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
       and ('${inputs.cnae.value}' = 'TODAS' or codigo_secao_cnae = '${inputs.cnae.value}')
     order by pos asc
-    limit 12
+    limit 10
 )
 select
     uf_setor,
@@ -114,7 +120,7 @@ ranked as (
         row_number() over (order by emprego_mi desc) as pos
     from agg
     order by pos asc
-    limit 12
+    limit 10
 )
 select
     setor,
@@ -124,60 +130,60 @@ from ranked
 order by pos asc
 ```
 
-<Grid cols=2>
-    <BarChart
-        data={top_shares_setoriais}
-        x=uf_setor
-        y=share_br_pct
-        series=destaque
-        type=stacked
-        swapXY=true
-        sort=false
-        labels=true
-        stackTotalLabel=false
-        labelPosition=outside
-        showAllLabels=true
-        labelFmt="0.0%"
-        leftPadding=16
-        rightPadding=32
-        legend=false
-        yGridlines=false
-        xGridlines=false
-        yAxisLabels=false
-        yBaseline=false
-        seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Quais UFs lideram o share setorial?"
-        subtitle="Participação no emprego do setor"
-    />
-    <BarChart
-        data={emprego_por_secao}
-        x=setor
-        y=emprego_mi
-        series=destaque
-        type=stacked
-        swapXY=true
-        sort=false
-        labels=true
-        stackTotalLabel=false
-        labelPosition=outside
-        showAllLabels=true
-        labelFmt="0.00"
-        leftPadding=26
-        rightPadding=30
-        legend=false
-        yGridlines=false
-        xGridlines=false
-        yAxisLabels=false
-        yBaseline=false
-        seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Quais seções CNAE mais empregam?"
-        subtitle="Pessoal ocupado formal (milhões)"
-    />
-</Grid>
-
----
-
-## Mapa de Calor: Concentração Estadual por Seção CNAE 2.0 (Top 12 UFs)
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<BarChart
+			data={top_shares_setoriais}
+			x=uf_setor
+			y=share_br_pct
+			series=destaque
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="0.0%"
+			leftPadding=16
+			rightPadding=36
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			title="Quais UFs lideram o share setorial?"
+			subtitle="Participação no emprego nacional do setor · Líder em azul"
+		/>
+	</div>
+	<div class="sl-card">
+		<BarChart
+			data={emprego_por_secao}
+			x=setor
+			y=emprego_mi
+			series=destaque
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="0.00"
+			leftPadding=26
+			rightPadding=34
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			title="Quais seções CNAE mais empregam?"
+			subtitle="Pessoal ocupado formal (milhões) · Seção líder em azul"
+		/>
+	</div>
+</div>
 
 ```sql heatmap_uf_cnae
 with top_ufs as (
@@ -201,20 +207,18 @@ where m.ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 20
 order by m.sigla_uf asc, m.codigo_secao_cnae asc
 ```
 
-<Heatmap
-    data={heatmap_uf_cnae}
-    x=cnae
-    y=uf
-    value=share_pct
-    valueFmt="0.0%"
-    colorScale={['#1e293b', '#1d4ed8', '#3b82f6', '#93c5fd']}
-    title="Participação Estadual (%) no Emprego Brasileiro por Seção CNAE"
-    subtitle="A=Agro · C=Indústria · F=Construção · G=Comércio · H=Transporte · J=TI · K=Finanças · N=Adm · P=Educação · Q=Saúde"
-/>
-
----
-
-## Matriz Completa UF × Seção CNAE 2.0
+<div class="sl-card sl-stack">
+	<Heatmap
+		data={heatmap_uf_cnae}
+		x=cnae
+		y=uf
+		value=share_pct
+		valueFmt="0.0%"
+		colorScale={['#141b26', '#1e3a8a', '#2563eb', '#3b82f6']}
+		title="Concentração Estadual (%) no Emprego Brasileiro por Seção CNAE"
+		subtitle="Top 12 UFs · A=Agro · C=Indústria · F=Construção · G=Comércio · H=Transporte · J=TI · K=Finanças · N=Adm · P=Educação · Q=Saúde"
+	/>
+</div>
 
 ```sql tabela_clusters
 select
@@ -258,4 +262,26 @@ where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2024
 order by pessoal_ocupado_total desc nulls last
 ```
 
-<DataTable data={tabela_clusters} search=true rows=20 />
+<ExecTable
+	data={tabela_clusters}
+	title="Matriz Completa UF × Seção CNAE 2.0"
+	subtitle="Destaque azul: maior cluster, Share BR ≥ 25% e Cresc. YoY ≥ +8%"
+	search={true}
+	searchPlaceholder="Buscar UF ou setor CNAE..."
+	exportCsv={true}
+	csvFilename="sidralake_clusters_cnae.csv"
+	rowsPerPage={20}
+	highlightFirstRow={true}
+	columns={[
+		{ key: 'ano', label: 'Ano', kind: 'year' },
+		{ key: 'uf', label: 'UF', align: 'center', kind: 'primary' },
+		{ key: 'cnae', label: 'CNAE', align: 'center', kind: 'tier_badge' },
+		{ key: 'setor', label: 'Seção Setorial', kind: 'primary' },
+		{ key: 'empresas', label: 'Empresas', align: 'right', fmt: 'int' },
+		{ key: 'emprego', label: 'Emprego', align: 'right', fmt: 'int' },
+		{ key: 'massa_mi', label: 'Massa (R$ Mi)', align: 'right', fmt: 'brl_mi' },
+		{ key: 'share_br_pct', label: 'Share BR', align: 'right', kind: 'databar', fmt: 'pct1', barMax: 0.6, barThreshold: 0.25 },
+		{ key: 'cresc_yoy_pct', label: 'Cresc. YoY', align: 'right', kind: 'growth', highlightThreshold: 0.08 },
+		{ key: 'sigilo_x', label: 'Sigilo', align: 'center', kind: 'sigilo_badge' }
+	]}
+/>

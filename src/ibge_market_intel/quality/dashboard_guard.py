@@ -20,7 +20,7 @@ from ibge_market_intel.analytics.bi_export import BI_GOLD_TABLES
 _SQL_BLOCK_RE = re.compile(r"```sql\s+(\w+)\s*\n(.*?)```", re.DOTALL)
 _COMPONENT_OPEN_RE = re.compile(
     r"<(?P<tag>BarChart|LineChart|AreaChart|ScatterPlot|BubbleChart|Heatmap|DataTable|"
-    r"BigValue|Dropdown|Slider|Value|ECharts)(?=[\s/>])"
+    r"BigValue|Dropdown|Slider|Value|ECharts|KpiCard|ExecTable|DonutPanel|CityHero)(?=[\s/>])"
 )
 _TABLE_REF_RE = re.compile(r"\bsidralake\.(\w+)\b")
 _DATA_ATTR_RE = re.compile(r"\bdata=\{\s*(\w+)\s*\}")
@@ -66,6 +66,8 @@ _LAYOUT_REQUIRED_PROPS: tuple[str, ...] = (
     "neverShowQueries={true}",
     "fullWidth={true}",
     "hideTOC={true}",
+    "hideSidebar={true}",
+    "hideHeader={true}",
     "builtWithEvidence={false}",
 )
 _WORKFLOW_REQUIRED_GATES: tuple[str, ...] = (
@@ -919,7 +921,9 @@ def validate_dashboard_queries(
 
         for page in pages:
             datatable_queries = {
-                c.data_ref for c in page.components if c.tag == "DataTable" and c.data_ref
+                c.data_ref
+                for c in page.components
+                if c.tag in ("DataTable", "ExecTable") and c.data_ref
             }
             for blk in page.sql_blocks:
                 ran, blk_issues = _run_page_query_modes(

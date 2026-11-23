@@ -2,15 +2,11 @@
 title: Raio-X Municipal (5.571 Cidades)
 ---
 
-Selecione qualquer **UF** e pesquise qualquer um dos **5.571 municípios brasileiros** para obter um dossiê executivo 360°: trajetória real do PIB, curva demográfica (2018–2026), diagnóstico dos 4 pilares do Score IMS, vocação produtiva (VAB), tecido empresarial (CEMPRE) e benchmarking contra os vizinhos da mesma Região Imediata.
-
 ```sql ufs_cidade
 select distinct sigla_uf, nome_uf
 from sidralake.dim_geografia
 order by sigla_uf
 ```
-
-<Dropdown data={ufs_cidade} name=uf value=sigla_uf label=sigla_uf title="UF" defaultValue="SP" />
 
 ```sql cidades_da_uf
 select
@@ -25,12 +21,11 @@ where g.sigla_uf = '${inputs.uf.value}'
 order by pop_ord desc, g.nome_municipio asc
 ```
 
-<Dropdown data={cidades_da_uf} name=cidade value=codigo_ibge_municipio label=nome_municipio title="Município" defaultValue={3550308} />
-
 ```sql perfil_cidade
 select
     g.codigo_ibge_municipio,
     g.nome_municipio || ' - ' || g.sigla_uf as cidade_uf,
+    g.sigla_uf,
     g.nome_regiao,
     g.nome_regiao_intermediaria,
     g.nome_regiao_imediata,
@@ -39,7 +34,7 @@ select
     m.ims_score_0_100,
     coalesce(m.tier_mercado, 'Emancipado 2024+') as tier_mercado,
     m.populacao_residente,
-    round(m.pib_real_mil_brl / 1e6, 3) as pib_real_bi,
+    round(m.pib_real_mil_brl / 1e6, 2) as pib_real_bi,
     round(m.pib_per_capita_real_brl, 0) as pib_pc_real,
     m.num_empresas_atuantes,
     round(m.salario_medio_real_brl, 0) as salario_medio_real
@@ -50,21 +45,19 @@ left join sidralake.mart_inteligencia_mercado_municipal as m
 where g.codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
 ```
 
-### Ficha Executiva — <Value data={perfil_cidade} column=cidade_uf /> · <Value data={perfil_cidade} column=tier_mercado />
+<CityHero data={perfil_cidade}>
+	<Dropdown data={ufs_cidade} name=uf value=sigla_uf label=sigla_uf title="UF" defaultValue="SP" />
+	<Dropdown data={cidades_da_uf} name=cidade value=codigo_ibge_municipio label=nome_municipio title="Município" defaultValue={3550308} />
+</CityHero>
 
-**Região Imediata:** <Value data={perfil_cidade} column=nome_regiao_imediata /> · **Região Intermediária:** <Value data={perfil_cidade} column=nome_regiao_intermediaria /> · **Grande Região:** <Value data={perfil_cidade} column=nome_regiao />
-
-<BigValue data={perfil_cidade} value=rank_nacional_ims title="Rank Brasil (IMS)" fmt="#,##0" />
-<BigValue data={perfil_cidade} value=rank_estadual_ims title="Rank Estadual (IMS)" fmt="#,##0" />
-<BigValue data={perfil_cidade} value=ims_score_0_100 title="Score IMS (0–100)" fmt="0.00" />
-<BigValue data={perfil_cidade} value=populacao_residente title="População Residente" fmt="#,##0" />
-
-<BigValue data={perfil_cidade} value=pib_real_bi title="PIB Real (R$ Bi)" fmt="#,##0.000" />
-<BigValue data={perfil_cidade} value=pib_pc_real title="PIB Per Capita (R$)" fmt="#,##0" />
-<BigValue data={perfil_cidade} value=num_empresas_atuantes title="Empresas Atuantes" fmt="#,##0" />
-<BigValue data={perfil_cidade} value=salario_medio_real title="Salário Médio (R$)" fmt="#,##0" />
-
----
+<div class="sl-kpi-grid-6">
+	<KpiCard data={perfil_cidade} value="rank_nacional_ims" title="Rank Brasil (IMS)" fmt="rank" icon="trophy" subtitle="Entre 5.570 municípios" />
+	<KpiCard data={perfil_cidade} value="rank_estadual_ims" title="Rank Estadual" fmt="rank" icon="mappin" subtitleCol="sigla_uf" subtitlePrefix="Posição na UF " />
+	<KpiCard data={perfil_cidade} value="ims_score_0_100" title="Score IMS (0–100)" fmt="dec2" icon="gauge" subtitle="Média ponderada 4 pilares" />
+	<KpiCard data={perfil_cidade} value="populacao_residente" title="População" fmt="pop_mi" icon="users" subtitleCol="populacao_residente" subtitleFmt="int" subtitlePrefix="IBGE · " subtitleSuffix=" hab" />
+	<KpiCard data={perfil_cidade} value="pib_real_bi" title="PIB Real" fmt="brl_bi_exact" icon="landmark" subtitleCol="pib_pc_real" subtitleFmt="brl_int" subtitlePrefix="Per capita " />
+	<KpiCard data={perfil_cidade} value="salario_medio_real" title="Salário Médio" fmt="brl_int" icon="wallet" subtitleCol="num_empresas_atuantes" subtitleFmt="int" subtitleSuffix=" empresas ativas" />
+</div>
 
 ```sql serie_pib_cidade
 select
@@ -75,51 +68,6 @@ where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as inte
   and pib_real_mil_brl is not null
 order by ano_referencia asc
 ```
-
-```sql serie_pop_cidade
-select
-    ano_referencia as ano,
-    populacao_residente as populacao
-from sidralake.fct_populacao_municipal
-where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
-order by ano_referencia asc
-```
-
-<Grid cols=2>
-    <LineChart
-        data={serie_pib_cidade}
-        x=ano
-        y=pib_real_bi
-        xFmt="0"
-        yFmt="#,##0.00"
-        markers=true
-        rightPadding=16
-        yGridlines=false
-        xGridlines=false
-        colorPalette={['#3b82f6']}
-        echartsOptions={{ xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
-        title="Evolução do PIB Real (2018–2023)"
-        subtitle="Valores constantes (R$ Bi · IPCA)"
-        yAxisTitle="R$ Bilhões"
-    />
-    <AreaChart
-        data={serie_pop_cidade}
-        x=ano
-        y=populacao
-        xFmt="0"
-        yFmt="#,##0"
-        rightPadding=16
-        yGridlines=false
-        xGridlines=false
-        colorPalette={['#3b82f6']}
-        echartsOptions={{ xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
-        title="Curva Demográfica (2018–2026)"
-        subtitle="Censo 2022 + Estimativas IBGE"
-        yAxisTitle="Habitantes"
-    />
-</Grid>
-
----
 
 ```sql pilares_cidade
 with raw_p as (
@@ -134,7 +82,7 @@ with raw_p as (
 ),
 unpiv as (
     select 'Tamanho (35%)' as pilar, score_tamanho_mercado as nota from raw_p
-    union all select 'Poder de Compra (30%)', score_poder_compra from raw_p
+    union all select 'Poder Compra (30%)', score_poder_compra from raw_p
     union all select 'Dinamismo (20%)', score_dinamismo from raw_p
     union all select 'Maturidade (15%)', score_maturidade_empresarial from raw_p
 ),
@@ -153,6 +101,54 @@ select
 from ranked
 order by pos asc
 ```
+
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<LineChart
+			data={serie_pib_cidade}
+			x=ano
+			y=pib_real_bi
+			xFmt="0"
+			yFmt="#,##0.0"
+			markers=true
+			rightPadding=18
+			yGridlines=false
+			xGridlines=false
+			colorPalette={['#3b82f6']}
+			echartsOptions={{ xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
+			title="Evolução do PIB Real (2018–2023)"
+			subtitle="Valores constantes (R$ Bi · IPCA) · Linha limpa sem preenchimento"
+			yAxisTitle="R$ Bilhões"
+		/>
+	</div>
+	<div class="sl-card">
+		<BarChart
+			data={pilares_cidade}
+			x=pilar
+			y=nota
+			series=destaque
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="0.0"
+			yMax=115
+			leftPadding=24
+			rightPadding=44
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			title="Onde a cidade é mais forte no IMS?"
+			subtitle="4 Pilares normalizados (0–100) · Pilar líder em azul"
+		/>
+	</div>
+</div>
 
 ```sql vab_cidade
 with raw_v as (
@@ -192,135 +188,6 @@ from ranked
 order by pos asc
 ```
 
-<Grid cols=2>
-    <BarChart
-        data={pilares_cidade}
-        x=pilar
-        y=nota
-        series=destaque
-        type=stacked
-        swapXY=true
-        sort=false
-        labels=true
-        stackTotalLabel=false
-        labelPosition=outside
-        showAllLabels=true
-        labelFmt="0.0"
-        yMax=115
-        leftPadding=24
-        rightPadding=44
-        legend=false
-        yGridlines=false
-        xGridlines=false
-        yAxisLabels=false
-        yBaseline=false
-        seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Onde a cidade é mais forte no IMS?"
-        subtitle="4 Pilares (0–100) · Pilar líder em azul"
-    />
-    <BarChart
-        data={vab_cidade}
-        x=setor
-        y=share_pct
-        series=destaque
-        type=stacked
-        swapXY=true
-        sort=false
-        labels=true
-        stackTotalLabel=false
-        labelPosition=outside
-        showAllLabels=true
-        labelFmt="0.0%"
-        leftPadding=20
-        rightPadding=44
-        legend=false
-        yGridlines=false
-        xGridlines=false
-        yAxisLabels=false
-        yBaseline=false
-        seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Qual é a vocação produtiva (VAB)?"
-        subtitle="Participação (%) · Último VAB IBGE (2021)"
-    />
-</Grid>
-
----
-
-## Benchmarking na Mesma Região Imediata
-
-```sql vizinhos_chart
-select
-    m.nome_municipio as municipio,
-    round(m.ims_score_0_100, 1) as ims,
-    case
-        when m.codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308) then 'Cidade Selecionada'
-        else 'Vizinhos'
-    end as destaque
-from sidralake.mart_inteligencia_mercado_municipal as m
-where m.is_ultimo_ano_completo
-  and m.nome_regiao_imediata = (
-      select nome_regiao_imediata
-      from sidralake.dim_geografia
-      where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
-  )
-  and m.ims_score_0_100 is not null
-order by m.ims_score_0_100 desc
-limit 15
-```
-
-```sql vizinhos_tabela
-select
-    m.rank_nacional_ims as rk_br,
-    m.nome_municipio as municipio,
-    m.populacao_residente as populacao,
-    round(m.pib_real_mil_brl / 1e6, 2) as pib_bi,
-    round(m.pib_per_capita_real_brl, 0) as pib_pc,
-    m.num_empresas_atuantes as empresas,
-    round(m.salario_medio_real_brl, 0) as salario_real,
-    round(m.ims_score_0_100, 1) as ims
-from sidralake.mart_inteligencia_mercado_municipal as m
-where m.is_ultimo_ano_completo
-  and m.nome_regiao_imediata = (
-      select nome_regiao_imediata
-      from sidralake.dim_geografia
-      where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
-  )
-  and m.ims_score_0_100 is not null
-order by m.ims_score_0_100 desc
-limit 15
-```
-
-<BarChart
-    data={vizinhos_chart}
-    x=municipio
-    y=ims
-    series=destaque
-    type=stacked
-    swapXY=true
-    sort=false
-    labels=true
-    stackTotalLabel=false
-    labelPosition=outside
-    showAllLabels=true
-    labelFmt="0.0"
-    leftPadding=24
-    rightPadding=28
-    legend=false
-    yGridlines=false
-    xGridlines=false
-    yAxisLabels=false
-    yBaseline=false
-    seriesColors={{'Cidade Selecionada': '#3b82f6', 'Vizinhos': '#525866'}}
-    title="Como a cidade se posiciona frente aos vizinhos da Região Imediata?"
-    subtitle="Score IMS (0–100) · Cidade selecionada em azul"
-/>
-
-<DataTable data={vizinhos_tabela} rows=15 />
-
----
-
-## Tecido Empresarial Histórico (CEMPRE 2022–2024)
-
 ```sql historico_cempre_cidade
 select
     cast(cast(ano_referencia as integer) as varchar) as ano,
@@ -339,4 +206,163 @@ where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as inte
 order by ano_referencia desc
 ```
 
-<DataTable data={historico_cempre_cidade} />
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<BarChart
+			data={vab_cidade}
+			x=setor
+			y=share_pct
+			series=destaque
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="0.0%"
+			leftPadding=20
+			rightPadding=44
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			title="Qual é a vocação produtiva (VAB)?"
+			subtitle="Participação no Valor Adicionado Bruto (%) · Último VAB IBGE (2021)"
+		/>
+	</div>
+	<ExecTable
+		data={historico_cempre_cidade}
+		title="Tecido Empresarial Histórico (CEMPRE 2022–2024)"
+		subtitle="Empresas atuantes, formalização e crescimento · Destaque azul: ano mais recente e YoY ≥ +8%"
+		compact={true}
+		rowsPerPage={10}
+		highlightFirstRow={true}
+		columns={[
+			{ key: 'ano', label: 'Ano', kind: 'year' },
+			{ key: 'empresas', label: 'Empresas', align: 'right', fmt: 'int' },
+			{ key: 'emprego', label: 'Emprego', align: 'right', fmt: 'int' },
+			{ key: 'formalizacao_pct', label: 'Formalização', align: 'right', kind: 'databar', fmt: 'pct1', barMax: 1, barThreshold: 0.9 },
+			{ key: 'salario_real', label: 'Salário', align: 'right', fmt: 'brl_int' },
+			{ key: 'cresc_emp_pct', label: 'Cresc. YoY', align: 'right', kind: 'growth', highlightThreshold: 0.08 }
+		]}
+	/>
+</div>
+
+```sql serie_pop_cidade
+select
+    ano_referencia as ano,
+    populacao_residente as populacao
+from sidralake.fct_populacao_municipal
+where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
+order by ano_referencia asc
+```
+
+```sql vizinhos_chart
+select
+    m.nome_municipio as municipio,
+    round(m.ims_score_0_100, 1) as ims,
+    case
+        when m.codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308) then 'Cidade Selecionada'
+        else 'Vizinhos'
+    end as destaque
+from sidralake.mart_inteligencia_mercado_municipal as m
+where m.is_ultimo_ano_completo
+  and m.nome_regiao_imediata = (
+      select nome_regiao_imediata
+      from sidralake.dim_geografia
+      where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
+  )
+  and m.ims_score_0_100 is not null
+order by m.ims_score_0_100 desc
+limit 12
+```
+
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<LineChart
+			data={serie_pop_cidade}
+			x=ano
+			y=populacao
+			xFmt="0"
+			yFmt="#,##0"
+			markers=true
+			rightPadding=18
+			yGridlines=false
+			xGridlines=false
+			colorPalette={['#3b82f6']}
+			echartsOptions={{ xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
+			title="Curva Demográfica (2018–2026)"
+			subtitle="Censo 2022 + Estimativas IBGE · Série contínua sem área sombreada"
+			yAxisTitle="Habitantes"
+		/>
+	</div>
+	<div class="sl-card">
+		<BarChart
+			data={vizinhos_chart}
+			x=municipio
+			y=ims
+			series=destaque
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="0.0"
+			leftPadding=24
+			rightPadding=34
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Cidade Selecionada': '#3b82f6', 'Vizinhos': '#525866'}}
+			title="Benchmarking na Mesma Região Imediata"
+			subtitle="Score IMS (0–100) · Cidade selecionada em azul pré-atentivo"
+		/>
+	</div>
+</div>
+
+```sql vizinhos_tabela
+select
+    m.rank_nacional_ims as rk_br,
+    m.nome_municipio as municipio,
+    m.populacao_residente as populacao,
+    round(m.pib_real_mil_brl / 1e6, 2) as pib_bi,
+    round(m.pib_per_capita_real_brl, 0) as pib_pc,
+    m.num_empresas_atuantes as empresas,
+    round(m.salario_medio_real_brl, 0) as salario_real,
+    round(m.ims_score_0_100, 2) as ims
+from sidralake.mart_inteligencia_mercado_municipal as m
+where m.is_ultimo_ano_completo
+  and m.nome_regiao_imediata = (
+      select nome_regiao_imediata
+      from sidralake.dim_geografia
+      where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
+  )
+  and m.ims_score_0_100 is not null
+order by m.ims_score_0_100 desc
+limit 15
+```
+
+<ExecTable
+	data={vizinhos_tabela}
+	title="Municípios da Mesma Região Imediata"
+	subtitle="Comparação direta contra os vizinhos econômicos mais próximos · Destaque azul: líder regional e IMS ≥ 85"
+	rowsPerPage={15}
+	highlightFirstRow={true}
+	columns={[
+		{ key: 'rk_br', label: 'RK BR', kind: 'rank' },
+		{ key: 'municipio', label: 'Município', kind: 'primary' },
+		{ key: 'populacao', label: 'População', align: 'right', fmt: 'int' },
+		{ key: 'pib_bi', label: 'PIB Real (Bi)', align: 'right', fmt: 'brl_bi2' },
+		{ key: 'pib_pc', label: 'PIB Per Capita', align: 'right', fmt: 'brl_int' },
+		{ key: 'empresas', label: 'Empresas', align: 'right', fmt: 'int' },
+		{ key: 'salario_real', label: 'Salário Médio', align: 'right', fmt: 'brl_int' },
+		{ key: 'ims', label: 'Score IMS', align: 'right', kind: 'databar', fmt: 'dec2', barMax: 100, barThreshold: 85 }
+	]}
+/>

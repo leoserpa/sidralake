@@ -2,22 +2,11 @@
 title: Comparador Head-to-Head (Cidade A × Cidade B)
 ---
 
-Compare **quaisquer duas cidades do Brasil lado a lado** para decisões de expansão comercial, abertura de filiais, precificação regional ou alocação de mídia. **Cidade A** em azul (`#3b82f6`) × **Cidade B** em esmeralda (`#10b981`).
-
 ```sql ufs_comp
 select distinct sigla_uf
 from sidralake.dim_geografia
 order by sigla_uf
 ```
-
-<Grid cols=2>
-    <div>
-        <Dropdown data={ufs_comp} name=uf_a value=sigla_uf title="UF — Cidade A" defaultValue="SP" />
-    </div>
-    <div>
-        <Dropdown data={ufs_comp} name=uf_b value=sigla_uf title="UF — Cidade B" defaultValue="PR" />
-    </div>
-</Grid>
 
 ```sql cidades_a
 select
@@ -45,16 +34,27 @@ where g.sigla_uf = '${inputs.uf_b.value}'
 order by pop_ord desc, g.nome_municipio asc
 ```
 
-<Grid cols=2>
-    <div>
-        <Dropdown data={cidades_a} name=cidade_a value=codigo_ibge_municipio label=nome_municipio title="Cidade A (Azul)" defaultValue={3550308} />
-    </div>
-    <div>
-        <Dropdown data={cidades_b} name=cidade_b value=codigo_ibge_municipio label=nome_municipio title="Cidade B (Esmeralda)" defaultValue={4106902} />
-    </div>
-</Grid>
+<header class="sl-page-header">
+	<div class="sl-page-heading">
+		<h1 class="sl-page-title">Comparador Head-to-Head (Cidade A × Cidade B)</h1>
+		<p class="sl-page-subtitle">Compare quaisquer duas cidades do Brasil lado a lado · Cidade A em azul pré-atentivo (#3B82F6) × Cidade B em ardósia (#64748B)</p>
+	</div>
+</header>
 
----
+<section class="sl-control-card">
+	<div class="sl-slider-grid-2">
+		<div class="sl-filter-bar">
+			<span class="sl-outline-pill">Cidade A · Foco</span>
+			<Dropdown data={ufs_comp} name=uf_a value=sigla_uf title="UF A" defaultValue="SP" />
+			<Dropdown data={cidades_a} name=cidade_a value=codigo_ibge_municipio label=nome_municipio title="Município A" defaultValue={3550308} />
+		</div>
+		<div class="sl-filter-bar">
+			<span class="sl-outline-pill">Cidade B · Referência</span>
+			<Dropdown data={ufs_comp} name=uf_b value=sigla_uf title="UF B" defaultValue="PR" />
+			<Dropdown data={cidades_b} name=cidade_b value=codigo_ibge_municipio label=nome_municipio title="Município B" defaultValue={4106902} />
+		</div>
+	</div>
+</section>
 
 ```sql comparativo_pilares
 with sel as (
@@ -91,53 +91,53 @@ where codigo_ibge_municipio in (coalesce(try_cast('${inputs.cidade_a.value}' as 
 order by ano_referencia asc, lado asc
 ```
 
-<Grid cols=2>
-    <BarChart
-        data={comparativo_pilares}
-        x=pilar
-        y=nota
-        series=lado
-        type=grouped
-        swapXY=true
-        sort=false
-        labels=true
-        stackTotalLabel=false
-        labelPosition=outside
-        showAllLabels=true
-        labelFmt="0.0"
-        yMax=115
-        leftPadding=24
-        rightPadding=44
-        yGridlines=false
-        xGridlines=false
-        yAxisLabels=false
-        yBaseline=false
-        seriesColors={{'Cidade A': '#3b82f6', 'Cidade B': '#10b981'}}
-        title="Pilares do Score IMS: Cidade A × Cidade B"
-        subtitle="Notas normalizadas (0–100)"
-    />
-    <LineChart
-        data={comparativo_pib_serie}
-        x=ano
-        y=pib_real_bi
-        series=lado
-        xFmt="0"
-        yFmt="#,##0.0"
-        markers=true
-        rightPadding=24
-        yGridlines=false
-        xGridlines=false
-        seriesColors={{'Cidade A': '#3b82f6', 'Cidade B': '#10b981'}}
-        echartsOptions={{ xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
-        title="Trajetória do PIB Real (2018–2023)"
-        subtitle="Valores constantes em R$ Bilhões"
-        yAxisTitle="R$ Bilhões"
-    />
-</Grid>
-
----
-
-## Quadro Comparativo Completo (Último Ano Completo)
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<BarChart
+			data={comparativo_pilares}
+			x=pilar
+			y=nota
+			series=lado
+			type=grouped
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="0.0"
+			yMax=115
+			leftPadding=24
+			rightPadding=44
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Cidade A': '#3b82f6', 'Cidade B': '#64748b'}}
+			title="Pilares do Score IMS: Cidade A × Cidade B"
+			subtitle="Notas normalizadas (0–100) · Cidade A em azul"
+		/>
+	</div>
+	<div class="sl-card">
+		<LineChart
+			data={comparativo_pib_serie}
+			x=ano
+			y=pib_real_bi
+			series=lado
+			xFmt="0"
+			yFmt="#,##0.0"
+			markers=true
+			rightPadding=24
+			yGridlines=false
+			xGridlines=false
+			seriesColors={{'Cidade A': '#3b82f6', 'Cidade B': '#94a3b8'}}
+			echartsOptions={{ xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
+			title="Trajetória do PIB Real (2018–2023)"
+			subtitle="Valores constantes em R$ Bilhões · Linhas puras sem sombreado"
+			yAxisTitle="R$ Bilhões"
+		/>
+	</div>
+</div>
 
 ```sql tabela_head_to_head
 select
@@ -147,7 +147,7 @@ select
     end as lado,
     nome_municipio || ' - ' || sigla_uf as municipio,
     rank_nacional_ims as rk_br,
-    ims_score_0_100 as ims,
+    round(ims_score_0_100, 2) as ims,
     populacao_residente as populacao,
     round(pib_real_mil_brl / 1e6, 2) as pib_bi,
     round(pib_per_capita_real_brl, 0) as pib_pc,
@@ -161,4 +161,23 @@ where is_ultimo_ano_completo
 order by lado asc
 ```
 
-<DataTable data={tabela_head_to_head} />
+<ExecTable
+	data={tabela_head_to_head}
+	title="Quadro Comparativo Completo (Último Ano Completo)"
+	subtitle="Destaque azul: Cidade A, Score IMS ≥ 85, Formalização ≥ 90% e CAGR ≥ +10%"
+	rowsPerPage={10}
+	highlightFirstRow={true}
+	columns={[
+		{ key: 'lado', label: 'Lado', kind: 'tier_badge', align: 'center' },
+		{ key: 'municipio', label: 'Município', kind: 'primary' },
+		{ key: 'rk_br', label: 'RK BR', kind: 'rank' },
+		{ key: 'populacao', label: 'População', align: 'right', fmt: 'int' },
+		{ key: 'pib_bi', label: 'PIB Real (Bi)', align: 'right', fmt: 'brl_bi2' },
+		{ key: 'pib_pc', label: 'PIB Per Capita', align: 'right', fmt: 'brl_int' },
+		{ key: 'cagr_3a_pct', label: 'CAGR 3A', align: 'right', kind: 'growth', highlightThreshold: 0.1 },
+		{ key: 'empresas', label: 'Empresas', align: 'right', fmt: 'int' },
+		{ key: 'salario_real', label: 'Salário Médio', align: 'right', fmt: 'brl_int' },
+		{ key: 'formalizacao_pct', label: 'Formalização', align: 'right', kind: 'databar', fmt: 'pct1', barMax: 1, barThreshold: 0.9 },
+		{ key: 'ims', label: 'Score IMS', align: 'right', kind: 'databar', fmt: 'dec2', barMax: 100, barThreshold: 85 }
+	]}
+/>

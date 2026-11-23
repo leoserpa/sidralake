@@ -2,8 +2,6 @@
 title: SidraLake 360° — Visão Executiva Brasil
 ---
 
-Plataforma completa de **Inteligência de Mercado 360°** sobre a malha municipal brasileira (`5.571` municípios cadastrados no IBGE; `5.570` com PIB/CEMPRE consolidado até 2023 e *Boa Esperança do Norte/MT* integrado na base geográfica e estimativas 2024+). Navegue pelo menu lateral para acessar **Raio-X Municipal**, **Comparador Head-to-Head**, **Radar de Expansão**, **Dinamismo & VAB**, **Clusters CNAE** e **Macroeconomia & Varejo**.
-
 ```sql anos_disponiveis
 select distinct ano_referencia
 from sidralake.mart_inteligencia_mercado_municipal
@@ -38,10 +36,18 @@ where is_ultimo_ano_completo
 order by ordem, tier_mercado
 ```
 
-<Dropdown data={anos_disponiveis} name=ano value=ano_referencia title="Ano" defaultValue={2023} />
-<Dropdown data={regioes_disponiveis} name=regiao value=nome_regiao title="Grande Região" defaultValue="TODAS" />
-<Dropdown data={ufs_disponiveis} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
-<Dropdown data={tiers_disponiveis} name=tier value=tier_mercado title="Tier de Mercado" defaultValue="TODOS" />
+<header class="sl-page-header">
+	<div class="sl-page-heading">
+		<h1 class="sl-page-title">Inteligência de Mercado 360° — Brasil</h1>
+		<p class="sl-page-subtitle">5.571 municípios oficiais IBGE · Valores constantes IPCA · Destaque pré-atentivo no líder</p>
+	</div>
+	<div class="sl-filter-bar">
+		<Dropdown data={anos_disponiveis} name=ano value=ano_referencia title="Ano" defaultValue={2023} />
+		<Dropdown data={regioes_disponiveis} name=regiao value=nome_regiao title="Região" defaultValue="TODAS" />
+		<Dropdown data={ufs_disponiveis} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
+		<Dropdown data={tiers_disponiveis} name=tier value=tier_mercado title="Tier" defaultValue="TODOS" />
+	</div>
+</header>
 
 ```sql kpis_gerais
 select
@@ -58,13 +64,23 @@ where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2023
   and ('${inputs.tier.value}' = 'TODOS' or tier_mercado = '${inputs.tier.value}')
 ```
 
-<BigValue data={kpis_gerais} value=total_municipios title="Municípios no Ano" fmt="#,##0" />
-<BigValue data={kpis_gerais} value=pib_real_tri title="PIB Real (R$ Tri)" fmt="#,##0.00" />
-<BigValue data={kpis_gerais} value=populacao_total title="População Residente" fmt="#,##0" />
-<BigValue data={kpis_gerais} value=massa_salarial_bi title="Massa Salarial (R$ Bi)" fmt="#,##0.0" />
-<BigValue data={kpis_gerais} value=ims_medio title="Score IMS Médio" fmt="0.00" />
+```sql ipca_resumo_home
+select
+    substr(ano_mes, 5, 2) || '/' || substr(ano_mes, 1, 4) as ultima_competencia,
+    round(variacao_acum_12m_pct / 100.0, 4) as ipca_12m_pct,
+    round(variacao_mensal_pct / 100.0, 4) as ipca_mes_pct
+from sidralake.fct_ipca_mensal
+order by data_referencia desc
+limit 1
+```
 
----
+<div class="sl-kpi-grid-5">
+	<KpiCard data={kpis_gerais} value="pib_real_tri" title="PIB Real Brasil" fmt="brl_tri" icon="landmark" subtitle="Valores constantes IPCA" />
+	<KpiCard data={kpis_gerais} value="populacao_total" title="População Residente" fmt="pop_mi" icon="users" subtitleCol="total_municipios" subtitleFmt="int" subtitleSuffix=" municípios no recorte" />
+	<KpiCard data={kpis_gerais} value="massa_salarial_bi" title="Massa Salarial Formal" fmt="brl_bi" icon="briefcase" subtitleCol="empresas_atuantes" subtitleFmt="pop_mi" subtitleSuffix=" empresas CEMPRE" />
+	<KpiCard data={kpis_gerais} value="ims_medio" title="Score IMS Médio" fmt="dec2" icon="gauge" subtitle="Escala 0–100 · 4 pilares" />
+	<KpiCard data={ipca_resumo_home} value="ipca_12m_pct" title="IPCA Acum. 12m" fmt="pct2" icon="percent" subtitleCol="ultima_competencia" subtitlePrefix="Ref. " subtitle2Col="ipca_mes_pct" subtitle2Fmt="signed_pct2" subtitle2Prefix=" · " subtitle2Suffix=" mês" />
+</div>
 
 ```sql top_12_ims
 with base as (
@@ -79,7 +95,7 @@ with base as (
       and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
       and ('${inputs.tier.value}' = 'TODOS' or tier_mercado = '${inputs.tier.value}')
     order by pos asc
-    limit 12
+    limit 10
 )
 select
     municipio,
@@ -117,87 +133,37 @@ from ranked
 order by pos asc
 ```
 
-<Grid cols=2>
-    <BarChart
-        data={top_12_ims}
-        x=municipio
-        y=ims_score_0_100
-        series=destaque
-        type=stacked
-        swapXY=true
-        sort=false
-        labels=true
-        stackTotalLabel=false
-        labelPosition=outside
-        showAllLabels=true
-        labelFmt="0.0"
-        leftPadding=16
-        rightPadding=28
-        legend=false
-        yGridlines=false
-        xGridlines=false
-        yAxisLabels=false
-        yBaseline=false
-        seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Quais municípios lideram o Score IMS?"
-        subtitle="Top 12 (0–100) · Líder em azul"
-    />
-    <ECharts
-        data={pib_por_regiao}
-        height="340px"
-        config={{
-            title: [
-                {
-                    text: 'Como o PIB real se distribui por Região?',
-                    subtext: 'Participação regional (R$ Bi) · Líder em azul',
-                    left: 'left',
-                    textStyle: { fontSize: 15, fontWeight: 600 },
-                    subtextStyle: { fontSize: 12 }
-                },
-                {
-                    text: 'R$ ' + (Array.from(pib_por_regiao ?? []).reduce((a, r) => a + Number(r.pib_real_bi || 0), 0) / 1000).toFixed(2) + ' Tri',
-                    subtext: 'PIB Real Total',
-                    left: 'center',
-                    top: '50%',
-                    textStyle: { fontSize: 16, fontWeight: 700 },
-                    subtextStyle: { fontSize: 11 }
-                }
-            ],
-            tooltip: {
-                trigger: 'item',
-                formatter: '{b}: R$ {c} Bi ({d}%)'
-            },
-            series: [
-                {
-                    name: 'PIB Real',
-                    type: 'pie',
-                    radius: ['42%', '64%'],
-                    center: ['50%', '58%'],
-                    avoidLabelOverlap: true,
-                    itemStyle: {
-                        borderRadius: 4,
-                        borderColor: '#0d1117',
-                        borderWidth: 2
-                    },
-                    label: {
-                        show: true,
-                        formatter: '{b}\n{d}%',
-                        fontSize: 11
-                    },
-                    data: Array.from(pib_por_regiao ?? []).map((r, idx) => ({
-                        name: r.regiao,
-                        value: r.pib_real_bi,
-                        itemStyle: {
-                            color: idx === 0 ? '#3b82f6' : idx === 1 ? '#64748b' : idx === 2 ? '#525866' : idx === 3 ? '#475569' : '#334155'
-                        }
-                    }))
-                }
-            ]
-        }}
-    />
-</Grid>
-
----
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<BarChart
+			data={top_12_ims}
+			x=municipio
+			y=ims_score_0_100
+			series=destaque
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="0.0"
+			leftPadding=18
+			rightPadding=34
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			title="Quais municípios lideram o Score IMS?"
+			subtitle="Top 10 no recorte (0–100) · Líder em azul pré-atentivo"
+		/>
+	</div>
+	<div class="sl-card">
+		<DonutPanel data={pib_por_regiao} labelCol="regiao" valueCol="pib_real_bi" title="Como o PIB real se distribui por Região?" centerLabel="PIB Real Total" />
+	</div>
+</div>
 
 ```sql top_12_pib
 with base as (
@@ -212,7 +178,7 @@ with base as (
       and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
       and ('${inputs.tier.value}' = 'TODOS' or tier_mercado = '${inputs.tier.value}')
     order by pos asc
-    limit 12
+    limit 8
 )
 select
     municipio,
@@ -222,97 +188,93 @@ from base
 order by pos asc
 ```
 
-```sql resumo_tiers
-with agg as (
+```sql regimes_varejo_home
+with base as (
     select
-        case tier_mercado
-            when 'Tier 1 - Polo Nacional' then 'Tier 1 · Polo'
-            when 'Tier 2 - Expansao Prioritaria' then 'Tier 2 · Expansão'
-            when 'Tier 3 - Emergente' then 'Tier 3 · Emergente'
-            when 'Tier 4 - Local / Nicho' then 'Tier 4 · Local'
-            else tier_mercado
-        end as tier_label,
-        count(*) as municipios,
-        round(avg(ims_score_0_100), 2) as ims_medio,
-        round(sum(pib_real_mil_brl) / 1e6, 1) as pib_real_bi,
-        sum(populacao_residente) as populacao
-    from sidralake.mart_inteligencia_mercado_municipal
-    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2023)
-      and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-      and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+        case regime_consumo
+            when 'EXPANSAO_REAL' then 'Expansão Real'
+            when 'PRESSAO_INFLACIONARIA' then 'Pressão Inflac.'
+            when 'ESTABILIDADE' then 'Estabilidade'
+            when 'RETRACAO' then 'Retração'
+            else regime_consumo
+        end as regime,
+        count(*) as series
+    from sidralake.mart_pulso_consumo_macro
+    where ano_mes = (select max(ano_mes) from sidralake.mart_pulso_consumo_macro)
+      and regime_consumo <> 'SEM_DADO'
     group by 1
 ),
 ranked as (
     select
-        *,
-        row_number() over (order by pib_real_bi desc nulls last) as pos
-    from agg
+        regime,
+        series,
+        round(series * 1.0 / sum(series) over (), 4) as share_pct,
+        row_number() over (order by series desc) as pos
+    from base
 )
 select
-    tier_label,
-    municipios,
-    ims_medio,
-    pib_real_bi,
-    populacao,
+    regime,
+    series,
+    share_pct,
     case when pos = 1 then 'Destaque' else 'Demais' end as destaque
 from ranked
 order by pos asc
 ```
 
-<Grid cols=2>
-    <BarChart
-        data={top_12_pib}
-        x=municipio
-        y=pib_real_bi
-        series=destaque
-        type=stacked
-        swapXY=true
-        sort=false
-        labels=true
-        stackTotalLabel=false
-        labelPosition=outside
-        showAllLabels=true
-        labelFmt="#,##0.0"
-        leftPadding=24
-        rightPadding=34
-        legend=false
-        yGridlines=false
-        xGridlines=false
-        yAxisLabels=false
-        yBaseline=false
-        seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Quais municípios têm maior PIB real?"
-        subtitle="Top 12 (R$ Bi) · Líder em azul"
-    />
-    <BarChart
-        data={resumo_tiers}
-        x=tier_label
-        y=pib_real_bi
-        series=destaque
-        type=stacked
-        swapXY=true
-        sort=false
-        labels=true
-        stackTotalLabel=false
-        labelPosition=outside
-        showAllLabels=true
-        labelFmt="#,##0.0"
-        leftPadding=20
-        rightPadding=36
-        legend=false
-        yGridlines=false
-        xGridlines=false
-        yAxisLabels=false
-        yBaseline=false
-        seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Onde se concentra o PIB por Tier?"
-        subtitle="PIB real acumulado (R$ Bi)"
-    />
-</Grid>
-
----
-
-## Explorador Completo de Municípios
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<BarChart
+			data={top_12_pib}
+			x=municipio
+			y=pib_real_bi
+			series=destaque
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="#,##0.0"
+			leftPadding=22
+			rightPadding=36
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			title="Quais municípios têm maior PIB real?"
+			subtitle="Top 8 no recorte (R$ Bilhões) · Valores constantes IPCA"
+		/>
+	</div>
+	<div class="sl-card">
+		<BarChart
+			data={regimes_varejo_home}
+			x=regime
+			y=share_pct
+			series=destaque
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="0.0%"
+			leftPadding=24
+			rightPadding=40
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			title="Qual regime domina o varejo nacional (PMC × IPCA)?"
+			subtitle="Participação das séries UF × Atividade (PMC × IPCA) · Líder em azul"
+		/>
+	</div>
+</div>
 
 ```sql tabela_municipios
 select
@@ -325,7 +287,7 @@ select
     num_empresas_atuantes as empresas,
     round(salario_medio_real_brl, 0) as salario_real,
     round(cagr_pib_real_3a_pct / 100.0, 4) as cagr_3a_pct,
-    ims_score_0_100 as ims,
+    round(ims_score_0_100, 2) as ims,
     case tier_mercado
         when 'Tier 1 - Polo Nacional' then 'Tier 1'
         when 'Tier 2 - Expansao Prioritaria' then 'Tier 2'
@@ -341,8 +303,30 @@ where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2023
 order by rank_nacional_ims asc
 ```
 
-<DataTable data={tabela_municipios} search=true rows=20 />
+<ExecTable
+	data={tabela_municipios}
+	title="Explorador Executivo de Municípios"
+	subtitle="Cidades ranqueadas por Score IMS · Destaque azul: Líder #1, IMS ≥ 85 e CAGR ≥ +10%"
+	search={true}
+	searchPlaceholder="Buscar município ou UF..."
+	exportCsv={true}
+	csvFilename="sidralake_municipios_ims.csv"
+	rowsPerPage={15}
+	highlightFirstRow={true}
+	columns={[
+		{ key: 'rk', label: 'RK', kind: 'rank' },
+		{ key: 'municipio', label: 'Município', kind: 'primary' },
+		{ key: 'uf', label: 'UF', align: 'center' },
+		{ key: 'populacao', label: 'População', align: 'right', fmt: 'int' },
+		{ key: 'pib_bi', label: 'PIB Real (Bi)', align: 'right', fmt: 'brl_bi' },
+		{ key: 'pib_pc', label: 'PIB Per Capita', align: 'right', fmt: 'brl_int' },
+		{ key: 'cagr_3a_pct', label: 'CAGR 3A', align: 'right', kind: 'growth', highlightThreshold: 0.1 },
+		{ key: 'ims', label: 'Score IMS', align: 'right', kind: 'databar', fmt: 'dec2', barMax: 100, barThreshold: 85 },
+		{ key: 'tier', label: 'Tier de Mercado', align: 'center', kind: 'tier_badge' }
+	]}
+/>
 
----
-
-> **Fonte dos Dados:** Os dados primários pertencem ao **Instituto Brasileiro de Geografia e Estatística (IBGE)** e são de acesso público nos termos da Política de Dados Abertos do Governo Federal. Código-fonte licenciado sob **GNU GPL v3.0**.
+<footer class="sl-footer">
+	<span><strong>Fonte dos Dados:</strong> Instituto Brasileiro de Geografia e Estatística (IBGE) · Dados públicos abertos.</span>
+	<span>SidraLake 360° · GNU GPL v3.0</span>
+</footer>

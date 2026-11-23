@@ -2,8 +2,6 @@
 title: Dinamismo Econômico & Estrutura Produtiva (VAB / HHI)
 ---
 
-Crescimento real composto do PIB (**CAGR 3 anos deflacionado pelo IPCA**), contraste da **composição setorial do Valor Adicionado Bruto (VAB)** entre regiões e relação entre poder de compra per capita e maturidade de mercado.
-
 ```sql ufs_dinamismo
 select 'TODAS' as sigla_uf, 0 as ordem
 union all
@@ -13,14 +11,19 @@ where is_ultimo_ano_completo
 order by ordem, sigla_uf
 ```
 
-<Grid cols=2>
-    <div>
-        <Dropdown data={ufs_dinamismo} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
-    </div>
-    <div>
-        <Slider name=min_pop_din title="População Mínima" min=0 max=200000 step=10000 defaultValue=50000 fmt="#,##0" size=full />
-    </div>
-</Grid>
+<header class="sl-page-header">
+	<div class="sl-page-heading">
+		<h1 class="sl-page-title">Dinamismo Econômico &amp; Estrutura Produtiva</h1>
+		<p class="sl-page-subtitle">CAGR real de 3 anos deflacionado pelo IPCA, composição setorial do VAB (IBGE) e diversificação produtiva (HHI)</p>
+	</div>
+	<div class="sl-filter-bar">
+		<Dropdown data={ufs_dinamismo} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
+	</div>
+</header>
+
+<section class="sl-control-card">
+	<Slider name=min_pop_din title="População Mínima para Ranking CAGR e Dispersão" min=0 max=200000 step=10000 defaultValue=50000 fmt="#,##0" size=full />
+</section>
 
 ```sql top_cagr
 with base as (
@@ -34,7 +37,7 @@ with base as (
       and cagr_pib_real_3a_pct is not null
       and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
     order by pos asc
-    limit 12
+    limit 10
 )
 select
     municipio,
@@ -62,59 +65,59 @@ with ult_vab as (
     group by 1
 )
 select regiao, 'Serviços' as setor, servicos as share from ult_vab
-union all select regiao, 'Agro', agropecuaria from ult_vab
 union all select regiao, 'Indústria', industria from ult_vab
+union all select regiao, 'Agro', agropecuaria from ult_vab
 union all select regiao, 'Adm. Púb.', adm_publica from ult_vab
 order by regiao asc
 ```
 
-<Grid cols=2>
-    <BarChart
-        data={top_cagr}
-        x=municipio
-        y=cagr_3a_pct
-        series=destaque
-        type=stacked
-        swapXY=true
-        sort=false
-        labels=true
-        stackTotalLabel=false
-        labelPosition=outside
-        showAllLabels=true
-        labelFmt="0.0%"
-        leftPadding=28
-        rightPadding=34
-        legend=false
-        yGridlines=false
-        xGridlines=false
-        yAxisLabels=false
-        yBaseline=false
-        seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-        title="Quais municípios mais cresceram?"
-        subtitle="CAGR real 3 anos · Líder em azul"
-    />
-    <BarChart
-        data={vab_empilhado_regiao}
-        x=regiao
-        y=share
-        series=setor
-        type=stacked100
-        swapXY=true
-        leftPadding=20
-        rightPadding=16
-        yGridlines=false
-        xGridlines=false
-        yAxisLabels=false
-        yBaseline=false
-        seriesColors={{'Serviços': '#3b82f6', 'Agro': '#10b981', 'Indústria': '#f59e0b', 'Adm. Púb.': '#525866'}}
-        title="Composição setorial do VAB por Região"
-        subtitle="Proporção 100% · Último VAB IBGE (2021)"
-    />
-</Grid>
-
----
-
-## Poder de Compra (PIB Per Capita Real) × Score IMS
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<BarChart
+			data={top_cagr}
+			x=municipio
+			y=cagr_3a_pct
+			series=destaque
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="0.0%"
+			leftPadding=28
+			rightPadding=38
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			title="Quais municípios mais cresceram?"
+			subtitle="CAGR real 3 anos (IPCA) · Líder em azul pré-atentivo"
+		/>
+	</div>
+	<div class="sl-card">
+		<BarChart
+			data={vab_empilhado_regiao}
+			x=regiao
+			y=share
+			series=setor
+			type=stacked100
+			swapXY=true
+			leftPadding=20
+			rightPadding=16
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Serviços': '#3b82f6', 'Indústria': '#94a3b8', 'Agro': '#64748b', 'Adm. Púb.': '#334155'}}
+			title="Composição setorial do VAB por Região"
+			subtitle="Proporção 100% · Serviços em destaque azul · Último VAB IBGE (2021)"
+		/>
+	</div>
+</div>
 
 ```sql scatter_poder_compra
 select
@@ -135,24 +138,23 @@ order by ims_score_0_100 desc
 limit 500
 ```
 
-<ScatterPlot
-    data={scatter_poder_compra}
-    x=pib_per_capita_real
-    y=ims
-    series=grupo_tier
-    tooltipTitle=municipio
-    xFmt="#,##0"
-    yGridlines=false
-    xGridlines=false
-    seriesColors={{'Tier 1 · Polo': '#3b82f6', 'Demais Municípios': '#525866'}}
-    title="Polos Nacionais (Tier 1) em destaque azul frente aos demais municípios"
-    xAxisTitle="PIB Per Capita Real (R$)"
-    yAxisTitle="Score IMS (0-100)"
-/>
-
----
-
-## Estrutura Produtiva Média por UF (Último VAB Publicado — 2021)
+<div class="sl-card sl-stack">
+	<ScatterPlot
+		data={scatter_poder_compra}
+		x=pib_per_capita_real
+		y=ims
+		series=grupo_tier
+		tooltipTitle=municipio
+		xFmt="#,##0"
+		yGridlines=false
+		xGridlines=false
+		seriesColors={{'Tier 1 · Polo': '#3b82f6', 'Demais Municípios': '#525866'}}
+		title="Polos Nacionais (Tier 1) concentram alto poder de compra e Score IMS"
+		subtitle="Dispersão PIB Per Capita Real (R$) × Score IMS · Polos Tier 1 em azul"
+		xAxisTitle="PIB Per Capita Real (R$)"
+		yAxisTitle="Score IMS (0–100)"
+	/>
+</div>
 
 ```sql vab_por_uf
 select
@@ -176,4 +178,25 @@ group by 2, 3
 order by hhi_div desc
 ```
 
-<DataTable data={vab_por_uf} search=true rows=15 />
+<ExecTable
+	data={vab_por_uf}
+	title="Estrutura Produtiva Média por UF (Último VAB Publicado — 2021)"
+	subtitle="Estados ordenados pelo Índice de Diversificação Setorial (HHI) · Destaque azul: UF líder e HHI ≥ 0,65"
+	search={true}
+	searchPlaceholder="Buscar UF ou região..."
+	exportCsv={true}
+	csvFilename="sidralake_vab_estrutura_uf.csv"
+	rowsPerPage={15}
+	highlightFirstRow={true}
+	columns={[
+		{ key: 'ano', label: 'Ano', kind: 'year' },
+		{ key: 'uf', label: 'UF', kind: 'primary', align: 'center' },
+		{ key: 'regiao', label: 'Região' },
+		{ key: 'municipios', label: 'Municípios', align: 'right', fmt: 'int' },
+		{ key: 'agro_pct', label: 'Agro %', align: 'right', fmt: 'pct1' },
+		{ key: 'ind_pct', label: 'Indústria %', align: 'right', fmt: 'pct1' },
+		{ key: 'servicos_pct', label: 'Serviços %', align: 'right', fmt: 'pct1' },
+		{ key: 'adm_pub_pct', label: 'Adm. Púb. %', align: 'right', fmt: 'pct1' },
+		{ key: 'hhi_div', label: 'HHI Div.', align: 'right', kind: 'databar', fmt: 'dec3', barMax: 0.75, barThreshold: 0.65 }
+	]}
+/>

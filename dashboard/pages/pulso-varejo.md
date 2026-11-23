@@ -2,10 +2,6 @@
 title: Macroeconomia (IPCA) & Pulso do Varejo (PMC)
 ---
 
-Painel macroeconômico integrando a **Inflação Oficial IPCA (SIDRA 1737 · 2018–2026)** e a **Pesquisa Mensal de Comércio Ampliado (PMC · SIDRA 8883)**, com **codificação semântica de cores** (Verde = Expansão Real, Âmbar = Pressão Inflacionária, Cinza = Estabilidade, Vermelho = Retração).
-
-## 1. Cenário Inflacionário Oficial (IPCA Brasil · 2018–2026)
-
 ```sql ipca_kpis
 with ult as (
     select *
@@ -29,38 +25,6 @@ from ult
 cross join pri
 ```
 
-<BigValue data={ipca_kpis} value=ultima_competencia title="Última Competência" />
-<BigValue data={ipca_kpis} value=ipca_mes_pct title="IPCA Mensal" fmt="0.00%" />
-<BigValue data={ipca_kpis} value=ipca_ano_pct title="IPCA Acum. Ano" fmt="0.00%" />
-<BigValue data={ipca_kpis} value=ipca_12m_pct title="IPCA Acum. 12m" fmt="0.00%" />
-<BigValue data={ipca_kpis} value=inflacao_acum_2018_pct title="Inflação (2018+)" fmt="0.0%" />
-
-```sql serie_ipca
-select
-    data_referencia,
-    round(variacao_acum_12m_pct / 100.0, 4) as ipca_12m_pct,
-    round(variacao_mensal_pct / 100.0, 4) as ipca_mensal_pct
-from sidralake.fct_ipca_mensal
-order by data_referencia asc
-```
-
-<LineChart
-    data={serie_ipca}
-    x=data_referencia
-    y={["ipca_12m_pct", "ipca_mensal_pct"]}
-    yFmt="0.0%"
-    yGridlines=false
-    xGridlines=false
-    colorPalette={['#f59e0b', '#64748b']}
-    title="Trajetória da Inflação Oficial (IPCA Brasil · 2018–2026)"
-    subtitle="IPCA acumulado em 12 meses em âmbar · Variação mensal em cinza"
-    yAxisTitle="Variação (%)"
-/>
-
----
-
-## 2. Pulso do Varejo Ampliado por UF e Atividade (PMC × IPCA)
-
 ```sql ufs_pmc
 select distinct sigla_uf
 from sidralake.mart_pulso_consumo_macro
@@ -73,8 +37,33 @@ from sidralake.mart_pulso_consumo_macro
 order by nome_atividade_pmc
 ```
 
-<Dropdown data={ufs_pmc} name=uf value=sigla_uf title="UF" defaultValue="SP" />
-<Dropdown data={atividades_pmc} name=atividade value=nome_atividade_pmc title="Atividade Comercial (PMC)" defaultValue="Hipermercados e supermercados" />
+<header class="sl-page-header">
+	<div class="sl-page-heading">
+		<h1 class="sl-page-title">Macroeconomia (IPCA) &amp; Pulso do Varejo (PMC)</h1>
+		<p class="sl-page-subtitle">Inflação Oficial IPCA (SIDRA 1737 · 2018–2026) integrada à Pesquisa Mensal de Comércio Ampliado (PMC · SIDRA 8883)</p>
+	</div>
+	<div class="sl-filter-bar">
+		<Dropdown data={ufs_pmc} name=uf value=sigla_uf title="UF" defaultValue="SP" />
+		<Dropdown data={atividades_pmc} name=atividade value=nome_atividade_pmc title="Atividade PMC" defaultValue="Hipermercados e supermercados" />
+	</div>
+</header>
+
+<div class="sl-kpi-grid-5">
+	<KpiCard data={ipca_kpis} value="ultima_competencia" title="Última Competência" fmt="raw" icon="calendar" subtitle="Fechamento oficial IBGE" />
+	<KpiCard data={ipca_kpis} value="ipca_mes_pct" title="IPCA Mensal" fmt="pct2" icon="percent" subtitle="Variação no mês" />
+	<KpiCard data={ipca_kpis} value="ipca_ano_pct" title="IPCA Acum. Ano" fmt="pct2" icon="trending" subtitle="Acumulado no ano civil" />
+	<KpiCard data={ipca_kpis} value="ipca_12m_pct" title="IPCA Acum. 12m" fmt="pct2" icon="gauge" subtitle="Referência de deflação" />
+	<KpiCard data={ipca_kpis} value="inflacao_acum_2018_pct" title="Inflação (2018+)" fmt="pct1" icon="layers" subtitle="Acumulada na janela do Lake" />
+</div>
+
+```sql serie_ipca
+select
+    data_referencia,
+    round(variacao_acum_12m_pct / 100.0, 4) as ipca_12m_pct,
+    round(variacao_mensal_pct / 100.0, 4) as ipca_mensal_pct
+from sidralake.fct_ipca_mensal
+order by data_referencia asc
+```
 
 ```sql serie_mensal_pmc
 select
@@ -98,40 +87,74 @@ where sigla_uf = '${inputs.uf.value}'
 order by data_referencia asc
 ```
 
-<LineChart
-    data={serie_mensal_pmc}
-    x=data_referencia
-    y={["volume_yoy_pct", "receita_yoy_pct", "ipca_12m_pct"]}
-    yFmt="0.0%"
-    yGridlines=false
-    xGridlines=false
-    colorPalette={['#3b82f6', '#64748b', '#f59e0b']}
-    title="Volume Real do Varejo vs. Receita Nominal e Inflação (YoY %)"
-    subtitle="Volume Real em azul · Receita Nominal em cinza · IPCA 12m em âmbar"
-    yAxisTitle="Variação (%)"
-/>
-
----
-
-## 3. Saúde do Varejo Nacional (Cores Semânticas & Mapa UF × Grupo)
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<LineChart
+			data={serie_ipca}
+			x=data_referencia
+			y={["ipca_12m_pct", "ipca_mensal_pct"]}
+			yFmt="0.0%"
+			yGridlines=false
+			xGridlines=false
+			colorPalette={['#3b82f6', '#64748b']}
+			title="Trajetória da Inflação Oficial (IPCA Brasil · 2018–2026)"
+			subtitle="IPCA acumulado em 12 meses em azul · Variação mensal em ardósia"
+			yAxisTitle="Variação (%)"
+		/>
+	</div>
+	<div class="sl-card">
+		<LineChart
+			data={serie_mensal_pmc}
+			x=data_referencia
+			y={["volume_yoy_pct", "receita_yoy_pct", "ipca_12m_pct"]}
+			yFmt="0.0%"
+			yGridlines=false
+			xGridlines=false
+			colorPalette={['#3b82f6', '#94a3b8', '#475569']}
+			title="Volume Real do Varejo vs. Receita Nominal e IPCA (YoY %)"
+			subtitle="Volume Real em azul pré-atentivo · Receita Nominal e IPCA 12m em ardósia"
+			yAxisTitle="Variação (%)"
+		/>
+	</div>
+</div>
 
 ```sql regimes_ultimo_mes
+with base as (
+    select
+        case regime_consumo
+            when 'EXPANSAO_REAL' then 'Expansão Real'
+            when 'PRESSAO_INFLACIONARIA' then 'Pressão Inflac.'
+            when 'ESTABILIDADE' then 'Estabilidade'
+            when 'RETRACAO' then 'Retração'
+            else regime_consumo
+        end as regime,
+        count(*) as series,
+        round(avg(var_yoy_volume_pct) / 100.0, 4) as vol_yoy_pct,
+        round(avg(spread_preco_vs_volume_yoy_pp), 2) as spread_pp
+    from sidralake.mart_pulso_consumo_macro
+    where ano_mes = (select max(ano_mes) from sidralake.mart_pulso_consumo_macro)
+      and regime_consumo <> 'SEM_DADO'
+    group by 1
+),
+ranked as (
+    select
+        regime,
+        series,
+        round(series * 1.0 / sum(series) over (), 4) as share_pct,
+        vol_yoy_pct,
+        spread_pp,
+        row_number() over (order by series desc) as pos
+    from base
+)
 select
-    case regime_consumo
-        when 'EXPANSAO_REAL' then 'Expansão Real'
-        when 'PRESSAO_INFLACIONARIA' then 'Pressão Inflac.'
-        when 'ESTABILIDADE' then 'Estabilidade'
-        when 'RETRACAO' then 'Retração'
-        else regime_consumo
-    end as regime,
-    count(*) as series,
-    round(avg(var_yoy_volume_pct) / 100.0, 4) as vol_yoy_pct,
-    round(avg(spread_preco_vs_volume_yoy_pp), 2) as spread_pp
-from sidralake.mart_pulso_consumo_macro
-where ano_mes = (select max(ano_mes) from sidralake.mart_pulso_consumo_macro)
-  and regime_consumo <> 'SEM_DADO'
-group by 1
-order by series desc
+    regime,
+    series,
+    share_pct,
+    vol_yoy_pct,
+    spread_pp,
+    case when pos = 1 then 'Destaque' else 'Demais' end as destaque
+from ranked
+order by pos asc
 ```
 
 ```sql heatmap_varejo_uf
@@ -153,47 +176,47 @@ group by 1, 2
 order by sigla_uf asc, grupo asc
 ```
 
-<Grid cols=2>
-    <BarChart
-        data={regimes_ultimo_mes}
-        x=regime
-        y=series
-        series=regime
-        type=stacked
-        swapXY=true
-        sort=false
-        labels=true
-        stackTotalLabel=false
-        labelPosition=outside
-        showAllLabels=true
-        labelFmt="#,##0"
-        leftPadding=24
-        rightPadding=28
-        legend=false
-        yGridlines=false
-        xGridlines=false
-        yAxisLabels=false
-        yBaseline=false
-        seriesColors={{'Expansão Real': '#10b981', 'Pressão Inflac.': '#f59e0b', 'Estabilidade': '#64748b', 'Retração': '#ef4444'}}
-        title="Saúde do varejo por regime de consumo"
-        subtitle="Verde=Expansão · Âmbar=Inflação · Vermelho=Retração"
-    />
-    <Heatmap
-        data={heatmap_varejo_uf}
-        x=grupo
-        y=uf
-        value=vol_yoy_pct
-        valueFmt="0.0%"
-        xLabelRotation=0
-        colorScale={['#dc2626', '#334155', '#10b981']}
-        title="Volume Real YoY (%) — UF × Grupo"
-        subtitle="Última competência PMC · Vermelho = queda · Verde = expansão"
-    />
-</Grid>
-
----
-
-## Histórico Mensal Detalhado da Série Selecionada
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<BarChart
+			data={regimes_ultimo_mes}
+			x=regime
+			y=share_pct
+			series=destaque
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="0.0%"
+			leftPadding=24
+			rightPadding=40
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			title="Qual regime domina o varejo nacional (PMC × IPCA)?"
+			subtitle="Distribuição das séries UF × Atividade (PMC × IPCA) · Regime dominante em azul"
+		/>
+	</div>
+	<div class="sl-card">
+		<Heatmap
+			data={heatmap_varejo_uf}
+			x=grupo
+			y=uf
+			value=vol_yoy_pct
+			valueFmt="0.0%"
+			xLabelRotation=0
+			colorScale={['#141b26', '#334155', '#3b82f6']}
+			title="Volume Real YoY (%) — UF × Grupo de Consumo"
+			subtitle="Última competência PMC · Intensidade azul indica maior expansão real"
+		/>
+	</div>
+</div>
 
 ```sql tabela_mensal_pmc
 select
@@ -216,4 +239,22 @@ where sigla_uf = '${inputs.uf.value}'
 order by data_referencia desc
 ```
 
-<DataTable data={tabela_mensal_pmc} search=true rows=15 />
+<ExecTable
+	data={tabela_mensal_pmc}
+	title="Histórico Mensal Detalhado da Série Selecionada"
+	subtitle="Destaque azul: competência mais recente e Volume Real YoY ≥ +5%"
+	search={true}
+	searchPlaceholder="Buscar competência ou regime..."
+	exportCsv={true}
+	csvFilename="sidralake_pulso_varejo_pmc.csv"
+	rowsPerPage={15}
+	highlightFirstRow={true}
+	columns={[
+		{ key: 'competencia', label: 'Competência', kind: 'year' },
+		{ key: 'volume_yoy_pct', label: 'Volume YoY', align: 'right', kind: 'growth', highlightThreshold: 0.05 },
+		{ key: 'receita_yoy_pct', label: 'Receita YoY', align: 'right', fmt: 'signed_pct1' },
+		{ key: 'ipca_12m_pct', label: 'IPCA 12m', align: 'right', fmt: 'pct2' },
+		{ key: 'spread_pp', label: 'Spread Preço×Vol', align: 'right', fmt: 'signed_pp' },
+		{ key: 'regime', label: 'Regime de Consumo', align: 'center', kind: 'tier_badge' }
+	]}
+/>

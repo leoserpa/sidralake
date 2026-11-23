@@ -1,0 +1,30 @@
+# Python / uv
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Lakehouse local & Warehouse
+data/
+*.duckdb
+*.duckdb.wal
+
+# dbt artifacts
+dbt_project/target/
+dbt_project/dbt_packages/
+dbt_project/logs/
+dbt_project/.user.yml
+
+# Dagster local runtime
+.dagster/
+dagster_home/
+
+# Environment & OS
+.env
+.env.local
+.DS_Store

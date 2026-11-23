@@ -1,0 +1,44 @@
+name: CI — SidraLake (IBGE Market Intelligence Medallion Pipeline)
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  quality-and-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sync dependencies
+        run: uv sync --dev
+
+      - name: Install dbt packages
+        run: uv run dbt deps --project-dir dbt_project --profiles-dir dbt_project
+
+      - name: Python lint & format check (ruff)
+        run: |
+          uv run ruff check src tests
+          uv run ruff format --check src tests
+
+      - name: Static type check (mypy)
+        run: uv run mypy src
+
+      - name: dbt parse & standalone unit tests
+        run: |
+          mkdir -p data/warehouse
+          uv run dbt parse --project-dir dbt_project --profiles-dir dbt_project
+          uv run dbt test --select test_type:unit --project-dir dbt_project --profiles-dir dbt_project
+
+      - name: SQL lint (sqlfluff)
+        run: uv run sqlfluff lint dbt_project/models dbt_project/macros dbt_project/tests
+
+      - name: Unit & End-to-End Integration tests (pytest)
+        run: uv run pytest tests -v --cov=ibge_market_intel

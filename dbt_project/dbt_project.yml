@@ -1,0 +1,50 @@
+name: "ibge_market_intel"
+version: "0.1.0"
+config-version: 2
+
+profile: "ibge_market_intel"
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+vars:
+  # Pesos configuraveis do Indice de Atratividade e Potencial de Mercado (IMS 0-100)
+  ims_weight_market_size: 0.35
+  ims_weight_purchasing_power: 0.30
+  ims_weight_dynamism: 0.20
+  ims_weight_business_maturity: 0.15
+
+models:
+  ibge_market_intel:
+    silver:
+      +schema: silver
+      staging:
+        +materialized: view
+        +tags: ["silver", "staging"]
+      intermediate:
+        +materialized: table
+        +tags: ["silver", "intermediate"]
+    gold:
+      +schema: gold
+      dimensions:
+        +materialized: table
+        +tags: ["gold", "dimension"]
+      facts:
+        +materialized: table
+        +tags: ["gold", "fact"]
+      marts:
+        +materialized: table
+        +tags: ["gold", "mart", "obt"]
+
+snapshots:
+  ibge_market_intel:
+    +target_schema: snapshots
+    +tags: ["silver", "scd2"]

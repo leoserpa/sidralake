@@ -1,0 +1,559 @@
+version: 2
+
+models:
+  # ==================== DIMENSIONS ====================
+  - name: dim_geografia
+    description: "Dimensao geografica municipal (SCD Type 2) com hierarquia IBGE completa (Regiao Imediata, Intermediaria, UF e Grande Regiao)."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: sk_municipio
+        data_type: varchar
+        tests: [unique, not_null]
+      - name: codigo_ibge_municipio
+        data_type: integer
+        tests: [not_null]
+      - name: nome_municipio
+        data_type: varchar
+        tests: [not_null]
+      - name: codigo_uf
+        data_type: integer
+        tests: [not_null]
+      - name: sigla_uf
+        data_type: varchar
+        tests: [not_null]
+      - name: nome_uf
+        data_type: varchar
+        tests: [not_null]
+      - name: codigo_regiao
+        data_type: integer
+        tests: [not_null]
+      - name: sigla_regiao
+        data_type: varchar
+        tests: [not_null]
+      - name: nome_regiao
+        data_type: varchar
+        tests: [not_null]
+      - name: codigo_regiao_imediata
+        data_type: integer
+        tests: [not_null]
+      - name: nome_regiao_imediata
+        data_type: varchar
+        tests: [not_null]
+      - name: codigo_regiao_intermediaria
+        data_type: integer
+        tests: [not_null]
+      - name: nome_regiao_intermediaria
+        data_type: varchar
+        tests: [not_null]
+      - name: codigo_microrregiao
+        data_type: integer
+      - name: nome_microrregiao
+        data_type: varchar
+      - name: codigo_mesorregiao
+        data_type: integer
+      - name: nome_mesorregiao
+        data_type: varchar
+      - name: valid_from
+        data_type: timestamp
+      - name: valid_to
+        data_type: timestamp
+      - name: is_current
+        data_type: boolean
+        tests: [not_null]
+
+  - name: dim_tempo
+    description: "Dimensao calendario mensal (2018-2026) com indicador de ano censitario."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: sk_tempo
+        data_type: integer
+        tests: [unique, not_null]
+      - name: data_referencia
+        data_type: date
+        tests: [unique, not_null]
+      - name: ano_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: mes_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: ano_mes
+        data_type: varchar
+        tests: [unique, not_null]
+      - name: trimestre
+        data_type: integer
+        tests: [not_null]
+      - name: semestre
+        data_type: integer
+        tests: [not_null]
+      - name: is_ano_censitario
+        data_type: boolean
+        tests: [not_null]
+
+  - name: dim_cnae
+    description: "Dimensao das 21 secoes CNAE 2.0 (SCD Type 2) mapeadas para a classificacao SIDRA 12762."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: sk_cnae_secao
+        data_type: varchar
+        tests: [unique, not_null]
+      - name: codigo_secao
+        data_type: varchar
+        tests: [not_null]
+      - name: descricao_secao
+        data_type: varchar
+        tests: [not_null]
+      - name: categoria_sidra_12762_id
+        data_type: integer
+        tests: [not_null]
+      - name: valid_from
+        data_type: timestamp
+      - name: valid_to
+        data_type: timestamp
+      - name: is_current
+        data_type: boolean
+        tests: [not_null]
+
+  - name: dim_atividade_varejo
+    description: "Dimensao das 14 atividades comerciais da PMC agrupadas por segmento de consumo."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: sk_atividade_varejo
+        data_type: varchar
+        tests: [unique, not_null]
+      - name: codigo_atividade_pmc
+        data_type: integer
+        tests: [unique, not_null]
+      - name: nome_atividade_pmc
+        data_type: varchar
+        tests: [not_null]
+      - name: grupo_consumo
+        data_type: varchar
+        tests: [not_null]
+
+  # ==================== FACTS (ENFORCED CONTRACTS) ====================
+  - name: fct_pib_municipal
+    description: "Fato anual do PIB e VAB setorial municipal a precos nominais e reais (deflacionados pelo IPCA)."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: sk_pib_municipal
+        data_type: varchar
+        tests: [unique, not_null]
+      - name: sk_municipio
+        data_type: varchar
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_geografia')
+                field: sk_municipio
+      - name: codigo_ibge_municipio
+        data_type: integer
+        tests: [not_null]
+      - name: ano_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: ano_mes_base_deflator
+        data_type: varchar
+      - name: fator_deflator_anual
+        data_type: double
+      - name: pib_nominal_mil_brl
+        data_type: double
+        tests: [not_null]
+      - name: pib_real_mil_brl
+        data_type: double
+        tests: [not_null]
+      - name: impostos_liquidos_mil_brl
+        data_type: double
+      - name: vab_total_mil_brl
+        data_type: double
+      - name: vab_agropecuaria_mil_brl
+        data_type: double
+      - name: vab_industria_mil_brl
+        data_type: double
+      - name: vab_servicos_privados_mil_brl
+        data_type: double
+      - name: vab_adm_publica_mil_brl
+        data_type: double
+      - name: share_vab_agropecuaria
+        data_type: double
+      - name: share_vab_industria
+        data_type: double
+      - name: share_vab_servicos_privados
+        data_type: double
+      - name: share_vab_adm_publica
+        data_type: double
+      - name: hhi_setorial
+        data_type: double
+      - name: indice_diversificacao_setorial
+        data_type: double
+      - name: crescimento_pib_real_yoy_pct
+        data_type: double
+      - name: cagr_pib_real_3a_pct
+        data_type: double
+
+  - name: fct_populacao_municipal
+    description: "Fato anual da serie populacional municipal unificada (Censo 2022 + Estimativas + interpolacao 2023)."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: sk_populacao_municipal
+        data_type: varchar
+        tests: [unique, not_null]
+      - name: sk_municipio
+        data_type: varchar
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_geografia')
+                field: sk_municipio
+      - name: codigo_ibge_municipio
+        data_type: integer
+        tests: [not_null]
+      - name: ano_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: populacao_residente
+        data_type: bigint
+        tests: [not_null]
+      - name: area_km2
+        data_type: double
+      - name: densidade_demografica
+        data_type: double
+      - name: origem_dado
+        data_type: varchar
+        tests: [not_null]
+      - name: is_interpolado
+        data_type: boolean
+        tests: [not_null]
+
+  - name: fct_cempre_municipal
+    description: "Fato anual do Cadastro Central de Empresas municipal (nova serie 2022+)."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: sk_cempre_municipal
+        data_type: varchar
+        tests: [unique, not_null]
+      - name: sk_municipio
+        data_type: varchar
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_geografia')
+                field: sk_municipio
+      - name: codigo_ibge_municipio
+        data_type: integer
+        tests: [not_null]
+      - name: ano_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: ano_mes_base_deflator
+        data_type: varchar
+      - name: num_unidades_locais
+        data_type: integer
+      - name: num_empresas_atuantes
+        data_type: integer
+      - name: pessoal_ocupado_total
+        data_type: integer
+      - name: pessoal_ocupado_assalariado
+        data_type: integer
+      - name: pessoal_assalariado_medio
+        data_type: integer
+      - name: massa_salarial_nominal_mil_brl
+        data_type: double
+      - name: massa_salarial_real_mil_brl
+        data_type: double
+      - name: salario_medio_sm
+        data_type: double
+      - name: salario_medio_nominal_brl
+        data_type: double
+      - name: salario_medio_real_brl
+        data_type: double
+      - name: taxa_assalariamento_formal
+        data_type: double
+      - name: crescimento_empresas_yoy_pct
+        data_type: double
+      - name: crescimento_emprego_yoy_pct
+        data_type: double
+
+  - name: fct_cempre_setorial_uf
+    description: "Fato anual do CEMPRE por UF e secao CNAE 2.0 com flag de sigilo estatistico."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: sk_cempre_setorial_uf
+        data_type: varchar
+        tests: [unique, not_null]
+      - name: codigo_uf
+        data_type: integer
+        tests: [not_null]
+      - name: sk_cnae_secao
+        data_type: varchar
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_cnae')
+                field: sk_cnae_secao
+      - name: codigo_secao_cnae
+        data_type: varchar
+        tests: [not_null]
+      - name: ano_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: num_empresas
+        data_type: integer
+      - name: pessoal_ocupado_total
+        data_type: integer
+      - name: pessoal_ocupado_assalariado
+        data_type: integer
+      - name: massa_salarial_nominal_mil_brl
+        data_type: double
+      - name: massa_salarial_real_mil_brl
+        data_type: double
+      - name: has_sigilo_estatistico
+        data_type: boolean
+        tests: [not_null]
+
+  - name: fct_ipca_mensal
+    description: "Fato mensal da inflacao IPCA Brasil com fator deflator para base corrente."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: ano_mes
+        data_type: varchar
+        tests: [unique, not_null]
+      - name: ano_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: mes_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: data_referencia
+        data_type: date
+        tests: [not_null]
+      - name: numero_indice_ipca
+        data_type: double
+        tests: [not_null]
+      - name: variacao_mensal_pct
+        data_type: double
+      - name: variacao_acum_3m_pct
+        data_type: double
+      - name: variacao_acum_6m_pct
+        data_type: double
+      - name: variacao_acum_ano_pct
+        data_type: double
+      - name: variacao_acum_12m_pct
+        data_type: double
+      - name: ano_mes_base_deflator
+        data_type: varchar
+        tests: [not_null]
+      - name: fator_deflator_base_atual
+        data_type: double
+        tests: [not_null]
+
+  - name: fct_pmc_varejo_mensal
+    description: "Fato mensal de receita nominal e volume de vendas do varejo ampliado (PMC) por UF e atividade."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: sk_pmc_mensal
+        data_type: varchar
+        tests: [unique, not_null]
+      - name: codigo_uf
+        data_type: integer
+        tests: [not_null]
+      - name: sk_atividade_varejo
+        data_type: varchar
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_atividade_varejo')
+                field: sk_atividade_varejo
+      - name: codigo_atividade_pmc
+        data_type: integer
+        tests: [not_null]
+      - name: ano_mes
+        data_type: varchar
+        tests: [not_null]
+      - name: ano_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: mes_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: data_referencia
+        data_type: date
+        tests: [not_null]
+      - name: indice_receita_nominal
+        data_type: double
+      - name: indice_receita_nominal_sa
+        data_type: double
+      - name: var_mom_sa_receita_pct
+        data_type: double
+      - name: var_yoy_receita_nominal_pct
+        data_type: double
+      - name: var_acum_12m_receita_pct
+        data_type: double
+      - name: indice_volume_vendas
+        data_type: double
+      - name: indice_volume_vendas_sa
+        data_type: double
+      - name: var_mom_sa_volume_pct
+        data_type: double
+      - name: var_yoy_volume_pct
+        data_type: double
+      - name: var_acum_12m_volume_pct
+        data_type: double
+
+  # ==================== GOLD DATA MARTS / OBTs ====================
+  - name: mart_inteligencia_mercado_municipal
+    description: >
+      OBT 360 graus de Inteligencia de Mercado Municipal combinando Demografia, PIB Real,
+      Diversificacao Produtiva (1 - HHI), Tecido Empresarial (CEMPRE) e Score composto IMS (0-100)
+      com rankings nacional/estadual/regional e classificacao em Tiers estrategicos.
+    columns:
+      - name: sk_inteligencia_municipal
+        tests: [unique, not_null]
+      - name: codigo_ibge_municipio
+        tests: [not_null]
+      - name: ano_referencia
+        tests: [not_null]
+      - name: tier_mercado
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "Tier 1 - Polo Nacional"
+                  - "Tier 2 - Expansao Prioritaria"
+                  - "Tier 3 - Emergente"
+                  - "Tier 4 - Local / Nicho"
+                  - "SEM_CLASSIFICACAO"
+
+  - name: mart_clusters_setoriais_uf
+    description: >
+      Data Mart de Inteligencia Setorial por UF e Secao CNAE 2.0 com calculo de Quociente Locacional (QL)
+      de emprego e massa salarial para identificacao objetiva de clusters produtivos especializados.
+    columns:
+      - name: sk_cluster_setorial
+        tests: [unique, not_null]
+      - name: perfil_especializacao
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "CLUSTER_DOMINANTE"
+                  - "CLUSTER_ESPECIALIZADO"
+                  - "EQUILIBRADO_MEDIA_NACIONAL"
+                  - "SUB_REPRESENTADO"
+                  - "SIGILO_OU_INDISPONIVEL"
+
+  - name: mart_pulso_consumo_macro
+    description: >
+      Data Mart mensal de pulso do varejo ampliado (PMC) cruzado com IPCA, medindo spread preco vs volume,
+      medias moveis 3m/12m e regime de consumo por UF e atividade comercial.
+    columns:
+      - name: sk_pulso_consumo
+        tests: [unique, not_null]
+      - name: regime_consumo
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EXPANSAO_REAL", "PRESSAO_INFLACIONARIA", "ESTABILIDADE", "RETRACAO", "SEM_DADO"]
+
+unit_tests:
+  - name: test_quociente_locacional_cluster_especializado
+    description: "Valida a formula exata do Quociente Locacional (QL = 1.60 -> CLUSTER_DOMINANTE) na matriz UF x CNAE."
+    model: mart_clusters_setoriais_uf
+    given:
+      - input: ref('dim_geografia')
+        format: sql
+        rows: |
+          select 35::integer as codigo_uf, 'SP'::varchar as sigla_uf, 'São Paulo'::varchar as nome_uf, 'SE'::varchar as sigla_regiao, 'Sudeste'::varchar as nome_regiao, true::boolean as is_current
+          union all
+          select 51::integer, 'MT'::varchar, 'Mato Grosso'::varchar, 'CO'::varchar, 'Centro-Oeste'::varchar, true::boolean
+      - input: ref('dim_cnae')
+        format: sql
+        rows: |
+          select 'sk_a'::varchar as sk_cnae_secao, 'A'::varchar as codigo_secao, 'Agricultura'::varchar as descricao_secao, true::boolean as is_current
+          union all
+          select 'sk_c'::varchar, 'C'::varchar, 'Industria'::varchar, true::boolean
+      - input: ref('fct_cempre_setorial_uf')
+        format: sql
+        rows: |
+          select 51::integer as codigo_uf, 'A'::varchar as codigo_secao_cnae, 2024::integer as ano_referencia, 100::integer as num_empresas, 80::integer as pessoal_ocupado_total, 70::integer as pessoal_ocupado_assalariado, 800.0::double as massa_salarial_real_mil_brl, false::boolean as has_sigilo_estatistico
+          union all
+          select 51::integer, 'C'::varchar, 2024::integer, 20::integer, 20::integer, 15::integer, 200.0::double, false::boolean
+          union all
+          select 35::integer, 'A'::varchar, 2024::integer, 20::integer, 20::integer, 15::integer, 200.0::double, false::boolean
+          union all
+          select 35::integer, 'C'::varchar, 2024::integer, 80::integer, 80::integer, 70::integer, 800.0::double, false::boolean
+    expect:
+      format: sql
+      rows: |
+        select md5('51-A-2024') as sk_cluster_setorial, 51::integer as codigo_uf, 'MT'::varchar as sigla_uf, 'Mato Grosso'::varchar as nome_uf, 'CO'::varchar as sigla_regiao, 'Centro-Oeste'::varchar as nome_regiao, 'A'::varchar as codigo_secao_cnae, 'Agricultura'::varchar as descricao_secao_cnae, 2024::integer as ano_referencia, 100::integer as num_empresas, 80::integer as pessoal_ocupado_total, 70::integer as pessoal_ocupado_assalariado, 800.0::double as massa_salarial_real_mil_brl, false::boolean as has_sigilo_estatistico, 1.6::double as quociente_locacional_emprego, 1.6::double as quociente_locacional_massa_salarial, 80.0::double as market_share_uf_no_setor_pct, null::double as crescimento_emprego_setor_yoy_pct, 'CLUSTER_DOMINANTE'::varchar as perfil_especializacao
+        union all
+        select md5('51-C-2024'), 51::integer, 'MT'::varchar, 'Mato Grosso'::varchar, 'CO'::varchar, 'Centro-Oeste'::varchar, 'C'::varchar, 'Industria'::varchar, 2024::integer, 20::integer, 20::integer, 15::integer, 200.0::double, false::boolean, 0.4::double, 0.4::double, 20.0::double, null::double, 'SUB_REPRESENTADO'::varchar
+        union all
+        select md5('35-A-2024'), 35::integer, 'SP'::varchar, 'São Paulo'::varchar, 'SE'::varchar, 'Sudeste'::varchar, 'A'::varchar, 'Agricultura'::varchar, 2024::integer, 20::integer, 20::integer, 15::integer, 200.0::double, false::boolean, 0.4::double, 0.4::double, 20.0::double, null::double, 'SUB_REPRESENTADO'::varchar
+        union all
+        select md5('35-C-2024'), 35::integer, 'SP'::varchar, 'São Paulo'::varchar, 'SE'::varchar, 'Sudeste'::varchar, 'C'::varchar, 'Industria'::varchar, 2024::integer, 80::integer, 80::integer, 70::integer, 800.0::double, false::boolean, 1.6::double, 1.6::double, 80.0::double, null::double, 'CLUSTER_DOMINANTE'::varchar
+
+  - name: test_quociente_locacional_particao_incompleta_retorna_null
+    description: "Valida que sigilo/NULL em uma celula anula QL dependente de denominadores incompletos, preservando market share de setores completos."
+    model: mart_clusters_setoriais_uf
+    given:
+      - input: ref('dim_geografia')
+        format: sql
+        rows: |
+          select 35::integer as codigo_uf, 'SP'::varchar as sigla_uf, 'São Paulo'::varchar as nome_uf, 'SE'::varchar as sigla_regiao, 'Sudeste'::varchar as nome_regiao, true::boolean as is_current
+          union all
+          select 51::integer, 'MT'::varchar, 'Mato Grosso'::varchar, 'CO'::varchar, 'Centro-Oeste'::varchar, true::boolean
+      - input: ref('dim_cnae')
+        format: sql
+        rows: |
+          select 'sk_a'::varchar as sk_cnae_secao, 'A'::varchar as codigo_secao, 'Agricultura'::varchar as descricao_secao, true::boolean as is_current
+          union all
+          select 'sk_c'::varchar, 'C'::varchar, 'Industria'::varchar, true::boolean
+      - input: ref('fct_cempre_setorial_uf')
+        format: sql
+        rows: |
+          select 35::integer as codigo_uf, 'A'::varchar as codigo_secao_cnae, 2024::integer as ano_referencia, 10::integer as num_empresas, 100::integer as pessoal_ocupado_total, 90::integer as pessoal_ocupado_assalariado, 100.0::double as massa_salarial_real_mil_brl, false::boolean as has_sigilo_estatistico
+          union all
+          select 35::integer, 'C'::varchar, 2024::integer, 10::integer, 100::integer, 90::integer, 100.0::double, false::boolean
+          union all
+          select 51::integer, 'A'::varchar, 2024::integer, 2::integer, null::integer, null::integer, null::double, true::boolean
+          union all
+          select 51::integer, 'C'::varchar, 2024::integer, 10::integer, 100::integer, 90::integer, 100.0::double, false::boolean
+    expect:
+      format: sql
+      rows: |
+        select md5('35-A-2024') as sk_cluster_setorial, 35::integer as codigo_uf, 'SP'::varchar as sigla_uf, 'São Paulo'::varchar as nome_uf, 'SE'::varchar as sigla_regiao, 'Sudeste'::varchar as nome_regiao, 'A'::varchar as codigo_secao_cnae, 'Agricultura'::varchar as descricao_secao_cnae, 2024::integer as ano_referencia, 10::integer as num_empresas, 100::integer as pessoal_ocupado_total, 90::integer as pessoal_ocupado_assalariado, 100.0::double as massa_salarial_real_mil_brl, false::boolean as has_sigilo_estatistico, null::double as quociente_locacional_emprego, null::double as quociente_locacional_massa_salarial, null::double as market_share_uf_no_setor_pct, null::double as crescimento_emprego_setor_yoy_pct, 'SIGILO_OU_INDISPONIVEL'::varchar as perfil_especializacao
+        union all
+        select md5('35-C-2024'), 35::integer, 'SP'::varchar, 'São Paulo'::varchar, 'SE'::varchar, 'Sudeste'::varchar, 'C'::varchar, 'Industria'::varchar, 2024::integer, 10::integer, 100::integer, 90::integer, 100.0::double, false::boolean, null::double, null::double, 50.0::double, null::double, 'SIGILO_OU_INDISPONIVEL'::varchar
+        union all
+        select md5('51-A-2024'), 51::integer, 'MT'::varchar, 'Mato Grosso'::varchar, 'CO'::varchar, 'Centro-Oeste'::varchar, 'A'::varchar, 'Agricultura'::varchar, 2024::integer, 2::integer, null::integer, null::integer, null::double, true::boolean, null::double, null::double, null::double, null::double, 'SIGILO_OU_INDISPONIVEL'::varchar
+        union all
+        select md5('51-C-2024'), 51::integer, 'MT'::varchar, 'Mato Grosso'::varchar, 'CO'::varchar, 'Centro-Oeste'::varchar, 'C'::varchar, 'Industria'::varchar, 2024::integer, 10::integer, 100::integer, 90::integer, 100.0::double, false::boolean, null::double, null::double, 50.0::double, null::double, 'SIGILO_OU_INDISPONIVEL'::varchar

@@ -1,0 +1,19 @@
+ibge_market_intel:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('IBGE_DUCKDB_PATH', 'data/warehouse/ibge_market_intel.duckdb') }}"
+      threads: 4
+      extensions:
+        - delta
+        - parquet
+      settings:
+        preserve_insertion_order: false
+    ci:
+      type: duckdb
+      path: "{{ env_var('IBGE_DUCKDB_PATH', '/tmp/ibge_market_intel_ci.duckdb') }}"
+      threads: 2
+      extensions:
+        - delta
+        - parquet

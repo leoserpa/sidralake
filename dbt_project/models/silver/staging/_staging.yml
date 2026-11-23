@@ -1,0 +1,96 @@
+version: 2
+
+models:
+  - name: stg_ibge__localidades
+    description: "Cadastro padronizado e deduplicado de municipios do IBGE."
+    columns:
+      - name: codigo_ibge_municipio
+        tests: [unique, not_null]
+      - name: sigla_uf
+        tests: [not_null]
+      - name: codigo_regiao_imediata
+        tests: [not_null]
+
+  - name: stg_ibge__cnae_secoes
+    description: "21 secoes oficiais da CNAE 2.0 com mapeamento SIDRA 12762."
+    columns:
+      - name: codigo_secao
+        tests: [unique, not_null]
+      - name: categoria_sidra_12762_id
+        tests: [unique, not_null]
+
+  - name: stg_ibge__pib_municipal
+    description: "Staging do SIDRA 5938 (PIB Municipal e VAB por setor) com codigos especiais tratados."
+    columns:
+      - name: codigo_ibge_municipio
+        tests: [not_null]
+      - name: ano_referencia
+        tests: [not_null]
+      - name: status_valor_ibge
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["VALIDO", "ZERO_EXATO", "NAO_SE_APLICA", "NAO_DISPONIVEL", "SIGILO_ESTATISTICO", "AUSENTE"]
+
+  - name: stg_ibge__censo_populacao
+    description: "Staging pivotado do Censo 2022 (SIDRA 4714): populacao, area e densidade."
+    columns:
+      - name: codigo_ibge_municipio
+        tests: [unique, not_null]
+
+  - name: stg_ibge__estimativa_populacao
+    description: "Staging das Estimativas anuais de populacao municipal (SIDRA 6579)."
+    columns:
+      - name: codigo_ibge_municipio
+        tests: [not_null]
+      - name: ano_referencia
+        tests: [not_null]
+
+  - name: stg_ibge__cempre_municipal
+    description: "Staging do CEMPRE municipal nova serie 2022+ (SIDRA 9509)."
+    columns:
+      - name: codigo_ibge_municipio
+        tests: [not_null]
+      - name: status_valor_ibge
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["VALIDO", "ZERO_EXATO", "NAO_SE_APLICA", "NAO_DISPONIVEL", "SIGILO_ESTATISTICO", "AUSENTE"]
+
+  - name: stg_ibge__cempre_setorial_uf
+    description: "Staging do CEMPRE setorial por UF e secao CNAE 2.0 (SIDRA 9418)."
+    columns:
+      - name: codigo_uf
+        tests: [not_null]
+      - name: codigo_secao_cnae
+        tests: [not_null]
+      - name: status_valor_ibge
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["VALIDO", "ZERO_EXATO", "NAO_SE_APLICA", "NAO_DISPONIVEL", "SIGILO_ESTATISTICO", "AUSENTE"]
+
+  - name: stg_ibge__ipca_mensal
+    description: "Staging pivotado do IPCA mensal Brasil (SIDRA 1737)."
+    columns:
+      - name: ano_mes
+        tests: [unique, not_null]
+      - name: numero_indice_ipca
+        tests: [not_null]
+
+  - name: stg_ibge__pmc_varejo_uf
+    description: "Staging da Pesquisa Mensal de Comercio - varejo ampliado por UF e atividade (SIDRA 8883)."
+    columns:
+      - name: codigo_uf
+        tests: [not_null]
+      - name: ano_mes
+        tests: [not_null]
+      - name: tipo_indice
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["RECEITA_NOMINAL", "VOLUME_VENDAS"]

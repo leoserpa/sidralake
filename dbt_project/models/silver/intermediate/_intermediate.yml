@@ -1,0 +1,232 @@
+version: 2
+
+models:
+  - name: int_populacao_municipal_unificada
+    description: "Unificacao da serie populacional (Censo 2022 + Estimativas + interpolacao linear 2023)."
+    columns:
+      - name: codigo_ibge_municipio
+        tests: [not_null]
+      - name: ano_referencia
+        tests: [not_null]
+      - name: origem_dado
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["CENSO_2022", "ESTIMATIVA_IBGE", "INTERPOLACAO_LINEAR"]
+
+  - name: int_ipca_deflator_anual
+    description: "Fator deflator medio anual baseado no numero-indice do IPCA (base constante = ultimo mes)."
+    columns:
+      - name: ano_referencia
+        tests: [unique, not_null]
+      - name: fator_deflator_anual
+        tests: [not_null]
+
+  - name: int_pib_municipal_deflacionado
+    description: "PIB e VABs municipais deflacionados pelo IPCA com shares setoriais, HHI e CAGR 3 anos."
+    columns:
+      - name: codigo_ibge_municipio
+        tests: [not_null]
+      - name: ano_referencia
+        tests: [not_null]
+      - name: pib_real_mil_brl
+        tests: [not_null]
+
+  - name: int_cempre_municipal_deflacionado
+    description: "CEMPRE municipal (2022+) com massa salarial e salario medio reais + crescimento YoY."
+    columns:
+      - name: codigo_ibge_municipio
+        tests: [not_null]
+      - name: ano_referencia
+        tests: [not_null]
+
+unit_tests:
+  - name: test_populacao_interpolacao_2023
+    description: "Valida que o ano 2023 e interpolado linearmente entre o Censo 2022 e a Estimativa 2024."
+    model: int_populacao_municipal_unificada
+    given:
+      - input: ref('stg_ibge__censo_populacao')
+        format: sql
+        rows: |
+          select
+            3550308::integer as codigo_ibge_municipio,
+            2022::integer as ano_referencia,
+            10000::bigint as populacao_residente,
+            100.0::double as area_km2,
+            100.0::double as densidade_demografica
+      - input: ref('stg_ibge__estimativa_populacao')
+        format: sql
+        rows: |
+          select
+            3550308::integer as codigo_ibge_municipio,
+            2024::integer as ano_referencia,
+            12000::bigint as populacao_estimada
+    expect:
+      format: sql
+      rows: |
+        select 3550308::integer as codigo_ibge_municipio, 2022::integer as ano_referencia, 10000::bigint as populacao_residente, 100.0::double as area_km2, 100.0::double as densidade_demografica, 'CENSO_2022'::varchar as origem_dado, false::boolean as is_interpolado
+        union all
+        select 3550308::integer, 2023::integer, 11000::bigint, 100.0::double, 110.0::double, 'INTERPOLACAO_LINEAR'::varchar, true::boolean
+        union all
+        select 3550308::integer, 2024::integer, 12000::bigint, 100.0::double, 120.0::double, 'ESTIMATIVA_IBGE'::varchar, false::boolean
+
+  - name: test_ipca_deflator_calculo_constante
+    description: "Valida o calculo do fator deflator anual trazendo 2022 a precos constantes da base 2024."
+    model: int_ipca_deflator_anual
+    given:
+      - input: ref('stg_ibge__ipca_mensal')
+        format: sql
+        rows: |
+          select '202206'::varchar as ano_mes, 2022::integer as ano_referencia, 6::integer as mes_referencia, date '2022-06-01' as data_referencia, 100.0::double as numero_indice_ipca, 0.5::double as variacao_mensal_pct, 1.5::double as variacao_acum_3m_pct, 3.0::double as variacao_acum_6m_pct, 3.0::double as variacao_acum_ano_pct, 6.0::double as variacao_acum_12m_pct
+          union all
+          select '202412'::varchar, 2024::integer, 12::integer, date '2024-12-01', 125.0::double, 0.4::double, 1.2::double, 2.4::double, 4.8::double, 4.8::double
+    expect:
+      format: sql
+      rows: |
+        select 2022::integer as ano_referencia, '202412'::varchar as ano_mes_base_deflator, 100.0::double as numero_indice_medio_anual, 1.25::double as fator_deflator_anual, 1::bigint as meses_observados_no_ano
+        union all
+        select 2024::integer, '202412'::varchar, 125.0::double, 1.0::double, 1::bigint
+
+  - name: test_pib_deflacao_e_hhi_setorial
+    description: "Valida deflacao do PIB real, HHI setorial (0.25 para economia perfeitamente equilibrada) e diversificacao (0.75)."
+    model: int_pib_municipal_deflacionado
+    given:
+      - input: ref('stg_ibge__pib_municipal')
+        format: sql
+        rows: |
+          select 3550308::integer as codigo_ibge_municipio, 2022::integer as ano_referencia, 37::integer as variavel_id, 1000.0::double as valor_numerico
+          union all select 3550308::integer, 2022::integer, 543::integer, 200.0::double
+          union all select 3550308::integer, 2022::integer, 498::integer, 800.0::double
+          union all select 3550308::integer, 2022::integer, 513::integer, 200.0::double
+          union all select 3550308::integer, 2022::integer, 517::integer, 200.0::double
+          union all select 3550308::integer, 2022::integer, 6575::integer, 200.0::double
+          union all select 3550308::integer, 2022::integer, 525::integer, 200.0::double
+      - input: ref('int_ipca_deflator_anual')
+        format: sql
+        rows: |
+          select 2022::integer as ano_referencia, '202412'::varchar as ano_mes_base_deflator, 1.25::double as fator_deflator_anual
+    expect:
+      format: sql
+      rows: |
+        select
+          3550308::integer as codigo_ibge_municipio,
+          2022::integer as ano_referencia,
+          '202412'::varchar as ano_mes_base_deflator,
+          1.25::double as fator_deflator_anual,
+          1000.0::double as pib_nominal_mil_brl,
+          1250.0::double as pib_real_mil_brl,
+          200.0::double as impostos_liquidos_mil_brl,
+          800.0::double as vab_total_mil_brl,
+          200.0::double as vab_agropecuaria_mil_brl,
+          200.0::double as vab_industria_mil_brl,
+          200.0::double as vab_servicos_privados_mil_brl,
+          200.0::double as vab_adm_publica_mil_brl,
+          0.25::double as share_vab_agropecuaria,
+          0.25::double as share_vab_industria,
+          0.25::double as share_vab_servicos_privados,
+          0.25::double as share_vab_adm_publica,
+          0.25::double as hhi_setorial,
+          0.75::double as indice_diversificacao_setorial,
+          null::double as crescimento_pib_real_yoy_pct,
+          null::double as cagr_pib_real_3a_pct
+
+  - name: test_pib_gap_de_ano_e_setores_nulos
+    description: "Valida que ausencia de deflator mantem pib_real NULL, lacuna de ano mantem YoY NULL e setor NULL anula HHI."
+    model: int_pib_municipal_deflacionado
+    given:
+      - input: ref('stg_ibge__pib_municipal')
+        format: sql
+        rows: |
+          select 3550308::integer as codigo_ibge_municipio, 2020::integer as ano_referencia, 37::integer as variavel_id, 100.0::double as valor_numerico
+          union all select 3550308::integer, 2020::integer, 498::integer, 80.0::double
+          union all select 3550308::integer, 2022::integer, 37::integer, 121.0::double
+          union all select 3550308::integer, 2022::integer, 498::integer, 100.0::double
+          union all select 3550308::integer, 2023::integer, 37::integer, 150.0::double
+          union all select 3550308::integer, 2023::integer, 498::integer, 120.0::double
+      - input: ref('int_ipca_deflator_anual')
+        format: sql
+        rows: |
+          select 2020::integer as ano_referencia, '202412'::varchar as ano_mes_base_deflator, 1.0::double as fator_deflator_anual
+          union all select 2022::integer, '202412'::varchar, 1.0::double
+    expect:
+      format: sql
+      rows: |
+        select
+          3550308::integer as codigo_ibge_municipio, 2020::integer as ano_referencia,
+          '202412'::varchar as ano_mes_base_deflator, 1.0::double as fator_deflator_anual,
+          100.0::double as pib_nominal_mil_brl, 100.0::double as pib_real_mil_brl,
+          null::double as impostos_liquidos_mil_brl, 80.0::double as vab_total_mil_brl,
+          null::double as vab_agropecuaria_mil_brl, null::double as vab_industria_mil_brl,
+          null::double as vab_servicos_privados_mil_brl, null::double as vab_adm_publica_mil_brl,
+          null::double as share_vab_agropecuaria, null::double as share_vab_industria,
+          null::double as share_vab_servicos_privados, null::double as share_vab_adm_publica,
+          null::double as hhi_setorial, null::double as indice_diversificacao_setorial,
+          null::double as crescimento_pib_real_yoy_pct, null::double as cagr_pib_real_3a_pct
+        union all
+        select
+          3550308::integer, 2022::integer,
+          '202412'::varchar, 1.0::double,
+          121.0::double, 121.0::double,
+          null::double, 100.0::double,
+          null::double, null::double,
+          null::double, null::double,
+          null::double, null::double,
+          null::double, null::double,
+          null::double, null::double,
+          null::double, null::double
+        union all
+        select
+          3550308::integer, 2023::integer,
+          null::varchar, null::double,
+          150.0::double, null::double,
+          null::double, 120.0::double,
+          null::double, null::double,
+          null::double, null::double,
+          null::double, null::double,
+          null::double, null::double,
+          null::double, null::double,
+          null::double, null::double
+
+  - name: test_pib_hhi_com_vab_negativo
+    description: "Valida que VAB setorial negativo usa a soma dos valores truncados positivos como denominador do HHI (evitando distorcao para 1.0)."
+    model: int_pib_municipal_deflacionado
+    given:
+      - input: ref('stg_ibge__pib_municipal')
+        format: sql
+        rows: |
+          select 3550308::integer as codigo_ibge_municipio, 2022::integer as ano_referencia, 37::integer as variavel_id, 100.0::double as valor_numerico
+          union all select 3550308::integer, 2022::integer, 543::integer, 0.0::double
+          union all select 3550308::integer, 2022::integer, 498::integer, 100.0::double
+          union all select 3550308::integer, 2022::integer, 513::integer, 100.0::double
+          union all select 3550308::integer, 2022::integer, 517::integer, -200.0::double
+          union all select 3550308::integer, 2022::integer, 6575::integer, 100.0::double
+          union all select 3550308::integer, 2022::integer, 525::integer, 100.0::double
+      - input: ref('int_ipca_deflator_anual')
+        format: sql
+        rows: |
+          select 2022::integer as ano_referencia, '202412'::varchar as ano_mes_base_deflator, 1.0::double as fator_deflator_anual
+    expect:
+      format: sql
+      rows: |
+        select
+          3550308::integer as codigo_ibge_municipio,
+          2022::integer as ano_referencia,
+          '202412'::varchar as ano_mes_base_deflator,
+          1.0::double as fator_deflator_anual,
+          100.0::double as pib_nominal_mil_brl,
+          100.0::double as pib_real_mil_brl,
+          0.0::double as impostos_liquidos_mil_brl,
+          100.0::double as vab_total_mil_brl,
+          100.0::double as vab_agropecuaria_mil_brl,
+          -200.0::double as vab_industria_mil_brl,
+          100.0::double as vab_servicos_privados_mil_brl,
+          100.0::double as vab_adm_publica_mil_brl,
+          1.0::double as share_vab_agropecuaria,
+          0.0::double as share_vab_industria,
+          1.0::double as share_vab_servicos_privados,
+          1.0::double as share_vab_adm_publica,
+          (3.0 * power(100.0 / 300.0, 2))::double as hhi_setorial,
+          (1.0 - (3.0 * power(100.0 / 300.0, 2)))::double as indice_diversificacao_setorial,
+          null::double as crescimento_pib_real_yoy_pct,
+          null::double as cagr_pib_real_3a_pct

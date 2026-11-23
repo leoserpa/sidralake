@@ -1,0 +1,35 @@
+[sqlfluff]
+templater = dbt
+dialect = duckdb
+max_line_length = 120
+exclude_rules = LT05,RF04,AL09,ST06,AM06,LT02,LT09
+
+[sqlfluff:rules:convention.casting_style]
+preferred_type_casting_style = cast
+
+[sqlfluff:templater:dbt]
+project_dir = ./dbt_project
+profiles_dir = ./dbt_project
+profile = ibge_market_intel
+target = dev
+
+[sqlfluff:indentation]
+indent_unit = space
+tab_space_size = 4
+indented_joins = False
+indented_using_on = True
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.identifiers]
+extended_capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.functions]
+extended_capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.literals]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.types]
+extended_capitalisation_policy = lower

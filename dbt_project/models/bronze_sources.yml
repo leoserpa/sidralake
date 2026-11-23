@@ -1,0 +1,73 @@
+version: 2
+
+sources:
+  - name: bronze_ibge
+    description: >
+      Camada Bronze em formato aberto Delta Lake (ACID, particionada por ano_referencia),
+      alimentada pelos assets Python/Dagster de ingestao das APIs oficiais do IBGE.
+    meta:
+      dagster:
+        group: bronze
+    tables:
+      - name: localidades
+        description: "Cadastro completo dos 5.571 municipios brasileiros (/api/v1/localidades/municipios)."
+        meta:
+          external_location: "delta_scan('{{ env_var('IBGE_BRONZE_DIR', 'data/bronze') }}/localidades')"
+          dagster:
+            asset_key: ["bronze", "localidades"]
+
+      - name: cnae_secoes
+        description: "21 secoes oficiais da CNAE 2.0 (/api/v2/cnae/secoes) enriquecidas com ID SIDRA 12762."
+        meta:
+          external_location: "delta_scan('{{ env_var('IBGE_BRONZE_DIR', 'data/bronze') }}/cnae_secoes')"
+          dagster:
+            asset_key: ["bronze", "cnae_secoes"]
+
+      - name: pib_municipal
+        description: "SIDRA 5938: PIB dos Municipios a precos correntes, impostos e VAB setorial."
+        meta:
+          external_location: "delta_scan('{{ env_var('IBGE_BRONZE_DIR', 'data/bronze') }}/pib_municipal')"
+          dagster:
+            asset_key: ["bronze", "pib_municipal"]
+
+      - name: censo_populacao
+        description: "SIDRA 4714: Censo Demografico 2022 (populacao residente, area km2 e densidade)."
+        meta:
+          external_location: "delta_scan('{{ env_var('IBGE_BRONZE_DIR', 'data/bronze') }}/censo_populacao')"
+          dagster:
+            asset_key: ["bronze", "censo_populacao"]
+
+      - name: estimativa_populacao
+        description: "SIDRA 6579: Estimativas anuais de populacao residente por municipio."
+        meta:
+          external_location: "delta_scan('{{ env_var('IBGE_BRONZE_DIR', 'data/bronze') }}/estimativa_populacao')"
+          dagster:
+            asset_key: ["bronze", "estimativa_populacao"]
+
+      - name: cempre_municipal
+        description: "SIDRA 9509 (nova serie 2022+): empresas, unidades locais, emprego e salarios municipais."
+        meta:
+          external_location: "delta_scan('{{ env_var('IBGE_BRONZE_DIR', 'data/bronze') }}/cempre_municipal')"
+          dagster:
+            asset_key: ["bronze", "cempre_municipal"]
+
+      - name: cempre_setorial_uf
+        description: "SIDRA 9418 (nova serie 2022+): empresas, emprego e massa salarial por UF e secao CNAE 2.0."
+        meta:
+          external_location: "delta_scan('{{ env_var('IBGE_BRONZE_DIR', 'data/bronze') }}/cempre_setorial_uf')"
+          dagster:
+            asset_key: ["bronze", "cempre_setorial_uf"]
+
+      - name: ipca_mensal
+        description: "SIDRA 1737: Serie historica mensal do IPCA (numero-indice e variacoes)."
+        meta:
+          external_location: "delta_scan('{{ env_var('IBGE_BRONZE_DIR', 'data/bronze') }}/ipca_mensal')"
+          dagster:
+            asset_key: ["bronze", "ipca_mensal"]
+
+      - name: pmc_varejo_uf
+        description: "SIDRA 8883: Pesquisa Mensal de Comercio (varejo ampliado por UF, indice e 14 atividades)."
+        meta:
+          external_location: "delta_scan('{{ env_var('IBGE_BRONZE_DIR', 'data/bronze') }}/pmc_varejo_uf')"
+          dagster:
+            asset_key: ["bronze", "pmc_varejo_uf"]

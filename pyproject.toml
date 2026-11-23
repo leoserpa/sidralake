@@ -1,0 +1,98 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ibge-market-intel"
+version = "0.1.0"
+description = "SidraLake: Pipeline de Inteligencia de Mercado 360 com dados oficiais do IBGE usando Arquitetura Medalhao (Delta Lake, DuckDB, dbt, Dagster, Polars e Pandera)."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "dagster>=1.10.0",
+    "dagster-dbt>=0.26.0",
+    "dagster-webserver>=1.10.0",
+    "dbt-core>=1.9.0,<2.0.0",
+    "dbt-duckdb>=1.9.0,<2.0.0",
+    "deltalake>=1.5.0",
+    "duckdb>=1.2.0,<2.0.0",
+    "httpx>=0.28.0",
+    "pandera[polars]>=0.24.0",
+    "polars>=1.20.0",
+    "pyarrow>=19.0.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "structlog>=25.0.0",
+    "tenacity>=9.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.14.0",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.25.0",
+    "pytest-cov>=6.0.0",
+    "respx>=0.22.0",
+    "ruff>=0.9.0",
+    "sqlfluff>=3.3.0",
+    "sqlfluff-templater-dbt>=3.3.0",
+]
+
+[project.scripts]
+sidralake = "ibge_market_intel.cli:main"
+ibge-pipeline = "ibge_market_intel.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ibge_market_intel"]
+
+[tool.dagster]
+module_name = "ibge_market_intel.orchestration.definitions"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+    "B",
+    "SIM",
+    "RUF",
+    "S",
+    "ASYNC",
+    "PERF",
+    "C901",
+    "PIE",
+    "PT",
+    "RET",
+    "TID",
+    "PTH",
+    "ERA",
+]
+ignore = ["B008", "RUF001", "RUF002", "RUF003", "S603"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S607"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+exclude = ["dbt_project", "tests"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "integration: testes de integracao ponta a ponta",
+]

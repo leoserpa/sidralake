@@ -9,4 +9,4 @@ select
     nome_regiao,
     nome_regiao_imediata,
     nome_regiao_intermediaria
-from read_parquet('sources/sidralake/data/dim_geografia.parquet')
+from read_parquet('parquet_data/dim_geografia.parquet')

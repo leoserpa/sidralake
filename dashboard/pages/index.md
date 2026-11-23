@@ -2,7 +2,7 @@
 title: SidraLake 360° — Visão Executiva Brasil
 ---
 
-Plataforma completa de **Inteligência de Mercado 360°** sobre todos os **5.571 municípios brasileiros**, alimentada pela camada **Gold** do Lakehouse **SidraLake** (IBGE PIB Municipal deflacionado pelo IPCA, Censo 2022 + Estimativas, CEMPRE Municipal/Setorial e PMC). Utilize o menu lateral para navegar entre **Visão Executiva**, **Raio-X Municipal (5.571 Cidades)**, **Comparador Head-to-Head**, **Radar de Expansão**, **Dinamismo & VAB**, **Clusters CNAE** e **Macroeconomia & Varejo**.
+Plataforma completa de **Inteligência de Mercado 360°** sobre a malha municipal brasileira (`5.571` municípios cadastrados no IBGE; `5.570` com PIB/CEMPRE consolidado até 2023 e *Boa Esperança do Norte/MT* integrado na base geográfica e estimativas 2024+). Navegue pelo menu lateral para acessar **Raio-X Municipal**, **Comparador Head-to-Head**, **Radar de Expansão**, **Dinamismo & VAB**, **Clusters CNAE** e **Macroeconomia & Varejo**.
 
 ```sql anos_disponiveis
 select distinct ano_referencia
@@ -58,7 +58,7 @@ where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2023
   and ('${inputs.tier.value}' = 'TODOS' or tier_mercado = '${inputs.tier.value}')
 ```
 
-<BigValue data={kpis_gerais} value=total_municipios title="Municípios no Recorte" fmt="#,##0" />
+<BigValue data={kpis_gerais} value=total_municipios title="Municípios no Ano" fmt="#,##0" />
 <BigValue data={kpis_gerais} value=pib_real_tri title="PIB Real (R$ Tri)" fmt="#,##0.00" />
 <BigValue data={kpis_gerais} value=populacao_total title="População Residente" fmt="#,##0" />
 <BigValue data={kpis_gerais} value=massa_salarial_bi title="Massa Salarial (R$ Bi)" fmt="#,##0.0" />
@@ -131,7 +131,8 @@ order by pos asc
         labelPosition=outside
         showAllLabels=true
         labelFmt="0.0"
-        rightPadding=24
+        leftPadding=16
+        rightPadding=28
         legend=false
         yGridlines=false
         xGridlines=false
@@ -148,7 +149,7 @@ order by pos asc
             title: [
                 {
                     text: 'Como o PIB real se distribui por Região?',
-                    subtext: 'Participação regional (R$ Bi) · Maior fatia em azul',
+                    subtext: 'Participação regional (R$ Bi) · Líder em azul',
                     left: 'left',
                     textStyle: { fontSize: 15, fontWeight: 600 },
                     subtextStyle: { fontSize: 12 }
@@ -158,7 +159,7 @@ order by pos asc
                     subtext: 'PIB Real Total',
                     left: 'center',
                     top: '50%',
-                    textStyle: { fontSize: 18, fontWeight: 700 },
+                    textStyle: { fontSize: 16, fontWeight: 700 },
                     subtextStyle: { fontSize: 11 }
                 }
             ],
@@ -170,7 +171,7 @@ order by pos asc
                 {
                     name: 'PIB Real',
                     type: 'pie',
-                    radius: ['48%', '72%'],
+                    radius: ['42%', '64%'],
                     center: ['50%', '58%'],
                     avoidLabelOverlap: true,
                     itemStyle: {
@@ -224,7 +225,13 @@ order by pos asc
 ```sql resumo_tiers
 with agg as (
     select
-        tier_mercado,
+        case tier_mercado
+            when 'Tier 1 - Polo Nacional' then 'Tier 1 · Polo'
+            when 'Tier 2 - Expansao Prioritaria' then 'Tier 2 · Expansão'
+            when 'Tier 3 - Emergente' then 'Tier 3 · Emergente'
+            when 'Tier 4 - Local / Nicho' then 'Tier 4 · Local'
+            else tier_mercado
+        end as tier_label,
         count(*) as municipios,
         round(avg(ims_score_0_100), 2) as ims_medio,
         round(sum(pib_real_mil_brl) / 1e6, 1) as pib_real_bi,
@@ -242,7 +249,7 @@ ranked as (
     from agg
 )
 select
-    tier_mercado,
+    tier_label,
     municipios,
     ims_medio,
     pib_real_bi,
@@ -266,7 +273,8 @@ order by pos asc
         labelPosition=outside
         showAllLabels=true
         labelFmt="#,##0.0"
-        rightPadding=28
+        leftPadding=24
+        rightPadding=34
         legend=false
         yGridlines=false
         xGridlines=false
@@ -278,7 +286,7 @@ order by pos asc
     />
     <BarChart
         data={resumo_tiers}
-        x=tier_mercado
+        x=tier_label
         y=pib_real_bi
         series=destaque
         type=stacked
@@ -289,7 +297,8 @@ order by pos asc
         labelPosition=outside
         showAllLabels=true
         labelFmt="#,##0.0"
-        rightPadding=32
+        leftPadding=20
+        rightPadding=36
         legend=false
         yGridlines=false
         xGridlines=false
@@ -303,25 +312,27 @@ order by pos asc
 
 ---
 
-## Explorador Completo dos 5.571 Municípios
+## Explorador Completo de Municípios
 
 ```sql tabela_municipios
 select
-    rank_nacional_ims as rk_br,
-    rank_estadual_ims as rk_uf,
+    rank_nacional_ims as rk,
     nome_municipio as municipio,
     sigla_uf as uf,
-    nome_regiao as regiao,
-    nome_regiao_imediata as reg_imediata,
     populacao_residente as populacao,
-    round(pib_real_mil_brl / 1e6, 3) as pib_real_bi,
-    round(pib_per_capita_real_brl, 0) as pib_pc_real,
+    round(pib_real_mil_brl / 1e6, 2) as pib_bi,
+    round(pib_per_capita_real_brl, 0) as pib_pc,
     num_empresas_atuantes as empresas,
-    pessoal_ocupado_total as emprego,
-    round(salario_medio_real_brl, 0) as salario_medio_real,
-    round(cagr_pib_real_3a_pct, 2) as cagr_3a_pct,
+    round(salario_medio_real_brl, 0) as salario_real,
+    round(cagr_pib_real_3a_pct / 100.0, 4) as cagr_3a_pct,
     ims_score_0_100 as ims,
-    tier_mercado as tier
+    case tier_mercado
+        when 'Tier 1 - Polo Nacional' then 'Tier 1'
+        when 'Tier 2 - Expansao Prioritaria' then 'Tier 2'
+        when 'Tier 3 - Emergente' then 'Tier 3'
+        when 'Tier 4 - Local / Nicho' then 'Tier 4'
+        else 'N/D'
+    end as tier
 from sidralake.mart_inteligencia_mercado_municipal
 where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2023)
   and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')

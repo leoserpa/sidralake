@@ -18,7 +18,7 @@ order by ordem, sigla_uf
         <Dropdown data={ufs_dinamismo} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
     </div>
     <div>
-        <Slider name=min_pop_din title="População Mínima (CAGR)" min=0 max=200000 step=10000 defaultValue=50000 fmt="#,##0" size=full />
+        <Slider name=min_pop_din title="População Mínima" min=0 max=200000 step=10000 defaultValue=50000 fmt="#,##0" size=full />
     </div>
 </Grid>
 
@@ -26,12 +26,7 @@ order by ordem, sigla_uf
 with base as (
     select
         nome_municipio || ' - ' || sigla_uf as municipio,
-        sigla_uf as uf,
-        nome_regiao as regiao,
-        populacao_residente as populacao,
-        round(cagr_pib_real_3a_pct, 1) as cagr_3a_pct,
-        round(pib_real_mil_brl / 1e6, 2) as pib_real_bi,
-        ims_score_0_100 as ims,
+        round(cagr_pib_real_3a_pct / 100.0, 4) as cagr_3a_pct,
         row_number() over (order by cagr_pib_real_3a_pct desc) as pos
     from sidralake.mart_inteligencia_mercado_municipal
     where is_ultimo_ano_completo
@@ -43,12 +38,7 @@ with base as (
 )
 select
     municipio,
-    uf,
-    regiao,
-    populacao,
     cagr_3a_pct,
-    pib_real_bi,
-    ims,
     case when pos = 1 then 'Destaque' else 'Demais' end as destaque
 from base
 order by pos asc
@@ -58,10 +48,10 @@ order by pos asc
 with ult_vab as (
     select
         nome_regiao as regiao,
-        round(avg(share_vab_servicos_privados) * 100, 1) as servicos,
-        round(avg(share_vab_agropecuaria) * 100, 1) as agropecuaria,
-        round(avg(share_vab_industria) * 100, 1) as industria,
-        round(avg(share_vab_adm_publica) * 100, 1) as adm_publica
+        round(avg(share_vab_servicos_privados), 4) as servicos,
+        round(avg(share_vab_agropecuaria), 4) as agropecuaria,
+        round(avg(share_vab_industria), 4) as industria,
+        round(avg(share_vab_adm_publica), 4) as adm_publica
     from sidralake.mart_inteligencia_mercado_municipal
     where ano_referencia = (
         select max(ano_referencia)
@@ -71,10 +61,10 @@ with ult_vab as (
       and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
     group by 1
 )
-select regiao, 'Serviços Privados' as setor, servicos as pct from ult_vab
-union all select regiao, 'Agropecuária', agropecuaria from ult_vab
+select regiao, 'Serviços' as setor, servicos as share from ult_vab
+union all select regiao, 'Agro', agropecuaria from ult_vab
 union all select regiao, 'Indústria', industria from ult_vab
-union all select regiao, 'Adm. Pública', adm_publica from ult_vab
+union all select regiao, 'Adm. Púb.', adm_publica from ult_vab
 order by regiao asc
 ```
 
@@ -91,8 +81,9 @@ order by regiao asc
         stackTotalLabel=false
         labelPosition=outside
         showAllLabels=true
-        labelFmt="0.0"
-        rightPadding=24
+        labelFmt="0.0%"
+        leftPadding=28
+        rightPadding=34
         legend=false
         yGridlines=false
         xGridlines=false
@@ -100,20 +91,22 @@ order by regiao asc
         yBaseline=false
         seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
         title="Quais municípios mais cresceram?"
-        subtitle="CAGR real 3 anos (%) · Líder em azul"
+        subtitle="CAGR real 3 anos · Líder em azul"
     />
     <BarChart
         data={vab_empilhado_regiao}
         x=regiao
-        y=pct
+        y=share
         series=setor
         type=stacked100
         swapXY=true
+        leftPadding=20
+        rightPadding=16
         yGridlines=false
         xGridlines=false
         yAxisLabels=false
         yBaseline=false
-        seriesColors={{'Serviços Privados': '#3b82f6', 'Agropecuária': '#10b981', 'Indústria': '#f59e0b', 'Adm. Pública': '#525866'}}
+        seriesColors={{'Serviços': '#3b82f6', 'Agro': '#10b981', 'Indústria': '#f59e0b', 'Adm. Púb.': '#525866'}}
         title="Composição setorial do VAB por Região"
         subtitle="Proporção 100% · Último VAB IBGE (2021)"
     />
@@ -127,7 +120,7 @@ order by regiao asc
 select
     nome_municipio || ' - ' || sigla_uf as municipio,
     case
-        when tier_mercado = 'Tier 1 - Polo Nacional' then 'Tier 1 - Polo Nacional'
+        when tier_mercado = 'Tier 1 - Polo Nacional' then 'Tier 1 · Polo'
         else 'Demais Municípios'
     end as grupo_tier,
     round(pib_per_capita_real_brl, 0) as pib_per_capita_real,
@@ -136,7 +129,6 @@ from sidralake.mart_inteligencia_mercado_municipal
 where is_ultimo_ano_completo
   and coalesce(populacao_residente, 0) >= coalesce(try_cast('${inputs.min_pop_din}' as double), 50000)
   and pib_per_capita_real_brl is not null
-  and pib_per_capita_real_brl <= 400000
   and ims_score_0_100 is not null
   and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
 order by ims_score_0_100 desc
@@ -149,9 +141,10 @@ limit 500
     y=ims
     series=grupo_tier
     tooltipTitle=municipio
+    xFmt="#,##0"
     yGridlines=false
     xGridlines=false
-    seriesColors={{'Tier 1 - Polo Nacional': '#3b82f6', 'Demais Municípios': '#525866'}}
+    seriesColors={{'Tier 1 · Polo': '#3b82f6', 'Demais Municípios': '#525866'}}
     title="Polos Nacionais (Tier 1) em destaque azul frente aos demais municípios"
     xAxisTitle="PIB Per Capita Real (R$)"
     yAxisTitle="Score IMS (0-100)"
@@ -163,15 +156,15 @@ limit 500
 
 ```sql vab_por_uf
 select
-    max(ano_referencia) as ano_vab,
+    cast(max(ano_referencia) as varchar) as ano,
     sigla_uf as uf,
     nome_regiao as regiao,
     count(*) as municipios,
-    round(avg(share_vab_agropecuaria) * 100, 1) as agro_pct,
-    round(avg(share_vab_industria) * 100, 1) as ind_pct,
-    round(avg(share_vab_servicos_privados) * 100, 1) as servicos_pct,
-    round(avg(share_vab_adm_publica) * 100, 1) as adm_pub_pct,
-    round(avg(indice_diversificacao_setorial), 3) as diversificacao_1_hhi
+    round(avg(share_vab_agropecuaria), 4) as agro_pct,
+    round(avg(share_vab_industria), 4) as ind_pct,
+    round(avg(share_vab_servicos_privados), 4) as servicos_pct,
+    round(avg(share_vab_adm_publica), 4) as adm_pub_pct,
+    round(avg(indice_diversificacao_setorial), 3) as hhi_div
 from sidralake.mart_inteligencia_mercado_municipal
 where ano_referencia = (
     select max(ano_referencia)
@@ -180,7 +173,7 @@ where ano_referencia = (
 )
   and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
 group by 2, 3
-order by diversificacao_1_hhi desc
+order by hhi_div desc
 ```
 
 <DataTable data={vab_por_uf} search=true rows=15 />

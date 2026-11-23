@@ -28,6 +28,7 @@ dagster_home/
 dashboard/node_modules/
 dashboard/build/
 dashboard/.evidence/
+dashboard/parquet_data/
 dashboard/sources/sidralake/data/
 
 # Environment & OS

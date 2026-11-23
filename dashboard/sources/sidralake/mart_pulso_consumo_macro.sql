@@ -24,4 +24,4 @@ select
     media_movel_3m_volume,
     media_movel_12m_volume,
     regime_consumo
-from read_parquet('sources/sidralake/data/mart_pulso_consumo_macro.parquet')
+from read_parquet('parquet_data/mart_pulso_consumo_macro.parquet')

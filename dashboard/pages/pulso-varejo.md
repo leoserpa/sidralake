@@ -20,26 +20,26 @@ pri as (
     limit 1
 )
 select
-    ult.ano_mes as ultima_competencia,
-    round(ult.variacao_mensal_pct, 2) as ipca_mes_pct,
-    round(ult.variacao_acum_ano_pct, 2) as ipca_ano_pct,
-    round(ult.variacao_acum_12m_pct, 2) as ipca_12m_pct,
-    round(((ult.numero_indice_ipca / pri.idx_ini) - 1.0) * 100.0, 1) as inflacao_acum_2018_pct
+    substr(ult.ano_mes, 5, 2) || '/' || substr(ult.ano_mes, 1, 4) as ultima_competencia,
+    round(ult.variacao_mensal_pct / 100.0, 4) as ipca_mes_pct,
+    round(ult.variacao_acum_ano_pct / 100.0, 4) as ipca_ano_pct,
+    round(ult.variacao_acum_12m_pct / 100.0, 4) as ipca_12m_pct,
+    round((ult.numero_indice_ipca / pri.idx_ini) - 1.0, 4) as inflacao_acum_2018_pct
 from ult
 cross join pri
 ```
 
-<BigValue data={ipca_kpis} value=ultima_competencia title="Última Competência IPCA" />
-<BigValue data={ipca_kpis} value=ipca_mes_pct title="IPCA Mensal (%)" fmt="0.00" />
-<BigValue data={ipca_kpis} value=ipca_ano_pct title="IPCA Acum. Ano (%)" fmt="0.00" />
-<BigValue data={ipca_kpis} value=ipca_12m_pct title="IPCA Acum. 12m (%)" fmt="0.00" />
-<BigValue data={ipca_kpis} value=inflacao_acum_2018_pct title="Inflação Acum. (2018+ %)" fmt="0.0" />
+<BigValue data={ipca_kpis} value=ultima_competencia title="Última Competência" />
+<BigValue data={ipca_kpis} value=ipca_mes_pct title="IPCA Mensal" fmt="0.00%" />
+<BigValue data={ipca_kpis} value=ipca_ano_pct title="IPCA Acum. Ano" fmt="0.00%" />
+<BigValue data={ipca_kpis} value=ipca_12m_pct title="IPCA Acum. 12m" fmt="0.00%" />
+<BigValue data={ipca_kpis} value=inflacao_acum_2018_pct title="Inflação (2018+)" fmt="0.0%" />
 
 ```sql serie_ipca
 select
     data_referencia,
-    round(variacao_acum_12m_pct, 2) as ipca_12m_pct,
-    round(variacao_mensal_pct, 2) as ipca_mensal_pct
+    round(variacao_acum_12m_pct / 100.0, 4) as ipca_12m_pct,
+    round(variacao_mensal_pct / 100.0, 4) as ipca_mensal_pct
 from sidralake.fct_ipca_mensal
 order by data_referencia asc
 ```
@@ -48,9 +48,10 @@ order by data_referencia asc
     data={serie_ipca}
     x=data_referencia
     y={["ipca_12m_pct", "ipca_mensal_pct"]}
+    yFmt="0.0%"
     yGridlines=false
     xGridlines=false
-    seriesColors={{'ipca_12m_pct': '#f59e0b', 'ipca_mensal_pct': '#64748b'}}
+    colorPalette={['#f59e0b', '#64748b']}
     title="Trajetória da Inflação Oficial (IPCA Brasil · 2018–2026)"
     subtitle="IPCA acumulado em 12 meses em âmbar · Variação mensal em cinza"
     yAxisTitle="Variação (%)"
@@ -78,12 +79,18 @@ order by nome_atividade_pmc
 ```sql serie_mensal_pmc
 select
     data_referencia,
-    ano_mes,
-    round(var_yoy_volume_pct, 2) as volume_yoy_pct,
-    round(var_yoy_receita_nominal_pct, 2) as receita_yoy_pct,
-    round(ipca_variacao_acum_12m_pct, 2) as ipca_12m_pct,
-    round(spread_preco_vs_volume_yoy_pp, 2) as spread_preco_vol_pp,
-    regime_consumo
+    substr(ano_mes, 5, 2) || '/' || substr(ano_mes, 1, 4) as competencia,
+    round(var_yoy_volume_pct / 100.0, 4) as volume_yoy_pct,
+    round(var_yoy_receita_nominal_pct / 100.0, 4) as receita_yoy_pct,
+    round(ipca_variacao_acum_12m_pct / 100.0, 4) as ipca_12m_pct,
+    round(spread_preco_vs_volume_yoy_pp, 2) as spread_pp,
+    case regime_consumo
+        when 'EXPANSAO_REAL' then 'Expansão Real'
+        when 'PRESSAO_INFLACIONARIA' then 'Pressão Inflac.'
+        when 'ESTABILIDADE' then 'Estabilidade'
+        when 'RETRACAO' then 'Retração'
+        else regime_consumo
+    end as regime
 from sidralake.mart_pulso_consumo_macro
 where sigla_uf = '${inputs.uf.value}'
   and nome_atividade_pmc = '${inputs.atividade.value}'
@@ -95,9 +102,10 @@ order by data_referencia asc
     data={serie_mensal_pmc}
     x=data_referencia
     y={["volume_yoy_pct", "receita_yoy_pct", "ipca_12m_pct"]}
+    yFmt="0.0%"
     yGridlines=false
     xGridlines=false
-    seriesColors={{'volume_yoy_pct': '#3b82f6', 'receita_yoy_pct': '#64748b', 'ipca_12m_pct': '#f59e0b'}}
+    colorPalette={['#3b82f6', '#64748b', '#f59e0b']}
     title="Volume Real do Varejo vs. Receita Nominal e Inflação (YoY %)"
     subtitle="Volume Real em azul · Receita Nominal em cinza · IPCA 12m em âmbar"
     yAxisTitle="Variação (%)"
@@ -109,35 +117,48 @@ order by data_referencia asc
 
 ```sql regimes_ultimo_mes
 select
-    regime_consumo,
-    count(*) as series_uf_atividade,
-    round(avg(var_yoy_volume_pct), 2) as vol_yoy_medio_pct,
-    round(avg(spread_preco_vs_volume_yoy_pp), 2) as spread_medio_pp
+    case regime_consumo
+        when 'EXPANSAO_REAL' then 'Expansão Real'
+        when 'PRESSAO_INFLACIONARIA' then 'Pressão Inflac.'
+        when 'ESTABILIDADE' then 'Estabilidade'
+        when 'RETRACAO' then 'Retração'
+        else regime_consumo
+    end as regime,
+    count(*) as series,
+    round(avg(var_yoy_volume_pct) / 100.0, 4) as vol_yoy_pct,
+    round(avg(spread_preco_vs_volume_yoy_pp), 2) as spread_pp
 from sidralake.mart_pulso_consumo_macro
 where ano_mes = (select max(ano_mes) from sidralake.mart_pulso_consumo_macro)
   and regime_consumo <> 'SEM_DADO'
 group by 1
-order by series_uf_atividade desc
+order by series desc
 ```
 
 ```sql heatmap_varejo_uf
 select
     sigla_uf as uf,
-    grupo_consumo as grupo,
-    round(avg(var_yoy_volume_pct), 1) as vol_yoy_pct
+    case grupo_consumo
+        when 'ALIMENTACAO_ATACAREJO' then 'Alimentos'
+        when 'AUTOMOTIVO_CONSTRUCAO' then 'Autos/Obra'
+        when 'BENS_DURAVEIS_LAR' then 'Lar/Eletro'
+        when 'COMBUSTIVEIS' then 'Combustíveis'
+        when 'FARMACIA_VESTUARIO_CONVENIENCIA' then 'Farma/Moda'
+        else grupo_consumo
+    end as grupo,
+    round(avg(var_yoy_volume_pct) / 100.0, 4) as vol_yoy_pct
 from sidralake.mart_pulso_consumo_macro
 where ano_mes = (select max(ano_mes) from sidralake.mart_pulso_consumo_macro)
   and var_yoy_volume_pct is not null
 group by 1, 2
-order by sigla_uf asc, grupo_consumo asc
+order by sigla_uf asc, grupo asc
 ```
 
 <Grid cols=2>
     <BarChart
         data={regimes_ultimo_mes}
-        x=regime_consumo
-        y=series_uf_atividade
-        series=regime_consumo
+        x=regime
+        y=series
+        series=regime
         type=stacked
         swapXY=true
         sort=false
@@ -146,13 +167,14 @@ order by sigla_uf asc, grupo_consumo asc
         labelPosition=outside
         showAllLabels=true
         labelFmt="#,##0"
-        rightPadding=24
+        leftPadding=24
+        rightPadding=28
         legend=false
         yGridlines=false
         xGridlines=false
         yAxisLabels=false
         yBaseline=false
-        seriesColors={{'EXPANSAO_REAL': '#10b981', 'PRESSAO_INFLACIONARIA': '#f59e0b', 'ESTABILIDADE': '#64748b', 'RETRACAO': '#ef4444'}}
+        seriesColors={{'Expansão Real': '#10b981', 'Pressão Inflac.': '#f59e0b', 'Estabilidade': '#64748b', 'Retração': '#ef4444'}}
         title="Saúde do varejo por regime de consumo"
         subtitle="Verde=Expansão · Âmbar=Inflação · Vermelho=Retração"
     />
@@ -161,9 +183,10 @@ order by sigla_uf asc, grupo_consumo asc
         x=grupo
         y=uf
         value=vol_yoy_pct
-        valueFmt="0.0"
+        valueFmt="0.0%"
+        xLabelRotation=0
         colorScale={['#dc2626', '#334155', '#10b981']}
-        title="Volume Real YoY (%) — UF × Grupo de Consumo"
+        title="Volume Real YoY (%) — UF × Grupo"
         subtitle="Última competência PMC · Vermelho = queda · Verde = expansão"
     />
 </Grid>
@@ -172,4 +195,25 @@ order by sigla_uf asc, grupo_consumo asc
 
 ## Histórico Mensal Detalhado da Série Selecionada
 
-<DataTable data={serie_mensal_pmc} search=true rows=15 />
+```sql tabela_mensal_pmc
+select
+    substr(ano_mes, 5, 2) || '/' || substr(ano_mes, 1, 4) as competencia,
+    round(var_yoy_volume_pct / 100.0, 4) as volume_yoy_pct,
+    round(var_yoy_receita_nominal_pct / 100.0, 4) as receita_yoy_pct,
+    round(ipca_variacao_acum_12m_pct / 100.0, 4) as ipca_12m_pct,
+    round(spread_preco_vs_volume_yoy_pp, 2) as spread_pp,
+    case regime_consumo
+        when 'EXPANSAO_REAL' then 'Expansão Real'
+        when 'PRESSAO_INFLACIONARIA' then 'Pressão Inflac.'
+        when 'ESTABILIDADE' then 'Estabilidade'
+        when 'RETRACAO' then 'Retração'
+        else regime_consumo
+    end as regime
+from sidralake.mart_pulso_consumo_macro
+where sigla_uf = '${inputs.uf.value}'
+  and nome_atividade_pmc = '${inputs.atividade.value}'
+  and var_yoy_volume_pct is not null
+order by data_referencia desc
+```
+
+<DataTable data={tabela_mensal_pmc} search=true rows=15 />

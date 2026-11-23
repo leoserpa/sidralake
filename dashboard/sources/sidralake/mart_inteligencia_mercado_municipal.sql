@@ -47,4 +47,4 @@ select
     rank_estadual_ims,
     rank_regional_ims,
     tier_mercado
-from read_parquet('sources/sidralake/data/mart_inteligencia_mercado_municipal.parquet')
+from read_parquet('parquet_data/mart_inteligencia_mercado_municipal.parquet')

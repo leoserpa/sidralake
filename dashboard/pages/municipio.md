@@ -34,19 +34,15 @@ select
     g.nome_regiao,
     g.nome_regiao_intermediaria,
     g.nome_regiao_imediata,
-    m.ano_referencia,
     m.rank_nacional_ims,
     m.rank_estadual_ims,
     m.ims_score_0_100,
-    m.tier_mercado,
+    coalesce(m.tier_mercado, 'Emancipado 2024+') as tier_mercado,
     m.populacao_residente,
-    round(m.densidade_demografica, 1) as densidade_hab_km2,
     round(m.pib_real_mil_brl / 1e6, 3) as pib_real_bi,
     round(m.pib_per_capita_real_brl, 0) as pib_pc_real,
     m.num_empresas_atuantes,
-    m.pessoal_ocupado_total,
-    round(m.salario_medio_real_brl, 0) as salario_medio_real,
-    round(m.cagr_pib_real_3a_pct, 2) as cagr_3a_pct
+    round(m.salario_medio_real_brl, 0) as salario_medio_real
 from sidralake.dim_geografia as g
 left join sidralake.mart_inteligencia_mercado_municipal as m
     on g.codigo_ibge_municipio = m.codigo_ibge_municipio
@@ -64,17 +60,16 @@ where g.codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as in
 <BigValue data={perfil_cidade} value=populacao_residente title="População Residente" fmt="#,##0" />
 
 <BigValue data={perfil_cidade} value=pib_real_bi title="PIB Real (R$ Bi)" fmt="#,##0.000" />
-<BigValue data={perfil_cidade} value=pib_pc_real title="PIB Per Capita Real (R$)" fmt="#,##0" />
+<BigValue data={perfil_cidade} value=pib_pc_real title="PIB Per Capita (R$)" fmt="#,##0" />
 <BigValue data={perfil_cidade} value=num_empresas_atuantes title="Empresas Atuantes" fmt="#,##0" />
-<BigValue data={perfil_cidade} value=salario_medio_real title="Salário Médio Real (R$)" fmt="#,##0" />
+<BigValue data={perfil_cidade} value=salario_medio_real title="Salário Médio (R$)" fmt="#,##0" />
 
 ---
 
 ```sql serie_pib_cidade
 select
     ano_referencia as ano,
-    round(pib_real_mil_brl / 1e6, 3) as pib_real_bi,
-    round(pib_per_capita_real_brl, 0) as pib_pc_real
+    round(pib_real_mil_brl / 1e6, 3) as pib_real_bi
 from sidralake.mart_inteligencia_mercado_municipal
 where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
   and pib_real_mil_brl is not null
@@ -84,8 +79,7 @@ order by ano_referencia asc
 ```sql serie_pop_cidade
 select
     ano_referencia as ano,
-    populacao_residente as populacao,
-    origem_dado
+    populacao_residente as populacao
 from sidralake.fct_populacao_municipal
 where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
 order by ano_referencia asc
@@ -99,6 +93,7 @@ order by ano_referencia asc
         xFmt="0"
         yFmt="#,##0.00"
         markers=true
+        rightPadding=16
         yGridlines=false
         xGridlines=false
         colorPalette={['#3b82f6']}
@@ -112,6 +107,7 @@ order by ano_referencia asc
         y=populacao
         xFmt="0"
         yFmt="#,##0"
+        rightPadding=16
         yGridlines=false
         xGridlines=false
         colorPalette={['#3b82f6']}
@@ -135,10 +131,10 @@ with raw_p as (
       and is_ultimo_ano_completo
 ),
 unpiv as (
-    select 'Tamanho de Mercado (35%)' as pilar, score_tamanho_mercado as nota from raw_p
+    select 'Tamanho (35%)' as pilar, score_tamanho_mercado as nota from raw_p
     union all select 'Poder de Compra (30%)', score_poder_compra from raw_p
-    union all select 'Dinamismo Econômico (20%)', score_dinamismo from raw_p
-    union all select 'Maturidade Empresarial (15%)', score_maturidade_empresarial from raw_p
+    union all select 'Dinamismo (20%)', score_dinamismo from raw_p
+    union all select 'Maturidade (15%)', score_maturidade_empresarial from raw_p
 ),
 ranked as (
     select
@@ -173,10 +169,10 @@ with raw_v as (
       )
 ),
 unpiv as (
-    select 'Serviços Privados' as setor, round(share_vab_servicos_privados * 100, 1) as share_pct from raw_v
-    union all select 'Indústria', round(share_vab_industria * 100, 1) from raw_v
-    union all select 'Agropecuária', round(share_vab_agropecuaria * 100, 1) from raw_v
-    union all select 'Administração Pública', round(share_vab_adm_publica * 100, 1) from raw_v
+    select 'Serviços Privados' as setor, round(share_vab_servicos_privados, 4) as share_pct from raw_v
+    union all select 'Indústria', round(share_vab_industria, 4) from raw_v
+    union all select 'Agropecuária', round(share_vab_agropecuaria, 4) from raw_v
+    union all select 'Adm. Pública', round(share_vab_adm_publica, 4) from raw_v
 ),
 ranked as (
     select
@@ -208,7 +204,8 @@ order by pos asc
         labelPosition=outside
         showAllLabels=true
         labelFmt="0.0"
-        rightPadding=24
+        leftPadding=24
+        rightPadding=28
         legend=false
         yGridlines=false
         xGridlines=false
@@ -230,8 +227,9 @@ order by pos asc
         stackTotalLabel=false
         labelPosition=outside
         showAllLabels=true
-        labelFmt="0.0"
-        rightPadding=24
+        labelFmt="0.0%"
+        leftPadding=20
+        rightPadding=30
         legend=false
         yGridlines=false
         xGridlines=false
@@ -247,17 +245,10 @@ order by pos asc
 
 ## Benchmarking na Mesma Região Imediata
 
-```sql vizinhos_regiao_imediata
+```sql vizinhos_chart
 select
     m.nome_municipio as municipio,
-    m.rank_nacional_ims as rk_br,
-    m.populacao_residente as populacao,
-    round(m.pib_real_mil_brl / 1e6, 3) as pib_real_bi,
-    round(m.pib_per_capita_real_brl, 0) as pib_pc_real,
-    m.num_empresas_atuantes as empresas,
-    round(m.salario_medio_real_brl, 0) as salario_medio_real,
     round(m.ims_score_0_100, 1) as ims,
-    m.tier_mercado as tier,
     case
         when m.codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308) then 'Cidade Selecionada'
         else 'Vizinhos'
@@ -274,8 +265,30 @@ order by m.ims_score_0_100 desc
 limit 15
 ```
 
+```sql vizinhos_tabela
+select
+    m.rank_nacional_ims as rk_br,
+    m.nome_municipio as municipio,
+    m.populacao_residente as populacao,
+    round(m.pib_real_mil_brl / 1e6, 2) as pib_bi,
+    round(m.pib_per_capita_real_brl, 0) as pib_pc,
+    m.num_empresas_atuantes as empresas,
+    round(m.salario_medio_real_brl, 0) as salario_real,
+    round(m.ims_score_0_100, 1) as ims
+from sidralake.mart_inteligencia_mercado_municipal as m
+where m.is_ultimo_ano_completo
+  and m.nome_regiao_imediata = (
+      select nome_regiao_imediata
+      from sidralake.dim_geografia
+      where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
+  )
+  and m.ims_score_0_100 is not null
+order by m.ims_score_0_100 desc
+limit 15
+```
+
 <BarChart
-    data={vizinhos_regiao_imediata}
+    data={vizinhos_chart}
     x=municipio
     y=ims
     series=destaque
@@ -287,7 +300,8 @@ limit 15
     labelPosition=outside
     showAllLabels=true
     labelFmt="0.0"
-    rightPadding=24
+    leftPadding=24
+    rightPadding=28
     legend=false
     yGridlines=false
     xGridlines=false
@@ -298,7 +312,7 @@ limit 15
     subtitle="Score IMS (0–100) · Cidade selecionada em azul"
 />
 
-<DataTable data={vizinhos_regiao_imediata} rows=15 />
+<DataTable data={vizinhos_tabela} rows=15 />
 
 ---
 
@@ -306,17 +320,16 @@ limit 15
 
 ```sql historico_cempre_cidade
 select
-    ano_referencia as ano,
-    num_unidades_locais as unidades_locais,
-    num_empresas_atuantes as empresas_atuantes,
-    pessoal_ocupado_total as pessoal_ocupado,
+    cast(ano_referencia as varchar) as ano,
+    num_empresas_atuantes as empresas,
+    pessoal_ocupado_total as emprego,
     pessoal_ocupado_assalariado as assalariados,
-    round(taxa_assalariamento_formal * 100, 1) as formalizacao_pct,
-    round(massa_salarial_real_mil_brl / 1e3, 2) as massa_real_mi,
-    round(salario_medio_real_brl, 0) as salario_medio_real,
+    round(taxa_assalariamento_formal, 4) as formalizacao_pct,
+    round(massa_salarial_real_mil_brl / 1e3, 1) as massa_mi,
+    round(salario_medio_real_brl, 0) as salario_real,
     round(salario_medio_sm, 2) as salario_sm,
-    round(crescimento_empresas_yoy_pct, 1) as cresc_emp_yoy_pct,
-    round(crescimento_emprego_yoy_pct, 1) as cresc_trab_yoy_pct
+    round(crescimento_empresas_yoy_pct / 100.0, 4) as cresc_emp_pct,
+    round(crescimento_emprego_yoy_pct / 100.0, 4) as cresc_trab_pct
 from sidralake.mart_inteligencia_mercado_municipal
 where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
   and num_empresas_atuantes is not null

@@ -46,7 +46,7 @@ where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2024
 <BigValue data={kpis_cnae} value=emprego_total title="Pessoal Ocupado" fmt="#,##0" />
 <BigValue data={kpis_cnae} value=assalariados_total title="Assalariados Formais" fmt="#,##0" />
 <BigValue data={kpis_cnae} value=empresas_total title="Empresas" fmt="#,##0" />
-<BigValue data={kpis_cnae} value=massa_real_bi title="Massa Salarial Real (R$ Bi)" fmt="#,##0.00" />
+<BigValue data={kpis_cnae} value=massa_real_bi title="Massa Salarial (R$ Bi)" fmt="#,##0.00" />
 <BigValue data={kpis_cnae} value=celulas_sigilo_x title="Células Sigilo IBGE (X)" fmt="#,##0" />
 
 ---
@@ -55,7 +55,7 @@ where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2024
 with base as (
     select
         sigla_uf || ' · ' || codigo_secao_cnae as uf_setor,
-        round(market_share_uf_no_setor_pct, 1) as share_br_pct,
+        round(market_share_uf_no_setor_pct / 100.0, 4) as share_br_pct,
         row_number() over (order by market_share_uf_no_setor_pct desc) as pos
     from sidralake.mart_clusters_setoriais_uf
     where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2024)
@@ -76,7 +76,30 @@ order by pos asc
 ```sql emprego_por_secao
 with agg as (
     select
-        codigo_secao_cnae || ' · ' || left(descricao_secao_cnae, 26) as setor,
+        codigo_secao_cnae || ' · ' || case codigo_secao_cnae
+            when 'A' then 'Agropecuária'
+            when 'B' then 'Ind. Extrativas'
+            when 'C' then 'Ind. Transformação'
+            when 'D' then 'Energia e Gás'
+            when 'E' then 'Água e Saneamento'
+            when 'F' then 'Construção'
+            when 'G' then 'Comércio e Veículos'
+            when 'H' then 'Transporte e Correio'
+            when 'I' then 'Alojamento e Alim.'
+            when 'J' then 'TI e Comunicação'
+            when 'K' then 'Finanças e Seguros'
+            when 'L' then 'Ativ. Imobiliárias'
+            when 'M' then 'Serv. Profissionais'
+            when 'N' then 'Serv. Administrativos'
+            when 'O' then 'Adm. Pública'
+            when 'P' then 'Educação'
+            when 'Q' then 'Saúde e Serv. Sociais'
+            when 'R' then 'Artes e Cultura'
+            when 'S' then 'Outros Serviços'
+            when 'T' then 'Serv. Domésticos'
+            when 'U' then 'Org. Internacionais'
+            else codigo_secao_cnae
+        end as setor,
         round(sum(pessoal_ocupado_total) / 1e6, 2) as emprego_mi
     from sidralake.mart_clusters_setoriais_uf
     where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2024)
@@ -114,8 +137,9 @@ order by pos asc
         stackTotalLabel=false
         labelPosition=outside
         showAllLabels=true
-        labelFmt="0.0"
-        rightPadding=24
+        labelFmt="0.0%"
+        leftPadding=16
+        rightPadding=32
         legend=false
         yGridlines=false
         xGridlines=false
@@ -123,7 +147,7 @@ order by pos asc
         yBaseline=false
         seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
         title="Quais UFs lideram o share setorial?"
-        subtitle="Participação (%) no emprego do setor"
+        subtitle="Participação no emprego do setor"
     />
     <BarChart
         data={emprego_por_secao}
@@ -138,7 +162,8 @@ order by pos asc
         labelPosition=outside
         showAllLabels=true
         labelFmt="0.00"
-        rightPadding=26
+        leftPadding=26
+        rightPadding=30
         legend=false
         yGridlines=false
         xGridlines=false
@@ -166,7 +191,7 @@ with top_ufs as (
 select
     m.sigla_uf as uf,
     m.codigo_secao_cnae as cnae,
-    round(m.market_share_uf_no_setor_pct, 1) as share_pct
+    round(m.market_share_uf_no_setor_pct / 100.0, 4) as share_pct
 from sidralake.mart_clusters_setoriais_uf as m
 inner join top_ufs as t
     on m.sigla_uf = t.sigla_uf
@@ -181,10 +206,10 @@ order by m.sigla_uf asc, m.codigo_secao_cnae asc
     x=cnae
     y=uf
     value=share_pct
-    valueFmt="0.0"
+    valueFmt="0.0%"
     colorScale={['#1e293b', '#1d4ed8', '#3b82f6', '#93c5fd']}
     title="Participação Estadual (%) no Emprego Brasileiro por Seção CNAE"
-    subtitle="A=Agro · C=Indústria · F=Construção · G=Comércio · H=Transporte · J=Tech/TI · K=Finanças · N=Adm · P=Educação · Q=Saúde"
+    subtitle="A=Agro · C=Indústria · F=Construção · G=Comércio · H=Transporte · J=TI · K=Finanças · N=Adm · P=Educação · Q=Saúde"
 />
 
 ---
@@ -193,19 +218,39 @@ order by m.sigla_uf asc, m.codigo_secao_cnae asc
 
 ```sql tabela_clusters
 select
-    ano_referencia as ano,
+    cast(ano_referencia as varchar) as ano,
     sigla_uf as uf,
-    nome_regiao as regiao,
     codigo_secao_cnae as cnae,
-    descricao_secao_cnae as setor,
+    case codigo_secao_cnae
+        when 'A' then 'Agropecuária'
+        when 'B' then 'Ind. Extrativas'
+        when 'C' then 'Ind. Transformação'
+        when 'D' then 'Energia e Gás'
+        when 'E' then 'Água e Saneamento'
+        when 'F' then 'Construção'
+        when 'G' then 'Comércio e Veículos'
+        when 'H' then 'Transporte e Correio'
+        when 'I' then 'Alojamento e Alim.'
+        when 'J' then 'TI e Comunicação'
+        when 'K' then 'Finanças e Seguros'
+        when 'L' then 'Ativ. Imobiliárias'
+        when 'M' then 'Serv. Profissionais'
+        when 'N' then 'Serv. Administrativos'
+        when 'O' then 'Adm. Pública'
+        when 'P' then 'Educação'
+        when 'Q' then 'Saúde e Serv. Sociais'
+        when 'R' then 'Artes e Cultura'
+        when 'S' then 'Outros Serviços'
+        when 'T' then 'Serv. Domésticos'
+        when 'U' then 'Org. Internacionais'
+        else descricao_secao_cnae
+    end as setor,
     num_empresas as empresas,
     pessoal_ocupado_total as emprego,
-    pessoal_ocupado_assalariado as assalariados,
-    round(massa_salarial_real_mil_brl / 1e3, 2) as massa_real_mi,
-    round(market_share_uf_no_setor_pct, 2) as share_br_pct,
-    round(crescimento_emprego_setor_yoy_pct, 2) as cresc_yoy_pct,
-    has_sigilo_estatistico as sigilo_x,
-    perfil_especializacao as perfil
+    round(massa_salarial_real_mil_brl / 1e3, 1) as massa_mi,
+    round(market_share_uf_no_setor_pct / 100.0, 4) as share_br_pct,
+    round(crescimento_emprego_setor_yoy_pct / 100.0, 4) as cresc_yoy_pct,
+    has_sigilo_estatistico as sigilo_x
 from sidralake.mart_clusters_setoriais_uf
 where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2024)
   and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')

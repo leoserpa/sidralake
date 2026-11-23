@@ -17,4 +17,4 @@ select
     market_share_uf_no_setor_pct,
     crescimento_emprego_setor_yoy_pct,
     perfil_especializacao
-from read_parquet('sources/sidralake/data/mart_clusters_setoriais_uf.parquet')
+from read_parquet('parquet_data/mart_clusters_setoriais_uf.parquet')

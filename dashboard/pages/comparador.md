@@ -63,7 +63,6 @@ with sel as (
             when codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade_a.value}' as integer), 3550308) then 'Cidade A'
             else 'Cidade B'
         end as lado,
-        nome_municipio || ' - ' || sigla_uf as cidade,
         score_tamanho_mercado,
         score_poder_compra,
         score_dinamismo,
@@ -73,7 +72,7 @@ with sel as (
       and codigo_ibge_municipio in (coalesce(try_cast('${inputs.cidade_a.value}' as integer), 3550308), coalesce(try_cast('${inputs.cidade_b.value}' as integer), 4106902))
 )
 select 'Tamanho (35%)' as pilar, lado, round(score_tamanho_mercado, 1) as nota from sel
-union all select 'Poder de Compra (30%)', lado, round(score_poder_compra, 1) from sel
+union all select 'Poder Compra (30%)', lado, round(score_poder_compra, 1) from sel
 union all select 'Dinamismo (20%)', lado, round(score_dinamismo, 1) from sel
 union all select 'Maturidade (15%)', lado, round(score_maturidade_empresarial, 1) from sel
 ```
@@ -106,7 +105,8 @@ order by ano_referencia asc, lado asc
         labelPosition=outside
         showAllLabels=true
         labelFmt="0.0"
-        rightPadding=24
+        leftPadding=24
+        rightPadding=28
         yGridlines=false
         xGridlines=false
         yAxisLabels=false
@@ -123,6 +123,7 @@ order by ano_referencia asc, lado asc
         xFmt="0"
         yFmt="#,##0.0"
         markers=true
+        rightPadding=24
         yGridlines=false
         xGridlines=false
         seriesColors={{'Cidade A': '#3b82f6', 'Cidade B': '#10b981'}}
@@ -141,25 +142,21 @@ select
     case
         when codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade_a.value}' as integer), 3550308) then 'Cidade A'
         else 'Cidade B'
-    end as comparacao,
+    end as lado,
     nome_municipio || ' - ' || sigla_uf as municipio,
-    tier_mercado as tier,
     rank_nacional_ims as rk_br,
     ims_score_0_100 as ims,
     populacao_residente as populacao,
-    round(densidade_demografica, 1) as dens_hab_km2,
-    round(pib_real_mil_brl / 1e6, 3) as pib_real_bi,
-    round(pib_per_capita_real_brl, 0) as pib_pc_real,
-    round(cagr_pib_real_3a_pct, 2) as cagr_3a_pct,
+    round(pib_real_mil_brl / 1e6, 2) as pib_bi,
+    round(pib_per_capita_real_brl, 0) as pib_pc,
+    round(cagr_pib_real_3a_pct / 100.0, 4) as cagr_3a_pct,
     num_empresas_atuantes as empresas,
-    pessoal_ocupado_total as emprego,
-    round(empresas_por_1000_hab, 1) as emp_por_1k_hab,
-    round(salario_medio_real_brl, 0) as salario_medio_real,
-    round(taxa_assalariamento_formal * 100, 1) as formalizacao_pct
+    round(salario_medio_real_brl, 0) as salario_real,
+    round(taxa_assalariamento_formal, 4) as formalizacao_pct
 from sidralake.mart_inteligencia_mercado_municipal
 where is_ultimo_ano_completo
   and codigo_ibge_municipio in (coalesce(try_cast('${inputs.cidade_a.value}' as integer), 3550308), coalesce(try_cast('${inputs.cidade_b.value}' as integer), 4106902))
-order by comparacao asc
+order by lado asc
 ```
 
 <DataTable data={tabela_head_to_head} />

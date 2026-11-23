@@ -349,7 +349,7 @@ def export_bi(*, output_dir: Path | None = None) -> None:
     """Exporta marts Gold Delta Lake para Parquet Snappy pronto para o dashboard Evidence.dev."""
     settings = get_settings()
     configure_logging(settings.log_level, log_format="console")
-    target = output_dir or (settings.project_root / "dashboard" / "sources" / "sidralake" / "data")
+    target = output_dir or (settings.project_root / "dashboard" / "parquet_data")
     summary = export_gold_for_bi(settings.resolved_gold_dir, target)
     for table_name, meta in summary.items():
         print(f"  bi/{table_name}.parquet: rows={meta['rows']} | size_kb={meta['size_kb']}")
@@ -385,7 +385,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         "--output-dir",
         type=Path,
         default=None,
-        help="Diretorio de destino dos arquivos Parquet (padrao: dashboard/sources/sidralake/data)",
+        help="Diretorio de destino dos arquivos Parquet (padrao: dashboard/parquet_data)",
     )
     sub.add_parser(
         "test", help="Executa toda a bateria de testes e qualidade (ruff, mypy, pytest, dbt)"

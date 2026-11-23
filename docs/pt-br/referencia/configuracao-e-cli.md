@@ -20,7 +20,7 @@ uv run sidralake <subcomando> [opcoes]
 | `sidralake maintain` | — | Percorre `data/bronze/`, `data/silver/` e `data/gold/` e executa `OPTIMIZE` (`compact()`) e `VACUUM` (`retention_hours=168`, `dry_run=False`) em cada tabela Delta Lake. |
 | `sidralake inspect` | — | Executa 6 consultas analíticas de verificação diretamente no DuckDB e no Delta Lake Gold (Top 15 Score IMS, distribuição por Tier, validação de *Boa Esperança do Norte*, Top 10 Clusters CNAE por QL, pulso PMC × IPCA e versões `_delta_log`). |
 | `sidralake insights` | `--top N`, `--uf SIGLA`, `--year ANO` | Executa consultas analíticas *one-shot* via **Polars Lazy API (`pl.scan_delta`)** diretamente nos Data Marts Delta Gold (Top municípios por IMS, maior CAGR real em 3 anos, liderança setorial CNAE e pulso do varejo por regime de consumo). |
-| `sidralake export-bi` | `--output-dir PATH` | Exporta os 3 Data Marts Gold e a `dim_geografia` corrente para Parquet Snappy (sem colunas `_` de auditoria) pronto para o dashboard **Evidence.dev** (`dashboard/sources/sidralake/data/`). |
+| `sidralake export-bi` | `--output-dir PATH` | Exporta os Data Marts e Fatos Gold + dimensões correntes para Parquet Snappy (sem colunas `_` de auditoria) pronto para o dashboard **Evidence.dev** (`dashboard/parquet_data/`). |
 | `sidralake test` | — | Roda toda a bateria de qualidade localmente (`ruff`, `mypy --strict`, `pytest` unitário + E2E, `dbt parse` e os 10 testes unitários SQL do dbt). |
 
 ---

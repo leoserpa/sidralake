@@ -11,4 +11,4 @@ select
     variacao_acum_12m_pct,
     ano_mes_base_deflator,
     fator_deflator_base_atual
-from read_parquet('sources/sidralake/data/fct_ipca_mensal.parquet')
+from read_parquet('parquet_data/fct_ipca_mensal.parquet')

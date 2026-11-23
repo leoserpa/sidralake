@@ -28,7 +28,7 @@ order by ordem, sigla_uf
 <Grid cols=3>
     <Slider name=min_pop title="População Mínima" min=0 max=500000 step=10000 defaultValue=50000 fmt="#,##0" size=full />
     <Slider name=min_ims title="Score IMS Mínimo" min=0 max=85 step=5 defaultValue=60 fmt="0" size=full />
-    <Slider name=min_sal title="Salário Médio Real Mínimo (R$)" min=0 max=5000 step=250 defaultValue=2500 fmt="#,##0" size=full />
+    <Slider name=min_sal title="Salário Mín. (R$)" min=0 max=5000 step=250 defaultValue=2500 fmt="#,##0" size=full />
 </Grid>
 
 ```sql funil_expansao
@@ -61,11 +61,11 @@ where is_ultimo_ano_completo
 select
     nome_municipio || ' - ' || sigla_uf as municipio,
     case
-        when tier_mercado = 'Tier 1 - Polo Nacional' then 'Tier 1 - Polo Nacional'
-        when tier_mercado = 'Tier 2 - Expansao Prioritaria' then 'Tier 2 - Expansão Prioritária'
+        when tier_mercado = 'Tier 1 - Polo Nacional' then 'Tier 1 · Polo'
+        when tier_mercado = 'Tier 2 - Expansao Prioritaria' then 'Tier 2 · Expansão'
         else 'Demais Tiers'
     end as tier_destaque,
-    round(cagr_pib_real_3a_pct, 2) as cagr_3a_pct,
+    round(cagr_pib_real_3a_pct / 100.0, 4) as cagr_3a_pct,
     round(pib_per_capita_real_brl, 0) as pib_pc_real,
     populacao_residente as populacao,
     ims_score_0_100 as ims
@@ -78,7 +78,6 @@ where is_ultimo_ano_completo
   and coalesce(salario_medio_real_brl, 0) >= coalesce(try_cast('${inputs.min_sal}' as double), 2500)
   and cagr_pib_real_3a_pct is not null
   and pib_per_capita_real_brl is not null
-  and pib_per_capita_real_brl <= 400000
 order by ims_score_0_100 desc
 limit 300
 ```
@@ -90,9 +89,11 @@ limit 300
     size=populacao
     series=tier_destaque
     tooltipTitle=municipio
+    xFmt="0.0%"
+    yFmt="#,##0"
     yGridlines=false
     xGridlines=false
-    seriesColors={{'Tier 1 - Polo Nacional': '#3b82f6', 'Tier 2 - Expansão Prioritária': '#10b981', 'Demais Tiers': '#525866'}}
+    seriesColors={{'Tier 1 · Polo': '#3b82f6', 'Tier 2 · Expansão': '#10b981', 'Demais Tiers': '#525866'}}
     title="Onde cruzar alto crescimento real com poder de compra?"
     subtitle="Eixo X: CAGR 3a (%) · Eixo Y: PIB Per Capita (R$) · Bolha: População"
     xAxisTitle="CAGR PIB Real 3 Anos (%)"
@@ -105,20 +106,22 @@ limit 300
 
 ```sql shortlist_expansao
 select
-    rank_nacional_ims as rk_br,
+    rank_nacional_ims as rk,
     nome_municipio as municipio,
     sigla_uf as uf,
-    nome_regiao as regiao,
-    tier_mercado as tier,
+    case tier_mercado
+        when 'Tier 1 - Polo Nacional' then 'Tier 1'
+        when 'Tier 2 - Expansao Prioritaria' then 'Tier 2'
+        when 'Tier 3 - Emergente' then 'Tier 3'
+        else 'Tier 4'
+    end as tier,
     ims_score_0_100 as ims,
     populacao_residente as populacao,
-    round(pib_real_mil_brl / 1e6, 3) as pib_real_bi,
-    round(pib_per_capita_real_brl, 0) as pib_pc_real,
-    round(cagr_pib_real_3a_pct, 2) as cagr_3a_pct,
+    round(pib_real_mil_brl / 1e6, 2) as pib_bi,
+    round(pib_per_capita_real_brl, 0) as pib_pc,
+    round(cagr_pib_real_3a_pct / 100.0, 4) as cagr_3a_pct,
     num_empresas_atuantes as empresas,
-    round(empresas_por_1000_hab, 1) as emp_por_1k_hab,
-    round(salario_medio_real_brl, 0) as salario_medio_real,
-    round(massa_salarial_real_mil_brl / 1e3, 1) as massa_real_mi
+    round(salario_medio_real_brl, 0) as salario_real
 from sidralake.mart_inteligencia_mercado_municipal
 where is_ultimo_ano_completo
   and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')

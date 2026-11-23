@@ -6,4 +6,4 @@ select
     densidade_demografica,
     origem_dado,
     is_interpolado
-from read_parquet('sources/sidralake/data/fct_populacao_municipal.parquet')
+from read_parquet('parquet_data/fct_populacao_municipal.parquet')

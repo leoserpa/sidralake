@@ -59,32 +59,36 @@ order by nome_atividade_pmc
 ```sql serie_ipca
 select
     data_referencia,
-    round(variacao_acum_12m_pct / 100.0, 4) as ipca_12m_pct,
-    round(variacao_mensal_pct / 100.0, 4) as ipca_mensal_pct
+    'IPCA Acum. 12m' as indicador,
+    round(variacao_acum_12m_pct / 100.0, 4) as valor_pct
 from sidralake.fct_ipca_mensal
-order by data_referencia asc
+union all
+select
+    data_referencia,
+    'IPCA Mensal' as indicador,
+    round(variacao_mensal_pct / 100.0, 4) as valor_pct
+from sidralake.fct_ipca_mensal
+order by data_referencia asc, indicador asc
 ```
 
 ```sql serie_mensal_pmc
-select
-    data_referencia,
-    substr(ano_mes, 5, 2) || '/' || substr(ano_mes, 1, 4) as competencia,
-    round(var_yoy_volume_pct / 100.0, 4) as volume_yoy_pct,
-    round(var_yoy_receita_nominal_pct / 100.0, 4) as receita_yoy_pct,
-    round(ipca_variacao_acum_12m_pct / 100.0, 4) as ipca_12m_pct,
-    round(spread_preco_vs_volume_yoy_pp, 2) as spread_pp,
-    case regime_consumo
-        when 'EXPANSAO_REAL' then 'Expansão Real'
-        when 'PRESSAO_INFLACIONARIA' then 'Pressão Inflac.'
-        when 'ESTABILIDADE' then 'Estabilidade'
-        when 'RETRACAO' then 'Retração'
-        else regime_consumo
-    end as regime
-from sidralake.mart_pulso_consumo_macro
-where sigla_uf = '${inputs.uf.value}'
-  and nome_atividade_pmc = '${inputs.atividade.value}'
-  and var_yoy_volume_pct is not null
-order by data_referencia asc
+with base as (
+    select
+        data_referencia,
+        round(var_yoy_volume_pct / 100.0, 4) as volume_yoy_pct,
+        round(var_yoy_receita_nominal_pct / 100.0, 4) as receita_yoy_pct,
+        round(ipca_variacao_acum_12m_pct / 100.0, 4) as ipca_12m_pct
+    from sidralake.mart_pulso_consumo_macro
+    where sigla_uf = '${inputs.uf.value}'
+      and nome_atividade_pmc = '${inputs.atividade.value}'
+      and var_yoy_volume_pct is not null
+)
+select data_referencia, 'Volume Real YoY' as indicador, volume_yoy_pct as valor_pct from base
+union all
+select data_referencia, 'Receita Nominal YoY' as indicador, receita_yoy_pct as valor_pct from base
+union all
+select data_referencia, 'IPCA Acum. 12m' as indicador, ipca_12m_pct as valor_pct from base
+order by data_referencia asc, indicador asc
 ```
 
 <div class="sl-grid-2">
@@ -92,11 +96,13 @@ order by data_referencia asc
 		<LineChart
 			data={serie_ipca}
 			x=data_referencia
-			y={["ipca_12m_pct", "ipca_mensal_pct"]}
+			y=valor_pct
+			series=indicador
 			yFmt="0.0%"
 			yGridlines=false
 			xGridlines=false
-			colorPalette={['#3b82f6', '#64748b']}
+			seriesColors={{'IPCA Acum. 12m': '#3b82f6', 'IPCA Mensal': '#64748b'}}
+			echartsOptions={{ backgroundColor: 'transparent', grid: { containLabel: true } }}
 			title="Trajetória da Inflação Oficial (IPCA Brasil · 2018–2026)"
 			subtitle="IPCA acumulado em 12 meses em azul · Variação mensal em ardósia"
 			yAxisTitle="Variação (%)"
@@ -106,11 +112,13 @@ order by data_referencia asc
 		<LineChart
 			data={serie_mensal_pmc}
 			x=data_referencia
-			y={["volume_yoy_pct", "receita_yoy_pct", "ipca_12m_pct"]}
+			y=valor_pct
+			series=indicador
 			yFmt="0.0%"
 			yGridlines=false
 			xGridlines=false
-			colorPalette={['#3b82f6', '#94a3b8', '#475569']}
+			seriesColors={{'Volume Real YoY': '#3b82f6', 'Receita Nominal YoY': '#94a3b8', 'IPCA Acum. 12m': '#475569'}}
+			echartsOptions={{ backgroundColor: 'transparent', grid: { containLabel: true } }}
 			title="Volume Real do Varejo vs. Receita Nominal e IPCA (YoY %)"
 			subtitle="Volume Real em azul pré-atentivo · Receita Nominal e IPCA 12m em ardósia"
 			yAxisTitle="Variação (%)"
@@ -143,7 +151,8 @@ ranked as (
         round(series * 1.0 / sum(series) over (), 4) as share_pct,
         vol_yoy_pct,
         spread_pp,
-        row_number() over (order by series desc) as pos
+        row_number() over (order by series desc) as pos,
+        row_number() over (order by vol_yoy_pct desc) as vol_pos
     from base
 )
 select
@@ -152,10 +161,68 @@ select
     share_pct,
     vol_yoy_pct,
     spread_pp,
-    case when pos = 1 then 'Destaque' else 'Demais' end as destaque
+    case when pos = 1 then 'Destaque' else 'Demais' end as destaque,
+    case when vol_pos = 1 then 'Destaque' else 'Demais' end as destaque_vol
 from ranked
 order by pos asc
 ```
+
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<BarChart
+			data={regimes_ultimo_mes}
+			x=regime
+			y=share_pct
+			series=destaque
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="0.0%"
+			leftPadding=24
+			rightPadding=44
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			echartsOptions={{ backgroundColor: 'transparent' }}
+			title="Qual regime domina o varejo nacional (PMC × IPCA)?"
+			subtitle="Distribuição das séries UF × Atividade · Regime dominante em azul"
+		/>
+	</div>
+	<div class="sl-card">
+		<BarChart
+			data={regimes_ultimo_mes}
+			x=regime
+			y=vol_yoy_pct
+			series=destaque_vol
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="0.0%"
+			leftPadding=24
+			rightPadding=44
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			echartsOptions={{ backgroundColor: 'transparent' }}
+			title="Qual o ritmo médio de volume real em cada regime?"
+			subtitle="Variação média YoY do volume de vendas (%) · Maior expansão em azul"
+		/>
+	</div>
+</div>
 
 ```sql heatmap_varejo_uf
 select
@@ -176,46 +243,19 @@ group by 1, 2
 order by sigla_uf asc, grupo asc
 ```
 
-<div class="sl-grid-2">
-	<div class="sl-card">
-		<BarChart
-			data={regimes_ultimo_mes}
-			x=regime
-			y=share_pct
-			series=destaque
-			type=stacked
-			swapXY=true
-			sort=false
-			labels=true
-			stackTotalLabel=false
-			labelPosition=outside
-			showAllLabels=true
-			labelFmt="0.0%"
-			leftPadding=24
-			rightPadding=40
-			legend=false
-			yGridlines=false
-			xGridlines=false
-			yAxisLabels=false
-			yBaseline=false
-			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-			title="Qual regime domina o varejo nacional (PMC × IPCA)?"
-			subtitle="Distribuição das séries UF × Atividade (PMC × IPCA) · Regime dominante em azul"
-		/>
-	</div>
-	<div class="sl-card">
-		<Heatmap
-			data={heatmap_varejo_uf}
-			x=grupo
-			y=uf
-			value=vol_yoy_pct
-			valueFmt="0.0%"
-			xLabelRotation=0
-			colorScale={['#141b26', '#334155', '#3b82f6']}
-			title="Volume Real YoY (%) — UF × Grupo de Consumo"
-			subtitle="Última competência PMC · Intensidade azul indica maior expansão real"
-		/>
-	</div>
+<div class="sl-card sl-stack">
+	<Heatmap
+		data={heatmap_varejo_uf}
+		x=grupo
+		y=uf
+		value=vol_yoy_pct
+		valueFmt="0.0%"
+		xLabelRotation=0
+		colorScale={['#141b26', '#334155', '#3b82f6']}
+		echartsOptions={{ backgroundColor: 'transparent' }}
+		title="Volume Real YoY (%) — UF × Grupo de Consumo"
+		subtitle="Última competência PMC · Intensidade azul indica maior expansão real"
+	/>
 </div>
 
 ```sql tabela_mensal_pmc

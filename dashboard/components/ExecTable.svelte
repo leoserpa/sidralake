@@ -431,7 +431,7 @@
 		outline: none;
 		color: #f8fafc;
 		font-size: 12.5px;
-		width: 190px;
+		width: 235px;
 	}
 
 	.sl-search-box input::placeholder {

@@ -87,13 +87,14 @@ order by regiao asc
 			showAllLabels=true
 			labelFmt="0.0%"
 			leftPadding=28
-			rightPadding=38
+			rightPadding=48
 			legend=false
 			yGridlines=false
 			xGridlines=false
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			echartsOptions={{ backgroundColor: 'transparent' }}
 			title="Quais municípios mais cresceram?"
 			subtitle="CAGR real 3 anos (IPCA) · Líder em azul pré-atentivo"
 		/>
@@ -113,6 +114,7 @@ order by regiao asc
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Serviços': '#3b82f6', 'Indústria': '#94a3b8', 'Agro': '#64748b', 'Adm. Púb.': '#334155'}}
+			echartsOptions={{ backgroundColor: 'transparent' }}
 			title="Composição setorial do VAB por Região"
 			subtitle="Proporção 100% · Serviços em destaque azul · Último VAB IBGE (2021)"
 		/>
@@ -149,6 +151,7 @@ limit 500
 		yGridlines=false
 		xGridlines=false
 		seriesColors={{'Tier 1 · Polo': '#3b82f6', 'Demais Municípios': '#525866'}}
+		echartsOptions={{ backgroundColor: 'transparent', grid: { left: 20, right: 24, top: 44, bottom: 40, containLabel: true } }}
 		title="Polos Nacionais (Tier 1) concentram alto poder de compra e Score IMS"
 		subtitle="Dispersão PIB Per Capita Real (R$) × Score IMS · Polos Tier 1 em azul"
 		xAxisTitle="PIB Per Capita Real (R$)"

@@ -247,9 +247,16 @@
 	}
 
 	/* Clean ECharts container alignment inside elevated .sl-card */
+	:global(.sl-card > div) {
+		width: 100% !important;
+		max-width: 100% !important;
+	}
+
 	:global(.sl-card .chart-container),
-	:global(.sl-card .echarts) {
+	:global(.sl-card .echarts),
+	:global(.sl-card [data-testid='ECharts']) {
 		background: transparent !important;
+		width: 100% !important;
 	}
 
 	:global(.sl-card h3),

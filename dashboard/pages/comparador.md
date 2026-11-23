@@ -114,6 +114,7 @@ order by ano_referencia asc, lado asc
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Cidade A': '#3b82f6', 'Cidade B': '#64748b'}}
+			echartsOptions={{ backgroundColor: 'transparent' }}
 			title="Pilares do Score IMS: Cidade A × Cidade B"
 			subtitle="Notas normalizadas (0–100) · Cidade A em azul"
 		/>
@@ -131,7 +132,7 @@ order by ano_referencia asc, lado asc
 			yGridlines=false
 			xGridlines=false
 			seriesColors={{'Cidade A': '#3b82f6', 'Cidade B': '#94a3b8'}}
-			echartsOptions={{ xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
+			echartsOptions={{ backgroundColor: 'transparent', grid: { containLabel: true }, xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
 			title="Trajetória do PIB Real (2018–2023)"
 			subtitle="Valores constantes em R$ Bilhões · Linhas puras sem sombreado"
 			yAxisTitle="R$ Bilhões"

@@ -153,6 +153,7 @@ order by pos asc
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			echartsOptions={{ backgroundColor: 'transparent' }}
 			title="Quais UFs lideram o share setorial?"
 			subtitle="Participação no emprego nacional do setor · Líder em azul"
 		/>
@@ -179,6 +180,7 @@ order by pos asc
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			echartsOptions={{ backgroundColor: 'transparent' }}
 			title="Quais seções CNAE mais empregam?"
 			subtitle="Pessoal ocupado formal (milhões) · Seção líder em azul"
 		/>
@@ -215,6 +217,7 @@ order by m.sigla_uf asc, m.codigo_secao_cnae asc
 		value=share_pct
 		valueFmt="0.0%"
 		colorScale={['#141b26', '#1e3a8a', '#2563eb', '#3b82f6']}
+		echartsOptions={{ backgroundColor: 'transparent' }}
 		title="Concentração Estadual (%) no Emprego Brasileiro por Seção CNAE"
 		subtitle="Top 12 UFs · A=Agro · C=Indústria · F=Construção · G=Comércio · H=Transporte · J=TI · K=Finanças · N=Adm · P=Educação · Q=Saúde"
 	/>

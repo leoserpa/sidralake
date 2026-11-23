@@ -115,7 +115,7 @@ order by pos asc
 			yGridlines=false
 			xGridlines=false
 			colorPalette={['#3b82f6']}
-			echartsOptions={{ xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
+			echartsOptions={{ backgroundColor: 'transparent', grid: { containLabel: true }, xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
 			title="Evolução do PIB Real (2018–2023)"
 			subtitle="Valores constantes (R$ Bi · IPCA) · Linha limpa sem preenchimento"
 			yAxisTitle="R$ Bilhões"
@@ -144,6 +144,7 @@ order by pos asc
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			echartsOptions={{ backgroundColor: 'transparent' }}
 			title="Onde a cidade é mais forte no IMS?"
 			subtitle="4 Pilares normalizados (0–100) · Pilar líder em azul"
 		/>
@@ -229,6 +230,7 @@ order by ano_referencia desc
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
+			echartsOptions={{ backgroundColor: 'transparent' }}
 			title="Qual é a vocação produtiva (VAB)?"
 			subtitle="Participação no Valor Adicionado Bruto (%) · Último VAB IBGE (2021)"
 		/>
@@ -289,11 +291,12 @@ limit 12
 			xFmt="0"
 			yFmt="#,##0"
 			markers=true
+			leftPadding=14
 			rightPadding=18
 			yGridlines=false
 			xGridlines=false
 			colorPalette={['#3b82f6']}
-			echartsOptions={{ xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
+			echartsOptions={{ backgroundColor: 'transparent', grid: { left: 16, containLabel: true }, xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
 			title="Curva Demográfica (2018–2026)"
 			subtitle="Censo 2022 + Estimativas IBGE · Série contínua sem área sombreada"
 			yAxisTitle="Habitantes"
@@ -321,6 +324,7 @@ limit 12
 			yAxisLabels=false
 			yBaseline=false
 			seriesColors={{'Cidade Selecionada': '#3b82f6', 'Vizinhos': '#525866'}}
+			echartsOptions={{ backgroundColor: 'transparent' }}
 			title="Benchmarking na Mesma Região Imediata"
 			subtitle="Score IMS (0–100) · Cidade selecionada em azul pré-atentivo"
 		/>

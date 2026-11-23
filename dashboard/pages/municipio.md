@@ -50,7 +50,7 @@ left join sidralake.mart_inteligencia_mercado_municipal as m
 where g.codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
 ```
 
-### Ficha Executiva — <Value data={perfil_cidade} column=cidade_uf /> (<Value data={perfil_cidade} column=tier_mercado />)
+### Ficha Executiva — <Value data={perfil_cidade} column=cidade_uf /> · <Value data={perfil_cidade} column=tier_mercado />
 
 **Região Imediata:** <Value data={perfil_cidade} column=nome_regiao_imediata /> · **Região Intermediária:** <Value data={perfil_cidade} column=nome_regiao_intermediaria /> · **Grande Região:** <Value data={perfil_cidade} column=nome_regiao />
 
@@ -97,6 +97,7 @@ order by ano_referencia asc
         yGridlines=false
         xGridlines=false
         colorPalette={['#3b82f6']}
+        echartsOptions={{ xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
         title="Evolução do PIB Real (2018–2023)"
         subtitle="Valores constantes (R$ Bi · IPCA)"
         yAxisTitle="R$ Bilhões"
@@ -111,6 +112,7 @@ order by ano_referencia asc
         yGridlines=false
         xGridlines=false
         colorPalette={['#3b82f6']}
+        echartsOptions={{ xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
         title="Curva Demográfica (2018–2026)"
         subtitle="Censo 2022 + Estimativas IBGE"
         yAxisTitle="Habitantes"
@@ -204,8 +206,9 @@ order by pos asc
         labelPosition=outside
         showAllLabels=true
         labelFmt="0.0"
+        yMax=115
         leftPadding=24
-        rightPadding=28
+        rightPadding=44
         legend=false
         yGridlines=false
         xGridlines=false
@@ -229,7 +232,7 @@ order by pos asc
         showAllLabels=true
         labelFmt="0.0%"
         leftPadding=20
-        rightPadding=30
+        rightPadding=44
         legend=false
         yGridlines=false
         xGridlines=false
@@ -320,7 +323,7 @@ limit 15
 
 ```sql historico_cempre_cidade
 select
-    cast(ano_referencia as varchar) as ano,
+    cast(cast(ano_referencia as integer) as varchar) as ano,
     num_empresas_atuantes as empresas,
     pessoal_ocupado_total as emprego,
     pessoal_ocupado_assalariado as assalariados,

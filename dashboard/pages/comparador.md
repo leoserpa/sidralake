@@ -105,8 +105,9 @@ order by ano_referencia asc, lado asc
         labelPosition=outside
         showAllLabels=true
         labelFmt="0.0"
+        yMax=115
         leftPadding=24
-        rightPadding=28
+        rightPadding=44
         yGridlines=false
         xGridlines=false
         yAxisLabels=false
@@ -127,6 +128,7 @@ order by ano_referencia asc, lado asc
         yGridlines=false
         xGridlines=false
         seriesColors={{'Cidade A': '#3b82f6', 'Cidade B': '#10b981'}}
+        echartsOptions={{ xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1 } }}
         title="Trajetória do PIB Real (2018–2023)"
         subtitle="Valores constantes em R$ Bilhões"
         yAxisTitle="R$ Bilhões"

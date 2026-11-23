@@ -156,7 +156,7 @@ limit 500
 
 ```sql vab_por_uf
 select
-    cast(max(ano_referencia) as varchar) as ano,
+    cast(cast(max(ano_referencia) as integer) as varchar) as ano,
     sigla_uf as uf,
     nome_regiao as regiao,
     count(*) as municipios,

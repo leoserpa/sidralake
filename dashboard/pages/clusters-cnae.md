@@ -218,7 +218,7 @@ order by m.sigla_uf asc, m.codigo_secao_cnae asc
 
 ```sql tabela_clusters
 select
-    cast(ano_referencia as varchar) as ano,
+    cast(cast(ano_referencia as integer) as varchar) as ano,
     sigla_uf as uf,
     codigo_secao_cnae as cnae,
     case codigo_secao_cnae

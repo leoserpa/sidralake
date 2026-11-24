@@ -12,13 +12,13 @@ Complete catalog of the 9 official IBGE data sources ingested by the pipeline, e
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `localidades` | `GET /v1/localidades/municipios` | `5,571` municipalities | `id`, `nome`, `regiao-imediata`, `regiao-intermediaria`, `UF`, `regiao`, optional `microrregiao` | — | Reference snapshot | Single request |
 | `cnae_secoes` | `GET /v2/cnae/secoes` | National (`21` sections) | `id` (`A`–`U`), `descricao`, `observacoes` | Mapped to `12762` | Reference snapshot | Single request |
-| `pib_municipal` | SIDRA `5938` (annual) | `N6` (Municipalities) | `37` (GDP), `543` (Net taxes), `498` (Total GVA), `513` (Agri), `517` (Industry), `6575` (Private services), `525` (Public adm.) | — | `PIB_YEARS` (`2018–2023`) | `chunk_by_uf=True` (`N6[N3[uf]]`) |
-| `censo_populacao` | SIDRA `4714` (annual) | `N6` (Municipalities) | `93` (Resident population), `6318` (Area km²), `614` (Density hab/km²) | — | `CENSO_YEARS` (`2022`) | `N6[all]` |
-| `estimativa_populacao` | SIDRA `6579` (annual) | `N6` (Municipalities) | `9324` (Estimated resident population) | — | `ESTIMATIVA_POP_YEARS` (`2018–2021, 2024–2026`) | `N6[all]` |
-| `cempre_municipal` | SIDRA `9509` (annual, new series) | `N6` (Municipalities) | `706` (Local units), `367` (Active firms), `707` (Total employed), `708` (Salaried), `5944` (Avg salaried), `662` (Payroll k BRL), `1606` (Avg wage MW), `10143` (Avg wage BRL) | — | `CEMPRE_YEARS` (`2022–2024`) | `chunk_by_uf=True` (`N6[N3[uf]]`) |
-| `cempre_setorial_uf` | SIDRA `9418` (annual, new series) | `N3` (27 States) | `2585` (Firms), `707` (Total employed), `708` (Salaried), `662` (Payroll k BRL) | `12762` (`21` CNAE sections) | `CEMPRE_YEARS` (`2022–2024`) | `N3[all]` per year |
-| `ipca_mensal` | SIDRA `1737` (monthly) | `N1` (Brazil) | `2266` (Index number), `63` (MoM %), `2263` (3m %), `2264` (6m %), `69` (YTD %), `2265` (12m %) | — | `IPCA_YEARS` (`2018–2026`) | `N1[all]` (12 months/year) |
-| `pmc_varejo_uf` | SIDRA `8883` (monthly) | `N3` (27 States) | `7169` (Index 2022=100), `7170` (SA Index), `11708` (MoM SA %), `11709` (YoY %), `11710` (YTD %), `11711` (12m %) | `11046` (2 index types) + `85` (14 activities) | `PMC_YEARS` (`2020–2026`) | `chunk_months_half_year=True` (6 months/req) |
+| `pib_municipal` | SIDRA `5938` (annual) | `N6` (Municipalities) | `37` (GDP), `543` (Net taxes), `498` (Total GVA), `513` (Agri), `517` (Industry), `6575` (Private services), `525` (Public adm.) | — | Dynamic (`min_year=2018`) | `chunk_by_uf=True` (`N6[N3[uf]]`) |
+| `censo_populacao` | SIDRA `4714` (annual) | `N6` (Municipalities) | `93` (Resident population), `6318` (Area km²), `614` (Density hab/km²) | — | Dynamic (`min_year=2022`) | `N6[all]` |
+| `estimativa_populacao` | SIDRA `6579` (annual) | `N6` (Municipalities) | `9324` (Estimated resident population) | — | Dynamic (`min_year=2018`) | `N6[all]` |
+| `cempre_municipal` | SIDRA `9509` (annual, new series) | `N6` (Municipalities) | `706` (Local units), `367` (Active firms), `707` (Total employed), `708` (Salaried), `5944` (Avg salaried), `662` (Payroll k BRL), `1606` (Avg wage MW), `10143` (Avg wage BRL) | — | Dynamic (`min_year=2022`) | `chunk_by_uf=True` (`N6[N3[uf]]`) |
+| `cempre_setorial_uf` | SIDRA `9418` (annual, new series) | `N3` (27 States) | `2585` (Firms), `707` (Total employed), `708` (Salaried), `662` (Payroll k BRL) | `12762` (`21` CNAE sections) | Dynamic (`min_year=2022`) | `N3[all]` per year |
+| `ipca_mensal` | SIDRA `1737` (monthly) | `N1` (Brazil) | `2266` (Index number), `63` (MoM %), `2263` (3m %), `2264` (6m %), `69` (YTD %), `2265` (12m %) | — | Dynamic (`min_year=2018`) | `N1[all]` (12 months/year) |
+| `pmc_varejo_uf` | SIDRA `8883` (monthly) | `N3` (27 States) | `7169` (Index 2022=100), `7170` (SA Index), `11708` (MoM SA %), `11709` (YoY %), `11710` (YTD %), `11711` (12m %) | `11046` (2 index types) + `85` (14 activities) | Dynamic (`min_year=2020`) | `chunk_months_half_year=True` (6 months/req) |
 
 ---
 

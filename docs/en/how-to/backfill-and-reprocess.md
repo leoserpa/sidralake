@@ -8,7 +8,7 @@ This guide provides practical recipes to run full national loads, idempotently r
 
 ## 1. Run a Full Brazil Backfill
 
-To ingest all **5,571 municipalities** across the default window (`2018–2026`), run the full `dbt build`, and export all curated layers to Delta Lake:
+To ingest all **5,571 municipalities** across the dynamic window (`2018+`, discovered from the IBGE API), run the full `dbt build`, and export all curated layers to Delta Lake:
 
 ```bash
 make materialize-full

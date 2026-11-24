@@ -13,8 +13,8 @@ O projeto adota uma **Arquitetura de Dados Moderna Local-First** com foco em con
 - **Lakehouse ACID**: Delta Lake (`deltalake`) nas camadas Bronze, Silver e Gold (`_delta_log`, `replace_where`, `MERGE`, `OPTIMIZE`, `VACUUM`)
 - **Motor Analítico, Contratos & Camada Semântica**: DuckDB + `dbt-duckdb` 1.12 (`delta_scan()`, Staging, Intermediate, SCD Tipo 2 via `dbt snapshot`, Esquema Estrela + 3 Data Marts OBT com **Contratos Obrigatórios** em 100% da camada Gold, **dbt Semantic Layer** com 3 modelos semânticos, 12 métricas governadas e `time_spine_daily`, **10 testes unitários SQL** e testes singulares contábeis)
 - **Ingestão & Consultas Lazy**: Python `>=3.12,<3.14` (`uv`), `httpx` assíncrono com semáforo e fatiamento adaptativo por UF/semestre, `tenacity` backoff com jitter, `Pydantic v2`, **Polars Lazy API** (`scan_delta` + hash determinístico Arrow IPC), `Pandera[polars]`
-- **Orquestração & Linhagem**: Dagster (`dagster-dbt`, partições estáticas anuais, Verificações de Ativos bloqueantes, **Declarative Automation `AutomationCondition.eager()`**, Sensor de Frescor blindado na API do IBGE e Agendamentos)
-- **Camada de BI as Code**: **Evidence.dev** (`dashboard/`) em SQL + Markdown compilado para **DuckDB-WASM** estático e publicado automaticamente no **GitHub Pages** (`https://leoserpa.github.io/sidralake/`) via `.github/workflows/pages.yml`
+- **Orquestração & Linhagem**: Dagster (`dagster-dbt`, partições dinâmicas anuais, Verificações de Ativos bloqueantes, **Declarative Automation `AutomationCondition.eager()`** nos modelos dbt e exports Delta, Sensor de Frescor dinâmico na API do IBGE e Agendamentos)
+- **Camada de BI as Code**: **Evidence.dev** (`dashboard/`, 8 páginas incluindo Radar Demográfico & Polos Regionais) em SQL + Markdown compilado para **DuckDB-WASM** estático e publicado automaticamente no **GitHub Pages** (`https://leoserpa.github.io/sidralake/`) via `.github/workflows/pages.yml` com manifesto mensal de frescor
 - **Qualidade & Observabilidade**: `structlog` JSON, `ruff`, `mypy --strict`, `sqlfluff`, `pytest` (`>85%` de cobertura) + `respx`, GitHub Actions CI
 
 ---
@@ -115,7 +115,7 @@ graph LR
 ```bash
 uv sync --dev                        # Cria .venv com uv e instala dependencias
 uv run sidralake run --mode smoke    # Validacao rapida (SP/MT) Bronze -> Silver -> Gold + Delta
-uv run sidralake run --mode full     # Carga completa Brasil (5.571 municipios, 2018-2026)
+uv run sidralake run --mode full     # Carga completa Brasil (5.571 municipios, 2018+ dinamico)
 uv run sidralake insights --top 10   # Rankings imediatos via Polars Lazy API (scan_delta) na Gold
 uv run sidralake export-bi           # Exporta marts Gold em Parquet para o dashboard Evidence.dev
 uv run sidralake inspect             # Sanity check completo no DuckDB e Delta Lake Gold

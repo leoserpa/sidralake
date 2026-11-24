@@ -8,7 +8,7 @@ Este guia apresenta receitas práticas para executar cargas completas, reprocess
 
 ## 1. Executar a Carga Completa do Brasil
 
-Para ingerir todos os **5.571 municípios** na janela padrão (`2018–2026`), rodar o `dbt build` completo e exportar todas as camadas para Delta Lake:
+Para ingerir todos os **5.571 municípios** na janela dinâmica (`2018+`, descoberta na API do IBGE), rodar o `dbt build` completo e exportar todas as camadas para Delta Lake:
 
 ```bash
 make materialize-full

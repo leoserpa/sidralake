@@ -74,7 +74,7 @@ Inventário estrutural das camadas **Bronze, Silver e Gold** em Delta Lake e Duc
 | Dimensão | Grão | Chave Primária (`sk_*`) | Principais Atributos |
 | :--- | :--- | :--- | :--- |
 | `dim_geografia` | Versão SCD2 do município | `sk_municipio` (`varchar`) | `codigo_ibge_municipio`, `nome_municipio`, `codigo_uf`/`sigla_uf`/`nome_uf`, `codigo_regiao`/`sigla_regiao`/`nome_regiao`, `codigo_regiao_imediata`/`nome_regiao_imediata`, `codigo_regiao_intermediaria`/`nome_regiao_intermediaria`, `codigo_microrregiao`/`nome_microrregiao`, `codigo_mesorregiao`/`nome_mesorregiao`, `valid_from`, `valid_to`, `is_current` |
-| `dim_tempo` | Mês (`2018-01` a `2026-12`) | `sk_tempo` (`integer`, `YYYYMM`) | `data_referencia`, `ano_referencia`, `mes_referencia`, `ano_mes`, `trimestre`, `semestre`, `is_ano_censitario` (`ano = 2022`) |
+| `dim_tempo` | Mês (dinâmico, `2018-01` até ano atual + 1) | `sk_tempo` (`integer`, `YYYYMM`) | `data_referencia`, `ano_referencia`, `mes_referencia`, `ano_mes`, `trimestre`, `semestre`, `is_ano_censitario` (`ano = 2022`) |
 | `dim_cnae` | Versão SCD2 da seção CNAE | `sk_cnae_secao` (`varchar`) | `codigo_secao` (`A–U`), `descricao_secao`, `categoria_sidra_12762_id`, `valid_from`, `valid_to`, `is_current` |
 | `dim_atividade_varejo` | Atividade comercial PMC | `sk_atividade_varejo` (`varchar`) | `codigo_atividade_pmc`, `nome_atividade_pmc`, `grupo_consumo` (`ALIMENTACAO_ATACAREJO`, `BENS_DURAVEIS_LAR`, `AUTOMOTIVO_CONSTRUCAO`, `COMBUSTIVEIS`, `FARMACIA_VESTUARIO_CONVENIENCIA`) |
 
@@ -119,7 +119,7 @@ Inventário estrutural das camadas **Bronze, Silver e Gold** em Delta Lake e Duc
 - **Assets**: `39` materializáveis (`0` fontes externas desconectadas) distribuídos nos grupos `bronze`, `silver_staging`, `silver_scd2`, `silver_intermediate`, `gold_dimensions`, `gold_facts`, `gold_marts` e `lakehouse_export`.
 - **Asset Checks**: `155` no total (`9` checks Pandera bloqueantes na Bronze + `146` checks integrados do `dbt`).
 - **Jobs**: `dbt_medallion_job`, `macro_refresh_job`, `delta_maintenance_job`.
-- **Sensor**: `ibge_new_period_sensor` (intervalo mínimo `3600s`, monitora `/periodos` para `ipca_mensal`, `pmc_varejo_uf`, `pib_municipal` e `cempre_municipal`).
+- **Sensor**: `ibge_new_period_sensor` (intervalo mínimo `3600s`, monitora `/periodos` para todas as 7 fontes SIDRA — `ipca_mensal`, `pmc_varejo_uf`, `pib_municipal`, `cempre_municipal`, `cempre_setorial_uf`, `estimativa_populacao` e `censo_populacao` — registrando novas partições via `DynamicPartitionsDefinition`).
 - **Schedules (`America/Sao_Paulo`)**:
   - `monthly_macro_refresh_schedule`: cron `0 8 15 * *` (executa `macro_refresh_job`)
   - `weekly_delta_maintenance_schedule`: cron `0 3 * * 0` (executa `delta_maintenance_job`)

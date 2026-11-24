@@ -12,13 +12,13 @@ Catálogo completo das 9 fontes oficiais do IBGE consumidas pelo pipeline, espec
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `localidades` | `GET /v1/localidades/municipios` | `5.571` municípios | `id`, `nome`, `regiao-imediata`, `regiao-intermediaria`, `UF`, `regiao`, `microrregiao` (opcional) | — | Snapshot cadastral | Requisição única |
 | `cnae_secoes` | `GET /v2/cnae/secoes` | Nacional (`21` seções) | `id` (`A`–`U`), `descricao`, `observacoes` | Mapeada p/ `12762` | Snapshot cadastral | Requisição única |
-| `pib_municipal` | SIDRA `5938` (anual) | `N6` (Municípios) | `37` (PIB), `543` (Impostos líq.), `498` (VAB Total), `513` (Agro), `517` (Indústria), `6575` (Serviços priv.), `525` (Adm. Pública) | — | `PIB_YEARS` (`2018–2023`) | `chunk_by_uf=True` (`N6[N3[uf]]`) |
-| `censo_populacao` | SIDRA `4714` (anual) | `N6` (Municípios) | `93` (População residente), `6318` (Área km²), `614` (Densidade hab/km²) | — | `CENSO_YEARS` (`2022`) | `N6[all]` |
-| `estimativa_populacao` | SIDRA `6579` (anual) | `N6` (Municípios) | `9324` (População residente estimada) | — | `ESTIMATIVA_POP_YEARS` (`2018–2021, 2024–2026`) | `N6[all]` |
-| `cempre_municipal` | SIDRA `9509` (anual, nova série) | `N6` (Municípios) | `706` (Unid. locais), `367` (Empresas atuantes), `707` (Pessoal ocupado), `708` (Assalariado), `5944` (Assal. médio), `662` (Massa salarial Mil R$), `1606` (Salário SM), `10143` (Salário R$) | — | `CEMPRE_YEARS` (`2022–2024`) | `chunk_by_uf=True` (`N6[N3[uf]]`) |
-| `cempre_setorial_uf` | SIDRA `9418` (anual, nova série) | `N3` (27 UFs) | `2585` (Empresas), `707` (Pessoal ocupado), `708` (Assalariado), `662` (Massa salarial Mil R$) | `12762` (`21` seções CNAE) | `CEMPRE_YEARS` (`2022–2024`) | `N3[all]` por ano |
-| `ipca_mensal` | SIDRA `1737` (mensal) | `N1` (Brasil) | `2266` (Número-índice), `63` (Var. mensal), `2263` (3m), `2264` (6m), `69` (Ano), `2265` (12m) | — | `IPCA_YEARS` (`2018–2026`) | `N1[all]` (12 meses/ano) |
-| `pmc_varejo_uf` | SIDRA `8883` (mensal) | `N3` (27 UFs) | `7169` (Índice 2022=100), `7170` (Índice SA), `11708` (MoM SA), `11709` (YoY), `11710` (Acum. Ano), `11711` (Acum. 12m) | `11046` (2 tipos índice) + `85` (14 atividades) | `PMC_YEARS` (`2020–2026`) | `chunk_months_half_year=True` (6 meses/req) |
+| `pib_municipal` | SIDRA `5938` (anual) | `N6` (Municípios) | `37` (PIB), `543` (Impostos líq.), `498` (VAB Total), `513` (Agro), `517` (Indústria), `6575` (Serviços priv.), `525` (Adm. Pública) | — | Dinâmica (`min_year=2018`) | `chunk_by_uf=True` (`N6[N3[uf]]`) |
+| `censo_populacao` | SIDRA `4714` (anual) | `N6` (Municípios) | `93` (População residente), `6318` (Área km²), `614` (Densidade hab/km²) | — | Dinâmica (`min_year=2022`) | `N6[all]` |
+| `estimativa_populacao` | SIDRA `6579` (anual) | `N6` (Municípios) | `9324` (População residente estimada) | — | Dinâmica (`min_year=2018`) | `N6[all]` |
+| `cempre_municipal` | SIDRA `9509` (anual, nova série) | `N6` (Municípios) | `706` (Unid. locais), `367` (Empresas atuantes), `707` (Pessoal ocupado), `708` (Assalariado), `5944` (Assal. médio), `662` (Massa salarial Mil R$), `1606` (Salário SM), `10143` (Salário R$) | — | Dinâmica (`min_year=2022`) | `chunk_by_uf=True` (`N6[N3[uf]]`) |
+| `cempre_setorial_uf` | SIDRA `9418` (anual, nova série) | `N3` (27 UFs) | `2585` (Empresas), `707` (Pessoal ocupado), `708` (Assalariado), `662` (Massa salarial Mil R$) | `12762` (`21` seções CNAE) | Dinâmica (`min_year=2022`) | `N3[all]` por ano |
+| `ipca_mensal` | SIDRA `1737` (mensal) | `N1` (Brasil) | `2266` (Número-índice), `63` (Var. mensal), `2263` (3m), `2264` (6m), `69` (Ano), `2265` (12m) | — | Dinâmica (`min_year=2018`) | `N1[all]` (12 meses/ano) |
+| `pmc_varejo_uf` | SIDRA `8883` (mensal) | `N3` (27 UFs) | `7169` (Índice 2022=100), `7170` (Índice SA), `11708` (MoM SA), `11709` (YoY), `11710` (Acum. Ano), `11711` (Acum. 12m) | `11046` (2 tipos índice) + `85` (14 atividades) | Dinâmica (`min_year=2020`) | `chunk_months_half_year=True` (6 meses/req) |
 
 ---
 

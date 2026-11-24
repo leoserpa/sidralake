@@ -74,7 +74,7 @@ In `src/ibge_market_intel/ingestion/catalogs.py`:
 
 ### Step 3: Add Partition, Bronze Asset, and Blocking Asset Check
 
-1. In `src/ibge_market_intel/orchestration/partitions.py`, add `StaticPartitionsDefinition(list(PAM_YEARS))`.
+1. In `src/ibge_market_intel/orchestration/partitions.py`, add `DynamicPartitionsDefinition(name="pam_years")`.
 2. In `src/ibge_market_intel/orchestration/assets_bronze.py`, define `@asset(key_prefix=["bronze"], name="<table>", ...)` reusing `_ingest_sidra_partition(...)`.
 3. Add the asset to `BRONZE_ASSETS` and include the table name in the `_make_sidra_check(...)` tuple inside `BRONZE_ASSET_CHECKS`.
 4. To include it in `ibge-pipeline run`, append `(SPEC, YEARS)` to `plan` inside `src/ibge_market_intel/cli.py`.

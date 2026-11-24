@@ -33,6 +33,7 @@ order by ordem, codigo_secao_cnae
 		<Dropdown data={anos_cempre} name=ano value=ano_referencia title="Ano" />
 		<Dropdown data={ufs_cnae} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
 		<Dropdown data={secoes_cnae} name=cnae value=codigo_secao_cnae title="CNAE" defaultValue="TODAS" />
+		<ResetFilters />
 	</div>
 </header>
 

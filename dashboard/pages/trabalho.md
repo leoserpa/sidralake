@@ -27,6 +27,7 @@ order by ordem, sigla_uf
 	<div class="sl-filter-bar">
 		<Dropdown data={regioes_pnad} name=regiao value=nome_regiao title="Região" defaultValue="TODAS" />
 		<Dropdown data={ufs_pnad} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
+		<ResetFilters />
 	</div>
 </header>
 
@@ -40,7 +41,16 @@ select
 from sidralake.mart_mercado_trabalho_uf
 where is_ultimo_trimestre
   and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-  and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+  and (
+      '${inputs.uf.value}' = 'TODAS'
+      or sigla_uf = '${inputs.uf.value}'
+      or not exists (
+          select 1
+          from sidralake.dim_geografia as _chk
+          where _chk.sigla_uf = '${inputs.uf.value}'
+            and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+      )
+  )
 ```
 
 <div class="sl-kpi-grid-5">
@@ -59,7 +69,16 @@ with base as (
         round(avg(taxa_subutilizacao_composta_pct) / 100.0, 4) as subutilizacao_pct
     from sidralake.mart_mercado_trabalho_uf
     where ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-      and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+      and (
+          '${inputs.uf.value}' = 'TODAS'
+          or sigla_uf = '${inputs.uf.value}'
+          or not exists (
+              select 1
+              from sidralake.dim_geografia as _chk
+              where _chk.sigla_uf = '${inputs.uf.value}'
+                and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+          )
+      )
       and taxa_desocupacao_pct is not null
     group by 1
 )
@@ -78,7 +97,16 @@ with base as (
         round(avg(rendimento_mulheres_real_brl), 0) as mulheres_brl
     from sidralake.mart_mercado_trabalho_uf
     where ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-      and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+      and (
+          '${inputs.uf.value}' = 'TODAS'
+          or sigla_uf = '${inputs.uf.value}'
+          or not exists (
+              select 1
+              from sidralake.dim_geografia as _chk
+              where _chk.sigla_uf = '${inputs.uf.value}'
+                and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+          )
+      )
       and rendimento_medio_real_brl is not null
     group by 1
 )
@@ -135,7 +163,16 @@ with base as (
     where is_ultimo_trimestre
       and rendimento_medio_real_brl is not null
       and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-      and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+      and (
+          '${inputs.uf.value}' = 'TODAS'
+          or sigla_uf = '${inputs.uf.value}'
+          or not exists (
+              select 1
+              from sidralake.dim_geografia as _chk
+              where _chk.sigla_uf = '${inputs.uf.value}'
+                and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+          )
+      )
     order by pos asc
     limit 12
 )
@@ -157,7 +194,16 @@ with base as (
     where is_ultimo_trimestre
       and taxa_desocupacao_pct is not null
       and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-      and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+      and (
+          '${inputs.uf.value}' = 'TODAS'
+          or sigla_uf = '${inputs.uf.value}'
+          or not exists (
+              select 1
+              from sidralake.dim_geografia as _chk
+              where _chk.sigla_uf = '${inputs.uf.value}'
+                and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+          )
+      )
     order by pos asc
     limit 12
 )
@@ -242,7 +288,16 @@ select
 from sidralake.mart_mercado_trabalho_uf
 where is_ultimo_trimestre
   and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-  and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+  and (
+      '${inputs.uf.value}' = 'TODAS'
+      or sigla_uf = '${inputs.uf.value}'
+      or not exists (
+          select 1
+          from sidralake.dim_geografia as _chk
+          where _chk.sigla_uf = '${inputs.uf.value}'
+            and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+      )
+  )
 order by rendimento_medio_real_brl desc nulls last
 ```
 

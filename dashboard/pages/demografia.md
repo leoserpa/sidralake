@@ -27,6 +27,7 @@ order by ordem, sigla_uf
 	<div class="sl-filter-bar">
 		<Dropdown data={regioes_demo} name=regiao value=nome_regiao title="Região" defaultValue="TODAS" />
 		<Dropdown data={ufs_demo} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
+		<ResetFilters />
 	</div>
 </header>
 
@@ -53,7 +54,16 @@ with pop_ranked as (
     inner join sidralake.dim_geografia as g
         on p.codigo_ibge_municipio = g.codigo_ibge_municipio
     where ('${inputs.regiao.value}' = 'TODAS' or g.nome_regiao = '${inputs.regiao.value}')
-      and ('${inputs.uf.value}' = 'TODAS' or g.sigla_uf = '${inputs.uf.value}')
+      and (
+          '${inputs.uf.value}' = 'TODAS'
+          or g.sigla_uf = '${inputs.uf.value}'
+          or not exists (
+              select 1
+              from sidralake.dim_geografia as _chk
+              where _chk.sigla_uf = '${inputs.uf.value}'
+                and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+          )
+      )
 ),
 ult as (
     select * from pop_ranked where rn_ult = 1
@@ -103,7 +113,16 @@ with pop_ranked as (
     inner join sidralake.dim_geografia as g
         on p.codigo_ibge_municipio = g.codigo_ibge_municipio
     where ('${inputs.regiao.value}' = 'TODAS' or g.nome_regiao = '${inputs.regiao.value}')
-      and ('${inputs.uf.value}' = 'TODAS' or g.sigla_uf = '${inputs.uf.value}')
+      and (
+          '${inputs.uf.value}' = 'TODAS'
+          or g.sigla_uf = '${inputs.uf.value}'
+          or not exists (
+              select 1
+              from sidralake.dim_geografia as _chk
+              where _chk.sigla_uf = '${inputs.uf.value}'
+                and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+          )
+      )
 ),
 agg as (
     select
@@ -154,7 +173,16 @@ with pop_ranked as (
     inner join sidralake.dim_geografia as g
         on p.codigo_ibge_municipio = g.codigo_ibge_municipio
     where ('${inputs.regiao.value}' = 'TODAS' or g.nome_regiao = '${inputs.regiao.value}')
-      and ('${inputs.uf.value}' = 'TODAS' or g.sigla_uf = '${inputs.uf.value}')
+      and (
+          '${inputs.uf.value}' = 'TODAS'
+          or g.sigla_uf = '${inputs.uf.value}'
+          or not exists (
+              select 1
+              from sidralake.dim_geografia as _chk
+              where _chk.sigla_uf = '${inputs.uf.value}'
+                and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+          )
+      )
 ),
 cresc as (
     select
@@ -256,7 +284,16 @@ with base as (
     where is_ultimo_ano_completo
       and pib_real_mil_brl is not null
       and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-      and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+      and (
+          '${inputs.uf.value}' = 'TODAS'
+          or sigla_uf = '${inputs.uf.value}'
+          or not exists (
+              select 1
+              from sidralake.dim_geografia as _chk
+              where _chk.sigla_uf = '${inputs.uf.value}'
+                and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+          )
+      )
     group by 1
     order by pos asc
     limit 12
@@ -344,7 +381,16 @@ left join pop_mun as pm
     on m.codigo_ibge_municipio = pm.codigo_ibge_municipio
 where m.is_ultimo_ano_completo
   and ('${inputs.regiao.value}' = 'TODAS' or m.nome_regiao = '${inputs.regiao.value}')
-  and ('${inputs.uf.value}' = 'TODAS' or m.sigla_uf = '${inputs.uf.value}')
+  and (
+      '${inputs.uf.value}' = 'TODAS'
+      or m.sigla_uf = '${inputs.uf.value}'
+      or not exists (
+          select 1
+          from sidralake.dim_geografia as _chk
+          where _chk.sigla_uf = '${inputs.uf.value}'
+            and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+      )
+  )
 group by 2, 3
 order by pib_bi desc nulls last
 ```

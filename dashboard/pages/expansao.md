@@ -29,6 +29,7 @@ order by ordem, sigla_uf
 	<div class="sl-filter-bar">
 		<Dropdown data={regioes_exp} name=regiao value=nome_regiao title="Região" defaultValue="TODAS" />
 		<Dropdown data={ufs_exp} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
+		<ResetFilters />
 	</div>
 </header>
 
@@ -50,7 +51,16 @@ select
 from sidralake.mart_inteligencia_mercado_municipal
 where is_ultimo_ano_completo
   and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-  and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+  and (
+      '${inputs.uf.value}' = 'TODAS'
+      or sigla_uf = '${inputs.uf.value}'
+      or not exists (
+          select 1
+          from sidralake.dim_geografia as _chk
+          where _chk.sigla_uf = '${inputs.uf.value}'
+            and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+      )
+  )
   and coalesce(populacao_residente, 0) >= coalesce(try_cast('${inputs.min_pop}' as double), 50000)
   and coalesce(ims_score_0_100, 0) >= coalesce(try_cast('${inputs.min_ims}' as double), 60)
   and coalesce(salario_medio_real_brl, 0) >= coalesce(try_cast('${inputs.min_sal}' as double), 2500)
@@ -79,7 +89,16 @@ select
 from sidralake.mart_inteligencia_mercado_municipal
 where is_ultimo_ano_completo
   and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-  and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+  and (
+      '${inputs.uf.value}' = 'TODAS'
+      or sigla_uf = '${inputs.uf.value}'
+      or not exists (
+          select 1
+          from sidralake.dim_geografia as _chk
+          where _chk.sigla_uf = '${inputs.uf.value}'
+            and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+      )
+  )
   and coalesce(populacao_residente, 0) >= coalesce(try_cast('${inputs.min_pop}' as double), 50000)
   and coalesce(ims_score_0_100, 0) >= coalesce(try_cast('${inputs.min_ims}' as double), 60)
   and coalesce(salario_medio_real_brl, 0) >= coalesce(try_cast('${inputs.min_sal}' as double), 2500)
@@ -133,7 +152,16 @@ select
 from sidralake.mart_inteligencia_mercado_municipal
 where is_ultimo_ano_completo
   and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-  and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+  and (
+      '${inputs.uf.value}' = 'TODAS'
+      or sigla_uf = '${inputs.uf.value}'
+      or not exists (
+          select 1
+          from sidralake.dim_geografia as _chk
+          where _chk.sigla_uf = '${inputs.uf.value}'
+            and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+      )
+  )
   and coalesce(populacao_residente, 0) >= coalesce(try_cast('${inputs.min_pop}' as double), 50000)
   and coalesce(ims_score_0_100, 0) >= coalesce(try_cast('${inputs.min_ims}' as double), 60)
   and coalesce(salario_medio_real_brl, 0) >= coalesce(try_cast('${inputs.min_sal}' as double), 2500)

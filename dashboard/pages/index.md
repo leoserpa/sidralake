@@ -47,6 +47,7 @@ order by ordem, tier_mercado
 		<Dropdown data={regioes_disponiveis} name=regiao value=nome_regiao title="Região" defaultValue="TODAS" />
 		<Dropdown data={ufs_disponiveis} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
 		<Dropdown data={tiers_disponiveis} name=tier value=tier_mercado title="Tier" defaultValue="TODOS" />
+		<ResetFilters />
 	</div>
 </header>
 
@@ -61,7 +62,16 @@ select
 from sidralake.mart_inteligencia_mercado_municipal
 where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_inteligencia_mercado_municipal where pib_real_mil_brl is not null))
   and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-  and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+  and (
+      '${inputs.uf.value}' = 'TODAS'
+      or sigla_uf = '${inputs.uf.value}'
+      or not exists (
+          select 1
+          from sidralake.dim_geografia as _chk
+          where _chk.sigla_uf = '${inputs.uf.value}'
+            and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+      )
+  )
   and ('${inputs.tier.value}' = 'TODOS' or tier_mercado = '${inputs.tier.value}')
 ```
 
@@ -93,7 +103,16 @@ with base as (
     where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_inteligencia_mercado_municipal where pib_real_mil_brl is not null))
       and ims_score_0_100 is not null
       and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-      and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+      and (
+          '${inputs.uf.value}' = 'TODAS'
+          or sigla_uf = '${inputs.uf.value}'
+          or not exists (
+              select 1
+              from sidralake.dim_geografia as _chk
+              where _chk.sigla_uf = '${inputs.uf.value}'
+                and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+          )
+      )
       and ('${inputs.tier.value}' = 'TODOS' or tier_mercado = '${inputs.tier.value}')
     order by pos asc
     limit 10
@@ -177,7 +196,16 @@ with base as (
     where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_inteligencia_mercado_municipal where pib_real_mil_brl is not null))
       and pib_real_mil_brl is not null
       and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-      and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+      and (
+          '${inputs.uf.value}' = 'TODAS'
+          or sigla_uf = '${inputs.uf.value}'
+          or not exists (
+              select 1
+              from sidralake.dim_geografia as _chk
+              where _chk.sigla_uf = '${inputs.uf.value}'
+                and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+          )
+      )
       and ('${inputs.tier.value}' = 'TODOS' or tier_mercado = '${inputs.tier.value}')
     order by pos asc
     limit 8
@@ -302,7 +330,16 @@ select
 from sidralake.mart_inteligencia_mercado_municipal
 where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_inteligencia_mercado_municipal where pib_real_mil_brl is not null))
   and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
-  and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+  and (
+      '${inputs.uf.value}' = 'TODAS'
+      or sigla_uf = '${inputs.uf.value}'
+      or not exists (
+          select 1
+          from sidralake.dim_geografia as _chk
+          where _chk.sigla_uf = '${inputs.uf.value}'
+            and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+      )
+  )
   and ('${inputs.tier.value}' = 'TODOS' or tier_mercado = '${inputs.tier.value}')
 order by rank_nacional_ims asc
 ```

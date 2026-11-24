@@ -45,6 +45,7 @@ order by nome_atividade_pmc
 	<div class="sl-filter-bar">
 		<Dropdown data={ufs_pmc} name=uf value=sigla_uf title="UF" defaultValue="SP" />
 		<Dropdown data={atividades_pmc} name=atividade value=nome_atividade_pmc title="Atividade PMC" defaultValue="Hipermercados e supermercados" />
+		<ResetFilters />
 	</div>
 </header>
 

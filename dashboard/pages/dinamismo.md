@@ -18,6 +18,7 @@ order by ordem, sigla_uf
 	</div>
 	<div class="sl-filter-bar">
 		<Dropdown data={ufs_dinamismo} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
+		<ResetFilters />
 	</div>
 </header>
 

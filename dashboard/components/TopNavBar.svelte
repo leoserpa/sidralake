@@ -44,8 +44,8 @@
 			<span class="sl-brand-name">SidraLake</span>
 			<span class="sl-brand-tag">
 				<svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-					<circle cx="12" cy="12" r="9" stroke="#60A5FA" stroke-width="2.2" stroke-dasharray="40 16" />
-					<circle cx="12" cy="12" r="2.5" fill="#60A5FA" />
+					<circle cx="12" cy="12" r="9" stroke="#686E6C" stroke-width="2.2" stroke-dasharray="40 16" />
+					<circle cx="12" cy="12" r="2.5" fill="#3B82F6" />
 				</svg>
 				<span>360°</span>
 			</span>
@@ -130,15 +130,16 @@
 	.sl-brand-tag {
 		display: inline-flex;
 		align-items: center;
-		gap: 4px;
-		padding: 3px 8px;
-		border-radius: 9999px;
-		border: 1px solid rgba(37, 99, 235, 0.45);
-		background: #131b2e;
-		color: #60a5fa;
+		gap: 5px;
+		height: 24px;
+		padding: 0 8px;
+		border-radius: 6px;
+		border: 1px solid #2d3231;
+		background: #131716;
+		color: #d4d8d6;
 		font-size: 11px;
-		font-weight: 700;
-		line-height: 1.1;
+		font-weight: 600;
+		line-height: 1;
 		letter-spacing: 0.02em;
 	}
 

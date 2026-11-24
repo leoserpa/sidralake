@@ -126,7 +126,9 @@ select
     round(pib_per_capita_real_brl, 0) as pib_pc,
     round(cagr_pib_real_3a_pct / 100.0, 4) as cagr_3a_pct,
     num_empresas_atuantes as empresas,
-    round(salario_medio_real_brl, 0) as salario_real
+    round(empresas_por_1000_hab, 1) as emp_1k_hab,
+    round(salario_medio_real_brl, 0) as salario_real,
+    round(salario_medio_sm, 2) as salario_sm
 from sidralake.mart_inteligencia_mercado_municipal
 where is_ultimo_ano_completo
   and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
@@ -155,6 +157,8 @@ order by ims_score_0_100 desc, pib_real_mil_brl desc
 		{ key: 'pib_bi', label: 'PIB Real (Bi)', align: 'right', fmt: 'brl_bi2' },
 		{ key: 'pib_pc', label: 'PIB Per Capita', align: 'right', fmt: 'brl_int' },
 		{ key: 'salario_real', label: 'Salário Médio', align: 'right', fmt: 'brl_int' },
+		{ key: 'salario_sm', label: 'Sal. (SM)', align: 'right', fmt: 'sm' },
+		{ key: 'emp_1k_hab', label: 'Emp./1k hab', align: 'right', fmt: 'dec1' },
 		{ key: 'cagr_3a_pct', label: 'CAGR 3A', align: 'right', kind: 'growth', highlightThreshold: 0.1 },
 		{ key: 'ims', label: 'Score IMS', align: 'right', kind: 'databar', fmt: 'dec2', barMax: 100, barThreshold: 85 },
 		{ key: 'tier', label: 'Tier', align: 'center', kind: 'tier_badge' }

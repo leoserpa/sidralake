@@ -126,6 +126,75 @@ order by data_referencia asc, indicador asc
 	</div>
 </div>
 
+```sql tendencia_volume_pmc
+with base as (
+    select
+        data_referencia,
+        round(media_movel_3m_volume, 2) as mm3,
+        round(media_movel_12m_volume, 2) as mm12
+    from sidralake.mart_pulso_consumo_macro
+    where sigla_uf = '${inputs.uf.value}'
+      and nome_atividade_pmc = '${inputs.atividade.value}'
+      and media_movel_3m_volume is not null
+      and media_movel_12m_volume is not null
+)
+select data_referencia, 'Média Móvel 3m (Curto Prazo)' as serie, mm3 as indice from base
+union all
+select data_referencia, 'Média Móvel 12m (Tendência)' as serie, mm12 as indice from base
+order by data_referencia asc, serie asc
+```
+
+```sql spread_real_varejo
+select
+    data_referencia,
+    round(spread_volume_vs_ipca_12m_pp, 2) as spread_pp,
+    case
+        when spread_volume_vs_ipca_12m_pp >= 0 then 'Acima do IPCA'
+        else 'Abaixo do IPCA'
+    end as regime_spread
+from sidralake.mart_pulso_consumo_macro
+where sigla_uf = '${inputs.uf.value}'
+  and nome_atividade_pmc = '${inputs.atividade.value}'
+  and spread_volume_vs_ipca_12m_pp is not null
+order by data_referencia asc
+```
+
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<LineChart
+			data={tendencia_volume_pmc}
+			x=data_referencia
+			y=indice
+			series=serie
+			yFmt="#,##0.0"
+			yGridlines=false
+			xGridlines=false
+			seriesColors={{'Média Móvel 3m (Curto Prazo)': '#3b82f6', 'Média Móvel 12m (Tendência)': '#686e6c'}}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
+			title="Tendência de Volume do Varejo (MM 3m × MM 12m)"
+			subtitle="Índice base 2022=100 · Curto prazo (MM 3m) acima da MM 12m indica aceleração"
+			yAxisTitle="Índice (2022 = 100)"
+		/>
+	</div>
+	<div class="sl-card">
+		<BarChart
+			data={spread_real_varejo}
+			x=data_referencia
+			y=spread_pp
+			series=regime_spread
+			type=stacked
+			yFmt="#,##0.0"
+			yGridlines=false
+			xGridlines=false
+			seriesColors={{'Acima do IPCA': '#3b82f6', 'Abaixo do IPCA': '#525755'}}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
+			title="Ganho ou Perda Real do Varejo vs. Inflação (p.p.)"
+			subtitle="Spread Volume Acum. 12m − IPCA 12m · Barras em azul superam a inflação"
+			yAxisTitle="Pontos Percentuais (p.p.)"
+		/>
+	</div>
+</div>
+
 ```sql regimes_ultimo_mes
 with base as (
     select

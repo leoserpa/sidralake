@@ -77,7 +77,7 @@ limit 1
 <div class="sl-kpi-grid-5">
 	<KpiCard data={kpis_gerais} value="pib_real_tri" title="PIB Real Brasil" fmt="brl_tri" icon="landmark" subtitle="Valores constantes IPCA" />
 	<KpiCard data={kpis_gerais} value="populacao_total" title="População Residente" fmt="pop_mi" icon="users" subtitleCol="total_municipios" subtitleFmt="int" subtitleSuffix=" municípios no recorte" />
-	<KpiCard data={kpis_gerais} value="massa_salarial_bi" title="Massa Salarial Formal" fmt="brl_bi" icon="briefcase" subtitleCol="empresas_atuantes" subtitleFmt="pop_mi" subtitleSuffix=" empresas CEMPRE" />
+	<KpiCard data={kpis_gerais} value="massa_salarial_bi" title="Massa Salarial Formal" fmt="brl_bi" icon="briefcase" subtitle="Série CEMPRE disponível a partir de 2022" subtitleCol="empresas_atuantes" subtitleFmt="pop_mi" subtitleSuffix=" empresas CEMPRE" />
 	<KpiCard data={kpis_gerais} value="ims_medio" title="Score IMS Médio" fmt="dec2" icon="gauge" subtitle="Escala 0–100 · 4 pilares" />
 	<KpiCard data={ipca_resumo_home} value="ipca_12m_pct" title="IPCA Acum. 12m" fmt="pct2" icon="percent" subtitleCol="ultima_competencia" subtitlePrefix="Ref. " subtitle2Col="ipca_mes_pct" subtitle2Fmt="signed_pct2" subtitle2Prefix=" · " subtitle2Suffix=" mês" />
 </div>

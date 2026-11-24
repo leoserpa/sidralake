@@ -223,6 +223,48 @@ order by m.sigla_uf asc, m.codigo_secao_cnae asc
 	/>
 </div>
 
+```sql scatter_renda_crescimento_cnae
+select
+    sigla_uf || ' · ' || codigo_secao_cnae as uf_setor,
+    case
+        when crescimento_emprego_setor_yoy_pct >= 8.0 then 'Alta Expansão (≥ +8% YoY)'
+        else 'Demais Clusters'
+    end as grupo_expansao,
+    round(crescimento_emprego_setor_yoy_pct / 100.0, 4) as cresc_emp_yoy_pct,
+    round((massa_salarial_real_mil_brl * 1000.0) / nullif(pessoal_ocupado_assalariado * 13.0, 0), 0) as salario_mensal_proxy
+from sidralake.mart_clusters_setoriais_uf
+where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_clusters_setoriais_uf))
+  and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+  and ('${inputs.cnae.value}' = 'TODAS' or codigo_secao_cnae = '${inputs.cnae.value}')
+  and pessoal_ocupado_total >= 5000
+  and pessoal_ocupado_assalariado > 0
+  and massa_salarial_real_mil_brl is not null
+  and crescimento_emprego_setor_yoy_pct is not null
+  and abs(crescimento_emprego_setor_yoy_pct) <= 200
+order by pessoal_ocupado_total desc
+limit 400
+```
+
+<div class="sl-card sl-stack">
+	<ScatterPlot
+		data={scatter_renda_crescimento_cnae}
+		x=cresc_emp_yoy_pct
+		y=salario_mensal_proxy
+		series=grupo_expansao
+		tooltipTitle=uf_setor
+		xFmt="0.0%"
+		yFmt="#,##0"
+		yGridlines=false
+		xGridlines=false
+		seriesColors={{'Alta Expansão (≥ +8% YoY)': '#3b82f6', 'Demais Clusters': '#525755'}}
+		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { left: 20, right: 24, top: 44, bottom: 40, containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
+		title="Quais clusters combinam expansão de emprego com salários elevados?"
+		subtitle="Clusters com ≥ 5 mil ocupados · Eixo X: Cresc. Emprego YoY (%) · Eixo Y: Remuneração Mensal Real Implícita (Massa / 13 meses)"
+		xAxisTitle="Crescimento de Emprego YoY (%)"
+		yAxisTitle="Remuneração Mensal Real Implícita (R$)"
+	/>
+</div>
+
 ```sql tabela_clusters
 select
     cast(cast(ano_referencia as integer) as varchar) as ano,

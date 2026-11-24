@@ -116,7 +116,116 @@ order by regiao asc
 			seriesColors={{'Serviços': '#3b82f6', 'Indústria': '#9ca3a0', 'Agro': '#686e6c', 'Adm. Púb.': '#2d3231'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
 			title="Composição setorial do VAB por Região"
-			subtitle="Proporção 100% · Serviços em destaque azul · Último VAB IBGE (2021)"
+			subtitle="Proporção 100% · Serviços em destaque azul · Último VAB setorial publicado pelo IBGE"
+		/>
+	</div>
+</div>
+
+```sql top_densidade_emp
+with base as (
+    select
+        nome_municipio || ' - ' || sigla_uf as municipio,
+        round(empresas_por_1000_hab, 1) as emp_por_1000_hab,
+        row_number() over (order by empresas_por_1000_hab desc) as pos
+    from sidralake.mart_inteligencia_mercado_municipal
+    where ano_referencia = (
+        select max(ano_referencia)
+        from sidralake.mart_inteligencia_mercado_municipal
+        where empresas_por_1000_hab is not null
+    )
+      and coalesce(populacao_residente, 0) >= coalesce(try_cast('${inputs.min_pop_din}' as double), 50000)
+      and empresas_por_1000_hab is not null
+      and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+    order by pos asc
+    limit 10
+)
+select
+    municipio,
+    emp_por_1000_hab,
+    case when pos = 1 then 'Destaque' else 'Demais' end as destaque
+from base
+order by pos asc
+```
+
+```sql top_cresc_empresas
+with base as (
+    select
+        nome_municipio || ' - ' || sigla_uf as municipio,
+        round(crescimento_empresas_yoy_pct / 100.0, 4) as cresc_emp_yoy_pct,
+        row_number() over (order by crescimento_empresas_yoy_pct desc) as pos
+    from sidralake.mart_inteligencia_mercado_municipal
+    where ano_referencia = (
+        select max(ano_referencia)
+        from sidralake.mart_inteligencia_mercado_municipal
+        where crescimento_empresas_yoy_pct is not null
+    )
+      and coalesce(populacao_residente, 0) >= coalesce(try_cast('${inputs.min_pop_din}' as double), 50000)
+      and crescimento_empresas_yoy_pct is not null
+      and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+    order by pos asc
+    limit 10
+)
+select
+    municipio,
+    cresc_emp_yoy_pct,
+    case when pos = 1 then 'Destaque' else 'Demais' end as destaque
+from base
+order by pos asc
+```
+
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<BarChart
+			data={top_densidade_emp}
+			x=municipio
+			y=emp_por_1000_hab
+			series=destaque
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="#,##0.0"
+			leftPadding=28
+			rightPadding=44
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
+			title="Onde há maior densidade empreendedora?"
+			subtitle="Empresas atuantes por 1.000 habitantes (último CEMPRE) · Líder em azul"
+		/>
+	</div>
+	<div class="sl-card">
+		<BarChart
+			data={top_cresc_empresas}
+			x=municipio
+			y=cresc_emp_yoy_pct
+			series=destaque
+			type=stacked
+			swapXY=true
+			sort=false
+			labels=true
+			stackTotalLabel=false
+			labelPosition=outside
+			showAllLabels=true
+			labelFmt="0.0%"
+			leftPadding=28
+			rightPadding=48
+			legend=false
+			yGridlines=false
+			xGridlines=false
+			yAxisLabels=false
+			yBaseline=false
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
+			title="Quais cidades mais abriram empresas no último ano?"
+			subtitle="Crescimento anual de empresas atuantes (CEMPRE YoY %) · Líder em azul"
 		/>
 	</div>
 </div>
@@ -183,7 +292,7 @@ order by hhi_div desc
 
 <ExecTable
 	data={vab_por_uf}
-	title="Estrutura Produtiva Média por UF (Último VAB Publicado — 2021)"
+	title="Estrutura Produtiva Média por UF (Último VAB Setorial Publicado)"
 	subtitle="Estados ordenados pelo Índice de Diversificação Setorial (HHI) · Destaque azul: UF líder e HHI ≥ 0,65"
 	search={true}
 	searchPlaceholder="Buscar UF ou região..."

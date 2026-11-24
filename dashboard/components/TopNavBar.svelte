@@ -8,6 +8,7 @@
 		{ label: 'Comparador', path: '/comparador/' },
 		{ label: 'Expansão', path: '/expansao/' },
 		{ label: 'Dinamismo', path: '/dinamismo/' },
+		{ label: 'Demografia', path: '/demografia/' },
 		{ label: 'CNAE', path: '/clusters-cnae/' },
 		{ label: 'Varejo', path: '/pulso-varejo/' }
 	];
@@ -58,7 +59,7 @@
 
 		<div class="sl-status-pill" title="Dados públicos oficiais IBGE executados localmente no navegador">
 			<span class="sl-status-dot" aria-hidden="true"></span>
-			<span>IBGE 2023 · DuckDB-WASM</span>
+			<span>IBGE Oficial · DuckDB-WASM</span>
 		</div>
 	</div>
 </header>

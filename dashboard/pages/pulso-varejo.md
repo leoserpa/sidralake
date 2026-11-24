@@ -189,8 +189,8 @@ order by data_referencia asc
 			xGridlines=false
 			seriesColors={{'Acima do IPCA': '#3b82f6', 'Abaixo do IPCA': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Ganho ou Perda Real do Varejo vs. Inflação (p.p.)"
-			subtitle="Spread Volume Acum. 12m − IPCA 12m · Barras em azul superam a inflação"
+			title="Spread de Taxas: Volume do Varejo vs. IPCA (p.p.)"
+			subtitle="Diferença entre variação acumulada em 12m do volume (PMC) e do IPCA · Barras em azul indicam ritmo de volume acima da inflação"
 			yAxisTitle="Pontos Percentuais (p.p.)"
 		/>
 	</div>

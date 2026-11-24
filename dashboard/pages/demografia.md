@@ -45,11 +45,7 @@ with pop_ranked as (
         g.sigla_uf,
         g.nome_regiao,
         g.nome_regiao_imediata,
-        row_number() over (partition by p.codigo_ibge_municipio order by p.ano_referencia desc) as rn_ult,
-        row_number() over (
-            partition by p.codigo_ibge_municipio
-            order by case when cast(p.ano_referencia as integer) = 2022 then 0 else 1 end, p.ano_referencia asc
-        ) as rn_base
+        row_number() over (partition by p.codigo_ibge_municipio order by p.ano_referencia desc) as rn_ult
     from sidralake.fct_populacao_municipal as p
     inner join sidralake.dim_geografia as g
         on p.codigo_ibge_municipio = g.codigo_ibge_municipio
@@ -71,15 +67,15 @@ ult as (
 base as (
     select codigo_ibge_municipio, populacao_residente as pop_base
     from pop_ranked
-    where rn_base = 1
+    where ano = 2022
 )
 select
     sum(u.populacao_residente) as pop_atual,
     cast(cast(max(u.ano) as integer) as varchar) as ano_atual,
-    sum(u.populacao_residente) - sum(coalesce(b.pop_base, u.populacao_residente)) as saldo_pop,
+    sum(case when b.pop_base is not null then u.populacao_residente - b.pop_base end) as saldo_pop,
     round(
-        (sum(u.populacao_residente) - sum(coalesce(b.pop_base, u.populacao_residente))) * 1.0
-        / nullif(sum(coalesce(b.pop_base, u.populacao_residente)), 0),
+        sum(case when b.pop_base is not null then u.populacao_residente - b.pop_base end) * 1.0
+        / nullif(sum(b.pop_base), 0),
         4
     ) as variacao_pop_pct,
     round(sum(u.populacao_residente) * 1.0 / nullif(sum(u.area_km2), 0), 1) as densidade_media,
@@ -91,8 +87,8 @@ left join base as b
 
 <div class="sl-kpi-grid-5">
 	<KpiCard data={kpis_demografia} value="pop_atual" title="População Atual" fmt="pop_mi" icon="users" subtitleCol="ano_atual" subtitlePrefix="Estimativa oficial IBGE " />
-	<KpiCard data={kpis_demografia} value="saldo_pop" title="Saldo Demográfico" fmt="pop_mi" icon="trending" subtitle="Variação desde o Censo base" />
-	<KpiCard data={kpis_demografia} value="variacao_pop_pct" title="Crescimento Populacional" fmt="signed_pct2" icon="percent" subtitle="Expansão acumulada no recorte" />
+	<KpiCard data={kpis_demografia} value="saldo_pop" title="Saldo Demográfico" fmt="pop_mi" icon="trending" subtitle="Variação desde o Censo 2022" />
+	<KpiCard data={kpis_demografia} value="variacao_pop_pct" title="Crescimento Populacional" fmt="signed_pct2" icon="percent" subtitle="Expansão acumulada desde 2022" />
 	<KpiCard data={kpis_demografia} value="densidade_media" title="Densidade Média" fmt="dec1" icon="layers" subtitle="Habitantes por km²" />
 	<KpiCard data={kpis_demografia} value="total_polos" title="Regiões Imediatas" fmt="int" icon="mappin" subtitle="Áreas de influência IBGE" />
 </div>
@@ -101,14 +97,11 @@ left join base as b
 with pop_ranked as (
     select
         p.codigo_ibge_municipio,
+        cast(p.ano_referencia as integer) as ano,
         p.populacao_residente,
         g.sigla_uf,
         g.nome_regiao,
-        row_number() over (partition by p.codigo_ibge_municipio order by p.ano_referencia desc) as rn_ult,
-        row_number() over (
-            partition by p.codigo_ibge_municipio
-            order by case when cast(p.ano_referencia as integer) = 2022 then 0 else 1 end, p.ano_referencia asc
-        ) as rn_base
+        row_number() over (partition by p.codigo_ibge_municipio order by p.ano_referencia desc) as rn_ult
     from sidralake.fct_populacao_municipal as p
     inner join sidralake.dim_geografia as g
         on p.codigo_ibge_municipio = g.codigo_ibge_municipio
@@ -128,12 +121,12 @@ agg as (
     select
         u.sigla_uf as uf,
         round(
-            (sum(u.populacao_residente) - sum(coalesce(b.populacao_residente, u.populacao_residente))) * 1.0
-            / nullif(sum(coalesce(b.populacao_residente, u.populacao_residente)), 0),
+            sum(case when b.populacao_residente is not null then u.populacao_residente - b.populacao_residente end) * 1.0
+            / nullif(sum(b.populacao_residente), 0),
             4
         ) as cresc_pct
     from (select * from pop_ranked where rn_ult = 1) as u
-    left join (select codigo_ibge_municipio, populacao_residente from pop_ranked where rn_base = 1) as b
+    left join (select codigo_ibge_municipio, populacao_residente from pop_ranked where ano = 2022) as b
         on u.codigo_ibge_municipio = b.codigo_ibge_municipio
     group by 1
 ),
@@ -164,11 +157,7 @@ with pop_ranked as (
         g.nome_municipio,
         g.sigla_uf,
         g.nome_regiao,
-        row_number() over (partition by p.codigo_ibge_municipio order by p.ano_referencia desc) as rn_ult,
-        row_number() over (
-            partition by p.codigo_ibge_municipio
-            order by case when cast(p.ano_referencia as integer) = 2022 then 0 else 1 end, p.ano_referencia asc
-        ) as rn_base
+        row_number() over (partition by p.codigo_ibge_municipio order by p.ano_referencia desc) as rn_ult
     from sidralake.fct_populacao_municipal as p
     inner join sidralake.dim_geografia as g
         on p.codigo_ibge_municipio = g.codigo_ibge_municipio
@@ -193,9 +182,9 @@ cresc as (
             4
         ) as cresc_pct
     from (select * from pop_ranked where rn_ult = 1) as u
-    inner join (select codigo_ibge_municipio, ano as ano_base, populacao_residente from pop_ranked where rn_base = 1) as b
+    inner join (select codigo_ibge_municipio, populacao_residente from pop_ranked where ano = 2022) as b
         on u.codigo_ibge_municipio = b.codigo_ibge_municipio
-    where u.ano > b.ano_base
+    where u.ano > 2022
       and u.populacao_residente >= coalesce(try_cast('${inputs.min_pop_demo}' as double), 50000)
       and b.populacao_residente > 0
 ),
@@ -242,7 +231,7 @@ order by pos asc
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
 			title="Quais UFs mais crescem em população?"
-			subtitle="Variação acumulada desde o Censo base · UF líder em azul"
+			subtitle="Variação acumulada desde o Censo 2022 · UF líder em azul"
 		/>
 	</div>
 	<div class="sl-card">
@@ -268,8 +257,8 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Quais municípios mais ganham habitantes?"
-			subtitle="Expansão demográfica recente no porte filtrado · Líder em azul"
+			title="Quais municípios têm maior crescimento populacional (%)?"
+			subtitle="Variação percentual desde o Censo 2022 no porte filtrado · Líder em azul"
 		/>
 	</div>
 </div>
@@ -338,23 +327,20 @@ order by pos asc
 with pop_ranked as (
     select
         p.codigo_ibge_municipio,
+        cast(p.ano_referencia as integer) as ano,
         p.populacao_residente,
         p.area_km2,
-        row_number() over (partition by p.codigo_ibge_municipio order by p.ano_referencia desc) as rn_ult,
-        row_number() over (
-            partition by p.codigo_ibge_municipio
-            order by case when cast(p.ano_referencia as integer) = 2022 then 0 else 1 end, p.ano_referencia asc
-        ) as rn_base
+        row_number() over (partition by p.codigo_ibge_municipio order by p.ano_referencia desc) as rn_ult
     from sidralake.fct_populacao_municipal as p
 ),
 pop_mun as (
     select
         u.codigo_ibge_municipio,
         u.populacao_residente as pop_atual,
-        coalesce(b.populacao_residente, u.populacao_residente) as pop_base,
+        b.populacao_residente as pop_base,
         u.area_km2
     from (select * from pop_ranked where rn_ult = 1) as u
-    left join (select codigo_ibge_municipio, populacao_residente from pop_ranked where rn_base = 1) as b
+    left join (select codigo_ibge_municipio, populacao_residente from pop_ranked where ano = 2022) as b
         on u.codigo_ibge_municipio = b.codigo_ibge_municipio
 )
 select
@@ -364,8 +350,8 @@ select
     count(*) as municipios,
     sum(coalesce(pm.pop_atual, m.populacao_residente)) as pop_atual,
     round(
-        (sum(coalesce(pm.pop_atual, m.populacao_residente)) - sum(coalesce(pm.pop_base, m.populacao_residente))) * 1.0
-        / nullif(sum(coalesce(pm.pop_base, m.populacao_residente)), 0),
+        sum(case when pm.pop_base is not null then pm.pop_atual - pm.pop_base end) * 1.0
+        / nullif(sum(pm.pop_base), 0),
         4
     ) as cresc_pop_pct,
     round(

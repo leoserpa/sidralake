@@ -75,13 +75,37 @@ def _seed_synthetic_bi_parquets(parquet_dir: Path) -> None:
 
     pl.DataFrame(
         {
-            "codigo_ibge_municipio": [3550308, 3550308, 4106902, 3545803, 5101837],
-            "ano_referencia": [2021, 2023, 2023, 2023, 2025],
-            "populacao_residente": [11_500_000, 11_673_789, 1_773_718, 183_347, 5_500],
-            "area_km2": [1521.1, 1521.1, 434.9, 271.0, 4700.0],
-            "densidade_demografica": [7560.0, 7674.5, 4078.4, 676.5, 1.17],
-            "origem_dado": ["ESTIMATIVA", "ESTIMATIVA", "ESTIMATIVA", "ESTIMATIVA", "ESTIMATIVA"],
-            "is_interpolado": [False, False, False, False, False],
+            "codigo_ibge_municipio": [
+                3550308,
+                3550308,
+                3550308,
+                4106902,
+                4106902,
+                3545803,
+                5101837,
+            ],
+            "ano_referencia": [2021, 2022, 2023, 2022, 2023, 2023, 2025],
+            "populacao_residente": [
+                11_500_000,
+                11_451_999,
+                11_673_789,
+                1_773_718,
+                1_801_472,
+                183_347,
+                5_500,
+            ],
+            "area_km2": [1521.1, 1521.1, 1521.1, 434.9, 434.9, 271.0, 4700.0],
+            "densidade_demografica": [7560.0, 7528.8, 7674.5, 4078.4, 4142.3, 676.5, 1.17],
+            "origem_dado": [
+                "ESTIMATIVA",
+                "CENSO_2022",
+                "ESTIMATIVA",
+                "CENSO_2022",
+                "ESTIMATIVA",
+                "ESTIMATIVA",
+                "ESTIMATIVA",
+            ],
+            "is_interpolado": [False] * 7,
         }
     ).write_parquet(parquet_dir / "fct_populacao_municipal.parquet")
 

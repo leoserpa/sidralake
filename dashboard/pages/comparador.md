@@ -103,19 +103,22 @@ with sel_ids as (
             4106902
         ) as id_b
 ),
+lados as (
+    select 'Cidade A' as lado, id_a as codigo_ibge_municipio from sel_ids
+    union all
+    select 'Cidade B' as lado, id_b as codigo_ibge_municipio from sel_ids
+),
 sel as (
     select
-        case
-            when codigo_ibge_municipio = (select id_a from sel_ids) then 'Cidade A'
-            else 'Cidade B'
-        end as lado,
-        score_tamanho_mercado,
-        score_poder_compra,
-        score_dinamismo,
-        score_maturidade_empresarial
-    from sidralake.mart_inteligencia_mercado_municipal
-    where is_ultimo_ano_completo
-      and codigo_ibge_municipio in ((select id_a from sel_ids), (select id_b from sel_ids))
+        l.lado,
+        m.score_tamanho_mercado,
+        m.score_poder_compra,
+        m.score_dinamismo,
+        m.score_maturidade_empresarial
+    from lados as l
+    inner join sidralake.mart_inteligencia_mercado_municipal as m
+        on m.codigo_ibge_municipio = l.codigo_ibge_municipio
+    where m.is_ultimo_ano_completo
 )
 select 'Tamanho (35%)' as pilar, lado, round(score_tamanho_mercado, 1) as nota from sel
 union all select 'Poder Compra (30%)', lado, round(score_poder_compra, 1) from sel
@@ -166,18 +169,21 @@ with sel_ids as (
             ),
             4106902
         ) as id_b
+),
+lados as (
+    select 'Cidade A' as lado, id_a as codigo_ibge_municipio from sel_ids
+    union all
+    select 'Cidade B' as lado, id_b as codigo_ibge_municipio from sel_ids
 )
 select
-    ano_referencia as ano,
-    case
-        when codigo_ibge_municipio = (select id_a from sel_ids) then 'Cidade A'
-        else 'Cidade B'
-    end as lado,
-    round(pib_real_mil_brl / 1e6, 2) as pib_real_bi
-from sidralake.mart_inteligencia_mercado_municipal
-where codigo_ibge_municipio in ((select id_a from sel_ids), (select id_b from sel_ids))
-  and pib_real_mil_brl is not null
-order by ano_referencia asc, lado asc
+    m.ano_referencia as ano,
+    l.lado,
+    round(m.pib_real_mil_brl / 1e6, 2) as pib_real_bi
+from lados as l
+inner join sidralake.mart_inteligencia_mercado_municipal as m
+    on m.codigo_ibge_municipio = l.codigo_ibge_municipio
+where m.pib_real_mil_brl is not null
+order by m.ano_referencia asc, l.lado asc
 ```
 
 <div class="sl-grid-2">
@@ -272,26 +278,29 @@ with sel_ids as (
             ),
             4106902
         ) as id_b
+),
+lados as (
+    select 'Cidade A' as lado, id_a as codigo_ibge_municipio from sel_ids
+    union all
+    select 'Cidade B' as lado, id_b as codigo_ibge_municipio from sel_ids
 )
 select
-    case
-        when codigo_ibge_municipio = (select id_a from sel_ids) then 'Cidade A'
-        else 'Cidade B'
-    end as lado,
-    nome_municipio || ' - ' || sigla_uf as municipio,
-    rank_nacional_ims as rk_br,
-    round(ims_score_0_100, 2) as ims,
-    populacao_residente as populacao,
-    round(pib_real_mil_brl / 1e6, 2) as pib_bi,
-    round(pib_per_capita_real_brl, 0) as pib_pc,
-    round(cagr_pib_real_3a_pct / 100.0, 4) as cagr_3a_pct,
-    num_empresas_atuantes as empresas,
-    round(salario_medio_real_brl, 0) as salario_real,
-    round(taxa_assalariamento_formal, 4) as formalizacao_pct
-from sidralake.mart_inteligencia_mercado_municipal
-where is_ultimo_ano_completo
-  and codigo_ibge_municipio in ((select id_a from sel_ids), (select id_b from sel_ids))
-order by lado asc
+    l.lado,
+    m.nome_municipio || ' - ' || m.sigla_uf as municipio,
+    m.rank_nacional_ims as rk_br,
+    round(m.ims_score_0_100, 2) as ims,
+    m.populacao_residente as populacao,
+    round(m.pib_real_mil_brl / 1e6, 2) as pib_bi,
+    round(m.pib_per_capita_real_brl, 0) as pib_pc,
+    round(m.cagr_pib_real_3a_pct / 100.0, 4) as cagr_3a_pct,
+    m.num_empresas_atuantes as empresas,
+    round(m.salario_medio_real_brl, 0) as salario_real,
+    round(m.taxa_assalariamento_formal, 4) as formalizacao_pct
+from lados as l
+inner join sidralake.mart_inteligencia_mercado_municipal as m
+    on m.codigo_ibge_municipio = l.codigo_ibge_municipio
+where m.is_ultimo_ano_completo
+order by l.lado asc
 ```
 
 <ExecTable

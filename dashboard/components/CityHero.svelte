@@ -113,7 +113,7 @@
 	.sl-hero-actions {
 		display: flex;
 		align-items: center;
-		gap: 10px;
+		gap: 8px;
 		flex-wrap: wrap;
 	}
 
@@ -121,19 +121,24 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 7px;
-		height: 36px;
+		height: 38px;
 		padding: 0 14px;
+		margin: 0;
+		border: 1px solid #3b82f6;
 		border-radius: 6px;
+		box-sizing: border-box;
 		background: #3b82f6;
 		color: #ffffff;
 		font-size: 12.5px;
 		font-weight: 600;
+		line-height: 1;
 		text-decoration: none;
 		white-space: nowrap;
-		transition: background 0.15s ease;
+		transition: background 0.15s ease, border-color 0.15s ease;
 	}
 
 	.sl-primary-btn:hover {
 		background: #2563eb;
+		border-color: #2563eb;
 	}
 </style>

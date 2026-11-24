@@ -130,9 +130,12 @@
 		flex-wrap: wrap;
 	}
 
-	:global(.sl-filter-bar > div),
+	:global(.sl-filter-bar > *),
+	:global(.sl-filter-bar > div > div),
 	:global(.sl-filter-bar button[role='combobox']) {
 		margin: 0 !important;
+		display: inline-flex;
+		align-items: center;
 	}
 
 	:global(.sl-filter-bar button) {
@@ -141,13 +144,27 @@
 		border-radius: 6px !important;
 		color: #d4d8d6 !important;
 		font-size: 12.5px !important;
-		min-height: 36px;
+		height: 38px !important;
+		min-height: 38px !important;
+		padding-top: 0 !important;
+		padding-bottom: 0 !important;
+		box-sizing: border-box !important;
+		display: inline-flex !important;
+		align-items: center !important;
+		line-height: 1 !important;
 		box-shadow: none !important;
 	}
 
 	:global(.sl-filter-bar button:hover) {
 		border-color: #464d4b !important;
 		color: #f5f7f6 !important;
+	}
+
+	:global(.sl-filter-bar .sl-outline-pill) {
+		height: 38px !important;
+		padding: 0 12px !important;
+		border-radius: 6px !important;
+		box-sizing: border-box;
 	}
 
 	/* Crisp unfilled outline pill (ZERO blue background shading) */
@@ -244,7 +261,7 @@
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 20px;
-		align-items: end;
+		align-items: center;
 	}
 
 	/* Clean ECharts container alignment inside recessed .sl-card */

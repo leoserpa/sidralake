@@ -101,8 +101,8 @@ order by data_referencia asc, indicador asc
 			yFmt="0.0%"
 			yGridlines=false
 			xGridlines=false
-			seriesColors={{'IPCA Acum. 12m': '#3b82f6', 'IPCA Mensal': '#64748b'}}
-			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, legend: { textStyle: { color: '#f8fafc' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } }, yAxis: { axisLabel: { color: '#f8fafc' }, nameTextStyle: { color: '#cbd5e1' } } }}
+			seriesColors={{'IPCA Acum. 12m': '#3b82f6', 'IPCA Mensal': '#686e6c'}}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
 			title="Trajetória da Inflação Oficial (IPCA Brasil · 2018–2026)"
 			subtitle="IPCA acumulado em 12 meses em azul · Variação mensal em ardósia"
 			yAxisTitle="Variação (%)"
@@ -117,8 +117,8 @@ order by data_referencia asc, indicador asc
 			yFmt="0.0%"
 			yGridlines=false
 			xGridlines=false
-			seriesColors={{'Volume Real YoY': '#3b82f6', 'Receita Nominal YoY': '#94a3b8', 'IPCA Acum. 12m': '#475569'}}
-			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, legend: { textStyle: { color: '#f8fafc' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } }, yAxis: { axisLabel: { color: '#f8fafc' }, nameTextStyle: { color: '#cbd5e1' } } }}
+			seriesColors={{'Volume Real YoY': '#3b82f6', 'Receita Nominal YoY': '#9ca3a0', 'IPCA Acum. 12m': '#3f4543'}}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
 			title="Volume Real do Varejo vs. Receita Nominal e IPCA (YoY %)"
 			subtitle="Volume Real em azul pré-atentivo · Receita Nominal e IPCA 12m em ardósia"
 			yAxisTitle="Variação (%)"
@@ -189,8 +189,8 @@ order by pos asc
 			xGridlines=false
 			yAxisLabels=false
 			yBaseline=false
-			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } } }}
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
 			title="Qual regime domina o varejo nacional (PMC × IPCA)?"
 			subtitle="Distribuição das séries UF × Atividade · Regime dominante em azul"
 		/>
@@ -216,8 +216,8 @@ order by pos asc
 			xGridlines=false
 			yAxisLabels=false
 			yBaseline=false
-			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } } }}
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
 			title="Qual o ritmo médio de volume real em cada regime?"
 			subtitle="Variação média YoY do volume de vendas (%) · Maior expansão em azul"
 		/>
@@ -251,8 +251,8 @@ order by sigla_uf asc, grupo asc
 		value=vol_yoy_pct
 		valueFmt="0.0%"
 		xLabelRotation=0
-		colorScale={['#141b26', '#334155', '#3b82f6']}
-		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' } } }}
+		colorScale={['#131716', '#2d3231', '#3b82f6']}
+		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' } } }}
 		title="Volume Real YoY (%) — UF × Grupo de Consumo"
 		subtitle="Última competência PMC · Intensidade azul indica maior expansão real"
 	/>

@@ -7,7 +7,7 @@
 	export let title = 'Como o PIB real se distribui por Região?';
 	export let centerLabel = 'PIB Real Total';
 
-	const PALETTE = ['#3b82f6', '#64748b', '#525866', '#475569', '#334155', '#1e293b'];
+	const PALETTE = ['#3b82f6', '#686e6c', '#525755', '#3f4543', '#2d3231', '#1d2220'];
 	const nfDec2 = new Intl.NumberFormat('pt-BR', {
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2
@@ -119,7 +119,7 @@
 					<path
 						d={s.path}
 						fill={s.color}
-						stroke="#0f141d"
+						stroke="#0b0f0d"
 						stroke-width="2.5"
 						class="sl-donut-slice"
 						class:is-dimmed={hoveredIndex >= 0 && hoveredIndex !== idx}
@@ -222,7 +222,7 @@
 	}
 
 	.sl-donut-total {
-		color: #f8fafc;
+		color: #f5f7f6;
 		font-size: 16px;
 		font-weight: 700;
 		letter-spacing: -0.02em;
@@ -230,7 +230,7 @@
 	}
 
 	.sl-donut-caption {
-		color: #94a3b8;
+		color: #9ca3a0;
 		font-size: 11px;
 		margin-top: 2px;
 	}
@@ -269,13 +269,13 @@
 	}
 
 	.sl-legend-name {
-		color: #cbd5e1;
+		color: #d4d8d6;
 		font-size: 13px;
 		font-weight: 400;
 	}
 
 	.sl-legend-row.is-leader .sl-legend-name {
-		color: #f8fafc;
+		color: #f5f7f6;
 		font-weight: 600;
 	}
 
@@ -288,12 +288,12 @@
 	}
 
 	.sl-legend-val {
-		color: #94a3b8;
+		color: #9ca3a0;
 		font-size: 12.5px;
 	}
 
 	.sl-legend-pct {
-		color: #cbd5e1;
+		color: #d4d8d6;
 		font-size: 12.5px;
 		font-weight: 600;
 		min-width: 44px;

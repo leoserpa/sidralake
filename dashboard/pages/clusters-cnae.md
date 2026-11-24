@@ -152,8 +152,8 @@ order by pos asc
 			xGridlines=false
 			yAxisLabels=false
 			yBaseline=false
-			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } } }}
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
 			title="Quais UFs lideram o share setorial?"
 			subtitle="Participação no emprego nacional do setor · Líder em azul"
 		/>
@@ -179,8 +179,8 @@ order by pos asc
 			xGridlines=false
 			yAxisLabels=false
 			yBaseline=false
-			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525866'}}
-			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' }, axisLine: { lineStyle: { color: '#334155' } } } }}
+			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
 			title="Quais seções CNAE mais empregam?"
 			subtitle="Pessoal ocupado formal (milhões) · Seção líder em azul"
 		/>
@@ -216,8 +216,8 @@ order by m.sigla_uf asc, m.codigo_secao_cnae asc
 		y=uf
 		value=share_pct
 		valueFmt="0.0%"
-		colorScale={['#141b26', '#1e3a8a', '#2563eb', '#3b82f6']}
-		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, xAxis: { axisLabel: { color: '#f8fafc' } }, yAxis: { axisLabel: { color: '#f8fafc' } } }}
+		colorScale={['#131716', '#1e3a8a', '#2563eb', '#3b82f6']}
+		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' } } }}
 		title="Concentração Estadual (%) no Emprego Brasileiro por Seção CNAE"
 		subtitle="Top 12 UFs · A=Agro · C=Indústria · F=Construção · G=Comércio · H=Transporte · J=TI · K=Finanças · N=Adm · P=Educação · Q=Saúde"
 	/>

@@ -378,8 +378,8 @@
 
 <style>
 	.sl-table-card {
-		background: #0f141d;
-		border: 1px solid #1e293b;
+		background: #0b0f0d;
+		border: 1px solid #2d3231;
 		border-radius: 10px;
 		padding: 20px 22px;
 		display: flex;
@@ -420,22 +420,22 @@
 		height: 34px;
 		padding: 0 11px;
 		border-radius: 6px;
-		background: #141b26;
-		border: 1px solid #334155;
-		color: #94a3b8;
+		background: #131716;
+		border: 1px solid #2d3231;
+		color: #9ca3a0;
 	}
 
 	.sl-search-box input {
 		background: transparent;
 		border: none;
 		outline: none;
-		color: #f8fafc;
+		color: #f5f7f6;
 		font-size: 12.5px;
 		width: 235px;
 	}
 
 	.sl-search-box input::placeholder {
-		color: #64748b;
+		color: #7c8380;
 	}
 
 	.sl-export-btn {
@@ -445,9 +445,9 @@
 		height: 34px;
 		padding: 0 12px;
 		border-radius: 6px;
-		background: #141b26;
-		border: 1px solid #334155;
-		color: #cbd5e1;
+		background: #131716;
+		border: 1px solid #2d3231;
+		color: #d4d8d6;
 		font-size: 12px;
 		font-weight: 500;
 		cursor: pointer;
@@ -455,8 +455,8 @@
 	}
 
 	.sl-export-btn:hover {
-		border-color: #475569;
-		color: #f8fafc;
+		border-color: #464d4b;
+		color: #f5f7f6;
 	}
 
 	.sl-table-scroll {
@@ -471,15 +471,15 @@
 	}
 
 	.sl-table thead th {
-		background: #141b26;
-		color: #94a3b8;
+		background: #131716;
+		color: #9ca3a0;
 		font-size: 10.5px;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		text-align: left;
 		padding: 0;
-		border-bottom: 1px solid #1e293b;
+		border-bottom: 1px solid #2d3231;
 		white-space: nowrap;
 	}
 
@@ -517,7 +517,7 @@
 	.sl-th-btn:hover,
 	.sl-th-btn:focus-visible,
 	.sl-table thead th.is-sorted {
-		color: #e2e8f0;
+		color: #f5f7f6;
 		outline: none;
 	}
 
@@ -531,7 +531,7 @@
 	}
 
 	.sl-table tbody tr {
-		border-bottom: 1px solid #1e293b;
+		border-bottom: 1px solid #1d2220;
 		transition: background 0.12s ease;
 	}
 
@@ -540,7 +540,7 @@
 	}
 
 	.sl-table tbody tr:hover {
-		background: rgba(255, 255, 255, 0.02);
+		background: rgba(255, 255, 255, 0.025);
 	}
 
 	.sl-table tbody tr.is-leader td:first-child {
@@ -549,7 +549,7 @@
 
 	.sl-table tbody td {
 		padding: 13px 14px;
-		color: #cbd5e1;
+		color: #d4d8d6;
 		font-size: 13px;
 		vertical-align: middle;
 		white-space: nowrap;
@@ -566,7 +566,7 @@
 	}
 
 	.sl-cell-rank {
-		color: #94a3b8;
+		color: #9ca3a0;
 		font-weight: 600;
 	}
 
@@ -575,7 +575,7 @@
 	}
 
 	.sl-cell-primary {
-		color: #f8fafc;
+		color: #f5f7f6;
 		font-weight: 600;
 	}
 
@@ -584,11 +584,11 @@
 	}
 
 	.sl-cell-text {
-		color: #cbd5e1;
+		color: #d4d8d6;
 	}
 
 	.sl-muted {
-		color: #64748b;
+		color: #686e6c;
 	}
 
 	.sl-bar-cell {
@@ -600,7 +600,7 @@
 	}
 
 	.sl-bar-num {
-		color: #f8fafc;
+		color: #f5f7f6;
 		font-size: 13px;
 		font-weight: 600;
 		line-height: 1;
@@ -614,14 +614,14 @@
 		width: 84px;
 		height: 4px;
 		border-radius: 2px;
-		background: #1e293b;
+		background: #232826;
 		overflow: hidden;
 	}
 
 	.sl-bar-fill {
 		height: 100%;
 		border-radius: 2px;
-		background: #525866;
+		background: #525755;
 	}
 
 	.sl-bar-fill.is-accent {
@@ -632,7 +632,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
-		color: #cbd5e1;
+		color: #d4d8d6;
 		font-weight: 500;
 	}
 
@@ -648,7 +648,7 @@
 
 	.sl-empty-cell {
 		text-align: center;
-		color: #94a3b8;
+		color: #9ca3a0;
 		padding: 28px 16px !important;
 	}
 
@@ -658,12 +658,12 @@
 		justify-content: space-between;
 		gap: 12px;
 		padding-top: 8px;
-		border-top: 1px solid #1e293b;
+		border-top: 1px solid #1d2220;
 		flex-wrap: wrap;
 	}
 
 	.sl-page-info {
-		color: #94a3b8;
+		color: #9ca3a0;
 		font-size: 12px;
 		font-variant-numeric: tabular-nums;
 	}
@@ -675,7 +675,7 @@
 	}
 
 	.sl-page-counter {
-		color: #cbd5e1;
+		color: #d4d8d6;
 		font-size: 12px;
 		font-variant-numeric: tabular-nums;
 		padding: 0 4px;
@@ -685,9 +685,9 @@
 		height: 30px;
 		padding: 0 11px;
 		border-radius: 6px;
-		background: #141b26;
-		border: 1px solid #334155;
-		color: #cbd5e1;
+		background: #131716;
+		border: 1px solid #2d3231;
+		color: #d4d8d6;
 		font-size: 12px;
 		font-weight: 500;
 		cursor: pointer;
@@ -699,7 +699,7 @@
 	}
 
 	.sl-page-btn:not(:disabled):hover {
-		border-color: #475569;
-		color: #f8fafc;
+		border-color: #464d4b;
+		color: #f5f7f6;
 	}
 </style>

@@ -216,8 +216,8 @@
 
 <style>
 	.sl-kpi-card {
-		background: #0f141d;
-		border: 1px solid #1e293b;
+		background: #0b0f0d;
+		border: 1px solid #2d3231;
 		border-radius: 10px;
 		padding: 16px 18px;
 		display: flex;
@@ -235,14 +235,14 @@
 	}
 
 	.sl-kpi-title {
-		color: #94a3b8;
+		color: #9ca3a0;
 		font-size: 12px;
 		font-weight: 500;
 		line-height: 1.3;
 	}
 
 	.sl-kpi-icon {
-		color: #94a3b8;
+		color: #9ca3a0;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -250,7 +250,7 @@
 	}
 
 	.sl-kpi-value {
-		color: #f8fafc;
+		color: #f5f7f6;
 		font-size: 24px;
 		font-weight: 700;
 		line-height: 1.15;
@@ -259,7 +259,7 @@
 	}
 
 	.sl-kpi-sub {
-		color: #94a3b8;
+		color: #9ca3a0;
 		font-size: 11.5px;
 		font-weight: 400;
 		line-height: 1.35;

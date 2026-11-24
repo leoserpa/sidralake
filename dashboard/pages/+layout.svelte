@@ -36,22 +36,23 @@
 <style>
 	:global(:root) {
 		color-scheme: dark;
-		--sl-canvas: #090d14;
-		--sl-surface: #0f141d;
-		--sl-elevated: #141b26;
-		--sl-border: #1e293b;
-		--sl-border-subtle: #334155;
-		--sl-text-primary: #f8fafc;
-		--sl-text-secondary: #cbd5e1;
-		--sl-text-muted: #94a3b8;
+		--sl-canvas: #191c1d;
+		--sl-surface: #0b0f0d;
+		--sl-elevated: #131716;
+		--sl-border: #2d3231;
+		--sl-border-subtle: #3a403e;
+		--sl-divider: #1d2220;
+		--sl-text-primary: #f5f7f6;
+		--sl-text-secondary: #d4d8d6;
+		--sl-text-muted: #9ca3a0;
 		--sl-accent: #3b82f6;
-		--sl-bar-muted: #525866;
+		--sl-bar-muted: #525755;
 	}
 
 	:global(html),
 	:global(body) {
-		background-color: #090d14 !important;
-		color: #f8fafc !important;
+		background-color: #191c1d !important;
+		color: #f5f7f6 !important;
 		font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
 		font-variant-numeric: tabular-nums;
 		-webkit-font-smoothing: antialiased;
@@ -85,7 +86,7 @@
 
 	:global(.sl-page-title) {
 		margin: 0 !important;
-		color: #f8fafc !important;
+		color: #f5f7f6 !important;
 		font-size: 23px !important;
 		font-weight: 700 !important;
 		line-height: 1.2 !important;
@@ -94,7 +95,7 @@
 
 	:global(.sl-page-subtitle) {
 		margin: 0 !important;
-		color: #94a3b8 !important;
+		color: #9ca3a0 !important;
 		font-size: 13px !important;
 		line-height: 1.45 !important;
 	}
@@ -110,18 +111,18 @@
 
 	:global(.sl-section-title) {
 		margin: 0 !important;
-		color: #f8fafc !important;
+		color: #f5f7f6 !important;
 		font-size: 16px !important;
 		font-weight: 600 !important;
 		letter-spacing: -0.015em;
 	}
 
 	:global(.sl-section-sub) {
-		color: #94a3b8;
+		color: #9ca3a0;
 		font-size: 12px;
 	}
 
-	/* Inline filter pill ribbon matching Figma FilterPill */
+	/* Inline filter pill ribbon */
 	:global(.sl-filter-bar) {
 		display: flex;
 		align-items: center;
@@ -135,18 +136,18 @@
 	}
 
 	:global(.sl-filter-bar button) {
-		background-color: #141b26 !important;
-		border: 1px solid #334155 !important;
+		background-color: #0b0f0d !important;
+		border: 1px solid #2d3231 !important;
 		border-radius: 6px !important;
-		color: #cbd5e1 !important;
+		color: #d4d8d6 !important;
 		font-size: 12.5px !important;
 		min-height: 36px;
 		box-shadow: none !important;
 	}
 
 	:global(.sl-filter-bar button:hover) {
-		border-color: #475569 !important;
-		color: #f8fafc !important;
+		border-color: #464d4b !important;
+		color: #f5f7f6 !important;
 	}
 
 	/* Crisp unfilled outline pill (ZERO blue background shading) */
@@ -156,9 +157,9 @@
 		justify-content: center;
 		padding: 4px 11px;
 		border-radius: 9999px;
-		border: 1px solid #334155;
+		border: 1px solid #3a403e;
 		background: transparent;
-		color: #cbd5e1;
+		color: #d4d8d6;
 		font-size: 11.5px;
 		font-weight: 500;
 		line-height: 1.2;
@@ -199,17 +200,17 @@
 		margin-bottom: 18px;
 	}
 
-	/* Elevated Obsidian Card (10px radius, 1px #1E293B border, zero shadow) */
+	/* Matte Charcoal Recessed Card (#0B0F0D on #191C1D canvas, 1px #2D3231 border) */
 	:global(.sl-card) {
-		background: #0f141d;
-		border: 1px solid #1e293b;
+		background: #0b0f0d;
+		border: 1px solid #2d3231;
 		border-radius: 10px;
 		padding: 20px 22px;
 		min-width: 0;
 	}
 
 	:global(.sl-card-title) {
-		color: #f8fafc;
+		color: #f5f7f6;
 		font-size: 15px;
 		font-weight: 600;
 		line-height: 1.3;
@@ -217,7 +218,7 @@
 	}
 
 	:global(.sl-card-subtitle) {
-		color: #94a3b8;
+		color: #9ca3a0;
 		font-size: 12px;
 		font-weight: 400;
 		line-height: 1.4;
@@ -225,8 +226,8 @@
 
 	/* Filter strip card for sliders / side-by-side selectors */
 	:global(.sl-control-card) {
-		background: #0f141d;
-		border: 1px solid #1e293b;
+		background: #0b0f0d;
+		border: 1px solid #2d3231;
 		border-radius: 10px;
 		padding: 16px 20px;
 		margin-bottom: 18px;
@@ -246,7 +247,7 @@
 		align-items: end;
 	}
 
-	/* Clean ECharts container alignment inside elevated .sl-card */
+	/* Clean ECharts container alignment inside recessed .sl-card */
 	:global(.sl-card > div) {
 		width: 100% !important;
 		max-width: 100% !important;
@@ -261,14 +262,14 @@
 
 	:global(.sl-card h3),
 	:global(.sl-card h4) {
-		color: #f8fafc !important;
+		color: #f5f7f6 !important;
 	}
 
 	:global(.sl-footer) {
 		margin-top: 28px;
 		padding-top: 16px;
-		border-top: 1px solid #1e293b;
-		color: #64748b;
+		border-top: 1px solid #2d3231;
+		color: #7c8380;
 		font-size: 12px;
 		display: flex;
 		align-items: center;
@@ -278,7 +279,7 @@
 	}
 
 	:global(.sl-footer strong) {
-		color: #94a3b8;
+		color: #9ca3a0;
 		font-weight: 600;
 	}
 

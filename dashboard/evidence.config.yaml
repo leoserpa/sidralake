@@ -10,18 +10,18 @@ theme:
     default:
       light:
         - "#2563eb"
-        - "#64748b"
-        - "#475569"
-        - "#94a3b8"
-        - "#334155"
-        - "#cbd5e1"
+        - "#686e6c"
+        - "#525755"
+        - "#9ca3a0"
+        - "#3f4543"
+        - "#d4d8d6"
       dark:
         - "#3b82f6"
-        - "#525866"
-        - "#64748b"
-        - "#475569"
-        - "#334155"
-        - "#94a3b8"
+        - "#525755"
+        - "#686e6c"
+        - "#3f4543"
+        - "#2a2f2d"
+        - "#9ca3a0"
   colors:
     primary:
       light: "#2563eb"
@@ -31,7 +31,7 @@ theme:
       dark: "#3b82f6"
     base:
       light: "#ffffff"
-      dark: "#090d14"
+      dark: "#191c1d"
     info:
       light: "#2563eb"
       dark: "#3b82f6"
@@ -39,11 +39,11 @@ theme:
       light: "#2563eb"
       dark: "#3b82f6"
     warning:
-      light: "#64748b"
-      dark: "#94a3b8"
+      light: "#686e6c"
+      dark: "#9ca3a0"
     negative:
-      light: "#475569"
-      dark: "#64748b"
+      light: "#525755"
+      dark: "#686e6c"
 
 plugins:
   components:

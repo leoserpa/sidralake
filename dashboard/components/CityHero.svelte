@@ -77,8 +77,8 @@
 
 <style>
 	.sl-hero-card {
-		background: #0f141d;
-		border: 1px solid #1e293b;
+		background: #0b0f0d;
+		border: 1px solid #2d3231;
 		border-radius: 10px;
 		padding: 20px 24px;
 		display: flex;
@@ -105,7 +105,7 @@
 
 	.sl-hero-meta {
 		margin: 0;
-		color: #94a3b8;
+		color: #9ca3a0;
 		font-size: 12.5px;
 		line-height: 1.4;
 	}

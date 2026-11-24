@@ -100,8 +100,8 @@ limit 300
 		yFmt="#,##0"
 		yGridlines=false
 		xGridlines=false
-		seriesColors={{'Tier 1 · Polo': '#3b82f6', 'Tier 2 · Expansão': '#94a3b8', 'Demais Tiers': '#475569'}}
-		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f8fafc' }, subtextStyle: { color: '#94a3b8' } }, legend: { textStyle: { color: '#f8fafc' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f8fafc' }, nameTextStyle: { color: '#cbd5e1' }, axisLine: { lineStyle: { color: '#334155' } } }, yAxis: { axisLabel: { color: '#f8fafc' }, nameTextStyle: { color: '#cbd5e1' } } }}
+		seriesColors={{'Tier 1 · Polo': '#3b82f6', 'Tier 2 · Expansão': '#9ca3a0', 'Demais Tiers': '#3f4543'}}
+		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
 		title="Onde cruzar alto crescimento real com poder de compra?"
 		subtitle="Eixo X: CAGR 3a (%) · Eixo Y: PIB Per Capita (R$) · Bolha: População · Tier 1 em destaque azul"
 		xAxisTitle="CAGR PIB Real 3 Anos (%)"

@@ -70,8 +70,8 @@
 		z-index: 40;
 		width: 100%;
 		height: 60px;
-		background: #0f141d;
-		border-bottom: 1px solid #1e293b;
+		background: #0b0f0d;
+		border-bottom: 1px solid #2d3231;
 	}
 
 	.sl-topbar-inner {
@@ -100,7 +100,7 @@
 	}
 
 	.sl-brand-name {
-		color: #f8fafc;
+		color: #f5f7f6;
 		font-size: 15px;
 		font-weight: 700;
 		letter-spacing: -0.02em;
@@ -111,9 +111,9 @@
 		align-items: center;
 		padding: 2px 7px;
 		border-radius: 5px;
-		border: 1px solid #334155;
+		border: 1px solid #3a403e;
 		background: transparent;
-		color: #94a3b8;
+		color: #9ca3a0;
 		font-size: 11px;
 		font-weight: 600;
 		line-height: 1.2;
@@ -138,7 +138,7 @@
 		display: inline-flex;
 		align-items: center;
 		height: 100%;
-		color: #94a3b8;
+		color: #9ca3a0;
 		font-size: 13px;
 		font-weight: 500;
 		text-decoration: none;
@@ -147,11 +147,11 @@
 	}
 
 	.sl-nav-link:hover {
-		color: #e2e8f0;
+		color: #e5e8e6;
 	}
 
 	.sl-nav-link.is-active {
-		color: #f8fafc;
+		color: #f5f7f6;
 		font-weight: 600;
 	}
 
@@ -172,9 +172,9 @@
 		gap: 8px;
 		padding: 6px 12px;
 		border-radius: 9999px;
-		background: #141b26;
-		border: 1px solid #1e293b;
-		color: #cbd5e1;
+		background: #131716;
+		border: 1px solid #2d3231;
+		color: #d4d8d6;
 		font-size: 11.5px;
 		font-weight: 500;
 		white-space: nowrap;

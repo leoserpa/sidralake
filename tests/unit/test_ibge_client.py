@@ -106,3 +106,27 @@ async def test_client_raises_on_non_list_chunk_payload(
         async with IBGEAsyncClient(tmp_settings) as client:
             with pytest.raises(ValueError, match="nao-lista"):
                 await client.fetch_agregado_for_year(PIB_MUNICIPAL_SPEC, ano="2023", uf_codes=[35])
+
+
+@pytest.mark.asyncio
+async def test_client_discovers_available_years_dynamically_from_min_year(
+    tmp_settings: PipelineSettings,
+) -> None:
+    base = tmp_settings.ibge_base_url
+    with respx.mock(assert_all_called=True) as mock_router:
+        mock_router.get(f"{base}/v3/agregados/8883/periodos").mock(
+            return_value=httpx.Response(
+                200,
+                json=[
+                    {"id": "201912"},
+                    {"id": "202001"},
+                    {"id": "202612"},
+                    {"id": "202701"},
+                    {"id": "202702"},
+                ],
+            )
+        )
+        async with IBGEAsyncClient(tmp_settings) as client:
+            years = await client.discover_available_years(PMC_VAREJO_UF_SPEC)
+
+        assert years == ["2020", "2026", "2027"]

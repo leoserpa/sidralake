@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import json
+from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import polars as pl
 
@@ -64,3 +67,40 @@ def export_gold_for_bi(
         )
 
     return summary
+
+
+def write_bi_freshness_manifest(
+    parquet_dir: Path,
+    manifest_path: Path,
+) -> dict[str, Any]:
+    """Extrai a competencia mais recente de cada fonte BI e grava manifesto JSON de frescor."""
+    parquet_dir = parquet_dir.resolve()
+    manifest_path = manifest_path.resolve()
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def _max_str(table: str, col: str, *, non_null_col: str | None = None) -> str | None:
+        path = parquet_dir / f"{table}.parquet"
+        if not path.exists():
+            return None
+        lf = pl.scan_parquet(path)
+        if non_null_col is not None:
+            lf = lf.filter(pl.col(non_null_col).is_not_null())
+        val = lf.select(pl.col(col).max()).collect().item()
+        return str(val) if val is not None else None
+
+    payload: dict[str, Any] = {
+        "refreshed_at_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "latest_periods": {
+            "ipca_mensal": _max_str("fct_ipca_mensal", "ano_mes"),
+            "pmc_varejo_uf": _max_str("mart_pulso_consumo_macro", "ano_mes"),
+            "pib_municipal": _max_str(
+                "mart_inteligencia_mercado_municipal",
+                "ano_referencia",
+                non_null_col="pib_real_mil_brl",
+            ),
+            "cempre_setorial_uf": _max_str("mart_clusters_setoriais_uf", "ano_referencia"),
+            "populacao_municipal": _max_str("fct_populacao_municipal", "ano_referencia"),
+        },
+    }
+    manifest_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return payload

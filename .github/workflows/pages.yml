@@ -56,7 +56,14 @@ jobs:
           SIDRALAKE_MODE: ${{ github.event.inputs.mode || 'full' }}
         run: |
           uv run sidralake run --mode "$SIDRALAKE_MODE"
-          uv run sidralake export-bi
+          uv run sidralake export-bi --freshness-file .github/last_data_refresh.json
+
+      - name: Upload freshness manifest artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: freshness-manifest
+          path: .github/last_data_refresh.json
+          retention-days: 1
 
       - name: Pre-build BI Quality Gate (static contracts + 52 SQL queries with DuckDB-WASM DOUBLE emulation)
         env:
@@ -119,3 +126,31 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  record-freshness:
+    needs: deploy
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Download freshness manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: freshness-manifest
+          path: .github
+
+      - name: Commit freshness manifest (keeps 60-day schedule active)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/last_data_refresh.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(data): registrar atualizacao mensal IBGE [skip ci]"
+            git push
+          fi

@@ -150,6 +150,21 @@ class IBGEAsyncClient:
         self._periods_cache[agregado_id] = periods
         return periods
 
+    async def discover_available_years(
+        self,
+        spec: AgregadoSpec,
+        *,
+        use_cache: bool = True,
+    ) -> list[str]:
+        """Descobre dinamicamente todos os anos >= spec.min_year publicados na API do IBGE."""
+        periods = await self.fetch_available_periods(spec.agregado_id, use_cache=use_cache)
+        years = {
+            p[:4]
+            for p in periods
+            if len(p) >= 4 and p[:4].isdigit() and int(p[:4]) >= spec.min_year
+        }
+        return sorted(years)
+
     def _build_sidra_url(
         self,
         spec: AgregadoSpec,

@@ -83,16 +83,18 @@ def test_ibge_dbt_translator_asset_keys_and_groups() -> None:
     assert translator.get_group_name({"fqn": ["other", "x"]}) == "dbt"
 
 
-def test_ibge_new_period_sensor_emits_runs_skips_unchanged_and_guards_out_of_range(
+def test_ibge_new_period_sensor_emits_runs_registers_dynamic_partitions_and_skips_unchanged(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
     fake_periods: dict[int, list[str]] = {
-        1737: ["202401", "202506"],
-        8883: ["202401", "202506"],
-        5938: ["2022", "2023"],
-        9509: ["2022", "2024"],
-        9418: ["2022", "2099"],  # Ano fora das particoes estaticas -> deve ignorar sem falhar
+        1737: ["201712", "202401", "202703"],  # inclui 2017 (< min_year) e ano futuro 2027
+        8883: ["201912", "202401", "202702"],
+        5938: ["2017", "2022", "2025"],
+        9509: ["2022", "2025"],
+        9418: ["2022", "2025"],
+        6579: ["2017", "2026", "2027"],
+        4714: ["2010", "2022"],
     }
 
     class _FakeClient:
@@ -111,21 +113,38 @@ def test_ibge_new_period_sensor_emits_runs_skips_unchanged_and_guards_out_of_ran
     pipeline = IBGEPipelineResource(data_dir=str(tmp_path))
     monkeypatch.setattr(IBGEPipelineResource, "create_client", lambda self: _FakeClient())
 
-    # 1. Primeira avaliacao (sem cursor): gera RunRequests apenas para periodos elegiveis
+    # 1. Primeira avaliacao (sem cursor): gera RunRequests e registra particoes dinamicas futuras
     ctx1 = build_sensor_context()
     res1 = ibge_new_period_sensor(ctx1, pipeline=pipeline)
     assert isinstance(res1, SensorResult)
     assert res1.run_requests is not None
     run_keys = {rr.run_key for rr in res1.run_requests}
     assert run_keys == {
-        "ipca_mensal-202506",
-        "pmc_varejo_uf-202506",
-        "pib_municipal-2023",
-        "cempre_municipal-2024",
+        "ipca_mensal-202703",
+        "pmc_varejo_uf-202702",
+        "pib_municipal-2025",
+        "cempre_municipal-2025",
+        "cempre_setorial_uf-2025",
+        "estimativa_populacao-2027",
+        "censo_populacao-2022",
+    }
+    assert res1.dynamic_partitions_requests is not None
+    added_by_def = {
+        req.partitions_def_name: list(req.partition_keys)
+        for req in res1.dynamic_partitions_requests
+    }
+    assert added_by_def == {
+        "ipca_years": ["2027"],
+        "pmc_years": ["2027"],
+        "pib_years": ["2025"],
+        "cempre_years": ["2025"],
+        "estimativa_pop_years": ["2027"],
+        "censo_years": ["2022"],
     }
     assert res1.cursor is not None
     cursor_data = json.loads(res1.cursor)
-    assert "cempre_setorial_uf" not in cursor_data
+    assert cursor_data["ipca_mensal"] == "202703"
+    assert cursor_data["estimativa_populacao"] == "2027"
 
     # 2. Segunda avaliacao com mesmo estado: retorna SkipReason
     ctx2 = build_sensor_context(cursor=res1.cursor)

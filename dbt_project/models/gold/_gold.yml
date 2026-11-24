@@ -64,7 +64,7 @@ models:
         tests: [not_null]
 
   - name: dim_tempo
-    description: "Dimensao calendario mensal (2018-2026) com indicador de ano censitario."
+    description: "Dimensao calendario mensal dinamica (2018+) com indicador de ano censitario."
     config:
       contract:
         enforced: true
@@ -95,7 +95,7 @@ models:
         tests: [not_null]
 
   - name: time_spine_daily
-    description: "Espinha dorsal temporal diaria (2018-2026) exigida pelo dbt Semantic Layer / MetricFlow."
+    description: "Espinha dorsal temporal diaria dinamica (2018+) exigida pelo dbt Semantic Layer / MetricFlow."
     time_spine:
       standard_granularity_column: date_day
     config:

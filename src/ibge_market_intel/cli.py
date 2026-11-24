@@ -14,23 +14,17 @@ from pathlib import Path
 import duckdb
 from deltalake import DeltaTable
 
-from ibge_market_intel.analytics.bi_export import export_gold_for_bi
+from ibge_market_intel.analytics.bi_export import export_gold_for_bi, write_bi_freshness_manifest
 from ibge_market_intel.analytics.insights import build_market_insights, format_insights_report
 from ibge_market_intel.config import PipelineSettings, get_settings
 from ibge_market_intel.ingestion.catalogs import (
     CEMPRE_MUNICIPAL_SPEC,
     CEMPRE_SETORIAL_UF_SPEC,
-    CEMPRE_YEARS,
     CENSO_POPULACAO_SPEC,
-    CENSO_YEARS,
-    ESTIMATIVA_POP_YEARS,
     ESTIMATIVA_POPULACAO_SPEC,
     IPCA_MENSAL_SPEC,
-    IPCA_YEARS,
     PIB_MUNICIPAL_SPEC,
-    PIB_YEARS,
     PMC_VAREJO_UF_SPEC,
-    PMC_YEARS,
     AgregadoSpec,
 )
 from ibge_market_intel.ingestion.client import IBGEAsyncClient
@@ -89,21 +83,32 @@ async def _ingest_all_bronze(
             source_url=cnae_res.source_urls[0],
         )
 
-        # 2. Fontes SIDRA particionadas por ano
-        plan: list[tuple[AgregadoSpec, Sequence[str]]] = [
-            (PIB_MUNICIPAL_SPEC, ("2020", "2022", "2023") if smoke else PIB_YEARS),
-            (CENSO_POPULACAO_SPEC, CENSO_YEARS),
-            (
-                ESTIMATIVA_POPULACAO_SPEC,
-                ("2020", "2021", "2024", "2025") if smoke else ESTIMATIVA_POP_YEARS,
-            ),
-            (CEMPRE_MUNICIPAL_SPEC, ("2022", "2023", "2024") if smoke else CEMPRE_YEARS),
-            (CEMPRE_SETORIAL_UF_SPEC, ("2022", "2023", "2024") if smoke else CEMPRE_YEARS),
-            (IPCA_MENSAL_SPEC, ("2020", "2022", "2023", "2024", "2025") if smoke else IPCA_YEARS),
-            (PMC_VAREJO_UF_SPEC, ("2023", "2024") if smoke else PMC_YEARS),
+        # 2. Fontes SIDRA descobertas dinamicamente na API do IBGE (>= spec.min_year)
+        specs_and_smoke_tail: list[tuple[AgregadoSpec, int | None]] = [
+            (PIB_MUNICIPAL_SPEC, 3),
+            (CENSO_POPULACAO_SPEC, None),
+            (ESTIMATIVA_POPULACAO_SPEC, 4),
+            (CEMPRE_MUNICIPAL_SPEC, 3),
+            (CEMPRE_SETORIAL_UF_SPEC, 3),
+            (IPCA_MENSAL_SPEC, None),
+            (PMC_VAREJO_UF_SPEC, 2),
         ]
 
-        for spec, years in plan:
+        for spec, smoke_tail in specs_and_smoke_tail:
+            discovered_years = await client.discover_available_years(spec)
+            years = (
+                discovered_years[-smoke_tail:]
+                if smoke and smoke_tail is not None
+                else discovered_years
+            )
+            logger.info(
+                "ibge_discovered_years",
+                table_name=spec.table_name,
+                agregado_id=spec.agregado_id,
+                min_year=spec.min_year,
+                years=years,
+                smoke=smoke,
+            )
             for ano in years:
                 res = await client.fetch_agregado_for_year(spec, ano=ano, uf_codes=uf_codes)
                 if res.df.height == 0:
@@ -350,7 +355,7 @@ def show_insights(*, top_n: int = 10, uf: str | None = None, year: int | None = 
     print(format_insights_report(report))
 
 
-def export_bi(*, output_dir: Path | None = None) -> None:
+def export_bi(*, output_dir: Path | None = None, freshness_file: Path | None = None) -> None:
     """Exporta marts Gold Delta Lake para Parquet Snappy pronto para o dashboard Evidence.dev."""
     settings = get_settings()
     configure_logging(settings.log_level, log_format="console")
@@ -358,6 +363,9 @@ def export_bi(*, output_dir: Path | None = None) -> None:
     summary = export_gold_for_bi(settings.resolved_gold_dir, target)
     for table_name, meta in summary.items():
         print(f"  bi/{table_name}.parquet: rows={meta['rows']} | size_kb={meta['size_kb']}")
+    if freshness_file is not None:
+        manifest = write_bi_freshness_manifest(target, freshness_file)
+        print(f"  freshness: {freshness_file} -> {manifest['latest_periods']}")
 
 
 def validate_bi(
@@ -433,6 +441,12 @@ def main(argv: Sequence[str] | None = None) -> None:
         default=None,
         help="Diretorio de destino dos arquivos Parquet (padrao: dashboard/parquet_data)",
     )
+    bi_cmd.add_argument(
+        "--freshness-file",
+        type=Path,
+        default=None,
+        help="Caminho opcional para gravar manifesto JSON com as ultimas competencias exportadas",
+    )
     val_bi_cmd = sub.add_parser(
         "validate-bi",
         help="Valida contratos estaticos, queries SQL (DuckDB-WASM) e build do dashboard Evidence",
@@ -473,7 +487,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     elif args.command == "insights":
         show_insights(top_n=args.top, uf=args.uf, year=args.year)
     elif args.command == "export-bi":
-        export_bi(output_dir=args.output_dir)
+        export_bi(output_dir=args.output_dir, freshness_file=args.freshness_file)
     elif args.command == "validate-bi":
         validate_bi(
             parquet_dir=args.parquet_dir,

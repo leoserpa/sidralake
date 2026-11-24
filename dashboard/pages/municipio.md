@@ -116,7 +116,7 @@ order by pos asc
 			xGridlines=false
 			colorPalette={['#3b82f6']}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, grid: { containLabel: true }, xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1, axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Evolução do PIB Real (2018–2023)"
+			title="Evolução do PIB Real (2018+)"
 			subtitle="Valores constantes (R$ Bi · IPCA) · Linha limpa sem preenchimento"
 			yAxisTitle="R$ Bilhões"
 		/>
@@ -237,7 +237,7 @@ order by ano_referencia desc
 	</div>
 	<ExecTable
 		data={historico_cempre_cidade}
-		title="Tecido Empresarial Histórico (CEMPRE 2022–2024)"
+		title="Tecido Empresarial Histórico (CEMPRE 2022+)"
 		subtitle="Empresas atuantes, formalização e crescimento · Destaque azul: ano mais recente e YoY ≥ +8%"
 		compact={true}
 		rowsPerPage={10}
@@ -297,7 +297,7 @@ limit 12
 			xGridlines=false
 			colorPalette={['#3b82f6']}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, grid: { left: 16, containLabel: true }, xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1, axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Curva Demográfica (2018–2026)"
+			title="Curva Demográfica (2018+)"
 			subtitle="Censo 2022 + Estimativas IBGE · Série contínua sem área sombreada"
 			yAxisTitle="Habitantes"
 		/>

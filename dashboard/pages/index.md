@@ -42,7 +42,7 @@ order by ordem, tier_mercado
 		<p class="sl-page-subtitle">5.571 municípios oficiais IBGE · Valores constantes IPCA · Destaque pré-atentivo no líder</p>
 	</div>
 	<div class="sl-filter-bar">
-		<Dropdown data={anos_disponiveis} name=ano value=ano_referencia title="Ano" defaultValue={2023} />
+		<Dropdown data={anos_disponiveis} name=ano value=ano_referencia title="Ano" />
 		<Dropdown data={regioes_disponiveis} name=regiao value=nome_regiao title="Região" defaultValue="TODAS" />
 		<Dropdown data={ufs_disponiveis} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
 		<Dropdown data={tiers_disponiveis} name=tier value=tier_mercado title="Tier" defaultValue="TODOS" />
@@ -58,7 +58,7 @@ select
     sum(num_empresas_atuantes) as empresas_atuantes,
     round(avg(ims_score_0_100), 2) as ims_medio
 from sidralake.mart_inteligencia_mercado_municipal
-where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2023)
+where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_inteligencia_mercado_municipal where pib_real_mil_brl is not null))
   and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
   and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
   and ('${inputs.tier.value}' = 'TODOS' or tier_mercado = '${inputs.tier.value}')
@@ -89,7 +89,7 @@ with base as (
         round(ims_score_0_100, 1) as ims_score_0_100,
         row_number() over (order by ims_score_0_100 desc, pib_real_mil_brl desc) as pos
     from sidralake.mart_inteligencia_mercado_municipal
-    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2023)
+    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_inteligencia_mercado_municipal where pib_real_mil_brl is not null))
       and ims_score_0_100 is not null
       and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
       and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
@@ -113,7 +113,7 @@ with agg as (
         round(sum(pib_real_mil_brl) / 1e6, 1) as pib_real_bi,
         round(avg(ims_score_0_100), 2) as ims_medio
     from sidralake.mart_inteligencia_mercado_municipal
-    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2023)
+    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_inteligencia_mercado_municipal where pib_real_mil_brl is not null))
       and ('${inputs.tier.value}' = 'TODOS' or tier_mercado = '${inputs.tier.value}')
     group by 1
 ),
@@ -173,7 +173,7 @@ with base as (
         round(pib_real_mil_brl / 1e6, 1) as pib_real_bi,
         row_number() over (order by pib_real_mil_brl desc) as pos
     from sidralake.mart_inteligencia_mercado_municipal
-    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2023)
+    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_inteligencia_mercado_municipal where pib_real_mil_brl is not null))
       and pib_real_mil_brl is not null
       and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
       and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
@@ -299,7 +299,7 @@ select
         else 'N/D'
     end as tier
 from sidralake.mart_inteligencia_mercado_municipal
-where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2023)
+where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_inteligencia_mercado_municipal where pib_real_mil_brl is not null))
   and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
   and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
   and ('${inputs.tier.value}' = 'TODOS' or tier_mercado = '${inputs.tier.value}')

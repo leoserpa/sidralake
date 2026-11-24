@@ -3,7 +3,7 @@ with base_dates as (
         cast(gs as date) as date_day
     from generate_series(
         date '2018-01-01',
-        date '2026-12-31',
+        make_date(cast(extract(year from current_date) as integer) + 1, 12, 31),
         interval 1 day
     ) as t (gs)
 ),

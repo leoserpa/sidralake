@@ -133,7 +133,7 @@ order by ano_referencia asc, lado asc
 			xGridlines=false
 			seriesColors={{'Cidade A': '#3b82f6', 'Cidade B': '#9ca3a0'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1, axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Trajetória do PIB Real (2018–2023)"
+			title="Trajetória do PIB Real (2018+)"
 			subtitle="Valores constantes em R$ Bilhões · Linhas puras sem sombreado"
 			yAxisTitle="R$ Bilhões"
 		/>

@@ -30,7 +30,7 @@ order by ordem, codigo_secao_cnae
 		<p class="sl-page-subtitle">Cadastro Central de Empresas (CEMPRE · SIDRA 9418) por UF e 21 Seções CNAE · Sigilo estatístico IBGE (X) sinalizado</p>
 	</div>
 	<div class="sl-filter-bar">
-		<Dropdown data={anos_cempre} name=ano value=ano_referencia title="Ano" defaultValue={2024} />
+		<Dropdown data={anos_cempre} name=ano value=ano_referencia title="Ano" />
 		<Dropdown data={ufs_cnae} name=uf value=sigla_uf title="UF" defaultValue="TODAS" />
 		<Dropdown data={secoes_cnae} name=cnae value=codigo_secao_cnae title="CNAE" defaultValue="TODAS" />
 	</div>
@@ -44,7 +44,7 @@ select
     round(sum(massa_salarial_real_mil_brl) / 1e6, 2) as massa_real_bi,
     sum(case when has_sigilo_estatistico then 1 else 0 end) as celulas_sigilo_x
 from sidralake.mart_clusters_setoriais_uf
-where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2024)
+where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_clusters_setoriais_uf))
   and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
   and ('${inputs.cnae.value}' = 'TODAS' or codigo_secao_cnae = '${inputs.cnae.value}')
 ```
@@ -64,7 +64,7 @@ with base as (
         round(market_share_uf_no_setor_pct / 100.0, 4) as share_br_pct,
         row_number() over (order by market_share_uf_no_setor_pct desc) as pos
     from sidralake.mart_clusters_setoriais_uf
-    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2024)
+    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_clusters_setoriais_uf))
       and market_share_uf_no_setor_pct is not null
       and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
       and ('${inputs.cnae.value}' = 'TODAS' or codigo_secao_cnae = '${inputs.cnae.value}')
@@ -108,7 +108,7 @@ with agg as (
         end as setor,
         round(sum(pessoal_ocupado_total) / 1e6, 2) as emprego_mi
     from sidralake.mart_clusters_setoriais_uf
-    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2024)
+    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_clusters_setoriais_uf))
       and pessoal_ocupado_total is not null
       and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
       and ('${inputs.cnae.value}' = 'TODAS' or codigo_secao_cnae = '${inputs.cnae.value}')
@@ -191,7 +191,7 @@ order by pos asc
 with top_ufs as (
     select sigla_uf
     from sidralake.mart_clusters_setoriais_uf
-    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2024)
+    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_clusters_setoriais_uf))
     group by 1
     order by sum(pessoal_ocupado_total) desc nulls last
     limit 12
@@ -203,7 +203,7 @@ select
 from sidralake.mart_clusters_setoriais_uf as m
 inner join top_ufs as t
     on m.sigla_uf = t.sigla_uf
-where m.ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2024)
+where m.ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_clusters_setoriais_uf))
   and m.market_share_uf_no_setor_pct is not null
   and m.codigo_secao_cnae in ('A', 'C', 'F', 'G', 'H', 'I', 'J', 'K', 'M', 'N', 'P', 'Q')
 order by m.sigla_uf asc, m.codigo_secao_cnae asc
@@ -259,7 +259,7 @@ select
     round(crescimento_emprego_setor_yoy_pct / 100.0, 4) as cresc_yoy_pct,
     has_sigilo_estatistico as sigilo_x
 from sidralake.mart_clusters_setoriais_uf
-where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), 2024)
+where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_clusters_setoriais_uf))
   and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
   and ('${inputs.cnae.value}' = 'TODAS' or codigo_secao_cnae = '${inputs.cnae.value}')
 order by pessoal_ocupado_total desc nulls last

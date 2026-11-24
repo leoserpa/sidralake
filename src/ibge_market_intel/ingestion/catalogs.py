@@ -142,6 +142,7 @@ class AgregadoSpec:
     classificacoes: dict[int, tuple[int, ...]]
     chunk_by_uf: bool = False
     chunk_months_half_year: bool = False
+    min_year: int = 2018
 
     def classificacao_param(self) -> str | None:
         if not self.classificacoes:
@@ -162,6 +163,7 @@ PIB_MUNICIPAL_SPEC = AgregadoSpec(
     periodicidade="anual",
     classificacoes={},
     chunk_by_uf=True,
+    min_year=2018,
 )
 
 CENSO_POPULACAO_SPEC = AgregadoSpec(
@@ -173,6 +175,7 @@ CENSO_POPULACAO_SPEC = AgregadoSpec(
     periodicidade="anual",
     classificacoes={},
     chunk_by_uf=False,
+    min_year=2022,
 )
 
 ESTIMATIVA_POPULACAO_SPEC = AgregadoSpec(
@@ -184,6 +187,7 @@ ESTIMATIVA_POPULACAO_SPEC = AgregadoSpec(
     periodicidade="anual",
     classificacoes={},
     chunk_by_uf=False,
+    min_year=2018,
 )
 
 CEMPRE_MUNICIPAL_SPEC = AgregadoSpec(
@@ -195,6 +199,7 @@ CEMPRE_MUNICIPAL_SPEC = AgregadoSpec(
     periodicidade="anual",
     classificacoes={},
     chunk_by_uf=True,
+    min_year=2022,
 )
 
 CEMPRE_SETORIAL_UF_SPEC = AgregadoSpec(
@@ -206,6 +211,7 @@ CEMPRE_SETORIAL_UF_SPEC = AgregadoSpec(
     periodicidade="anual",
     classificacoes={12762: tuple(CNAE_SIDRA_SECOES_12762.values())},
     chunk_by_uf=False,
+    min_year=2022,
 )
 
 IPCA_MENSAL_SPEC = AgregadoSpec(
@@ -217,6 +223,7 @@ IPCA_MENSAL_SPEC = AgregadoSpec(
     periodicidade="mensal",
     classificacoes={},
     chunk_by_uf=False,
+    min_year=2018,
 )
 
 PMC_VAREJO_UF_SPEC = AgregadoSpec(
@@ -232,6 +239,7 @@ PMC_VAREJO_UF_SPEC = AgregadoSpec(
     },
     chunk_by_uf=False,
     chunk_months_half_year=True,
+    min_year=2020,
 )
 
 ALL_SIDRA_SPECS: dict[str, AgregadoSpec] = {

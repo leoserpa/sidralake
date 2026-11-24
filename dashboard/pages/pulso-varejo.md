@@ -40,7 +40,7 @@ order by nome_atividade_pmc
 <header class="sl-page-header">
 	<div class="sl-page-heading">
 		<h1 class="sl-page-title">Macroeconomia (IPCA) &amp; Pulso do Varejo (PMC)</h1>
-		<p class="sl-page-subtitle">Inflação Oficial IPCA (SIDRA 1737 · 2018–2026) integrada à Pesquisa Mensal de Comércio Ampliado (PMC · SIDRA 8883)</p>
+		<p class="sl-page-subtitle">Inflação Oficial IPCA (SIDRA 1737 · 2018+) integrada à Pesquisa Mensal de Comércio Ampliado (PMC · SIDRA 8883)</p>
 	</div>
 	<div class="sl-filter-bar">
 		<Dropdown data={ufs_pmc} name=uf value=sigla_uf title="UF" defaultValue="SP" />
@@ -103,7 +103,7 @@ order by data_referencia asc, indicador asc
 			xGridlines=false
 			seriesColors={{'IPCA Acum. 12m': '#3b82f6', 'IPCA Mensal': '#686e6c'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Trajetória da Inflação Oficial (IPCA Brasil · 2018–2026)"
+			title="Trajetória da Inflação Oficial (IPCA Brasil · 2018+)"
 			subtitle="IPCA acumulado em 12 meses em azul · Variação mensal em ardósia"
 			yAxisTitle="Variação (%)"
 		/>

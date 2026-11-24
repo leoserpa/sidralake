@@ -311,9 +311,12 @@ def test_export_gold_for_bi_and_cli_dispatch(
     assert not any(c.startswith("_") for c in geo_df.columns)
 
     monkeypatch.setattr(cli, "get_settings", lambda: settings)
-    cli.main(["export-bi", "--output-dir", str(out_dir)])
+    freshness_path = tmp_path / "last_data_refresh.json"
+    cli.main(["export-bi", "--output-dir", str(out_dir), "--freshness-file", str(freshness_path)])
     printed = capsys.readouterr().out
     assert "bi/mart_inteligencia_mercado_municipal.parquet" in printed
+    assert freshness_path.exists()
+    assert '"ipca_mensal": "202412"' in freshness_path.read_text(encoding="utf-8")
 
     with pytest.raises(FileNotFoundError, match="nao encontrada"):
         export_gold_for_bi(tmp_path / "empty_gold", out_dir)

@@ -3,7 +3,7 @@
 from collections.abc import Iterator, Mapping
 from typing import Any
 
-from dagster import AssetExecutionContext, AssetKey
+from dagster import AssetExecutionContext, AssetKey, AutomationCondition
 from dagster_dbt import DagsterDbtTranslator, DbtCliResource, dbt_assets
 
 from ibge_market_intel.orchestration.resources import create_dbt_project
@@ -47,6 +47,13 @@ class IBGEDataTranslator(DagsterDbtTranslator):
         if "marts" in fqn:
             return "gold_marts"
         return "dbt"
+
+    def get_automation_condition(
+        self, dbt_resource_props: Mapping[str, Any]
+    ) -> AutomationCondition[Any] | None:
+        if dbt_resource_props.get("resource_type") in ("model", "snapshot"):
+            return AutomationCondition.eager()
+        return None
 
 
 @dbt_assets(

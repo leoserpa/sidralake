@@ -42,7 +42,13 @@
 				</svg>
 			</span>
 			<span class="sl-brand-name">SidraLake</span>
-			<span class="sl-brand-tag">360°</span>
+			<span class="sl-brand-tag">
+				<svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+					<circle cx="12" cy="12" r="9" stroke="#60A5FA" stroke-width="2.2" stroke-dasharray="40 16" />
+					<circle cx="12" cy="12" r="2.5" fill="#60A5FA" />
+				</svg>
+				<span>360°</span>
+			</span>
 		</a>
 
 		<nav class="sl-nav" aria-label="Navegação principal">
@@ -60,8 +66,20 @@
 		</nav>
 
 		<div class="sl-status-pill" title="Dados públicos oficiais IBGE executados localmente no navegador">
-			<span class="sl-status-dot" aria-hidden="true"></span>
-			<span>IBGE Oficial · DuckDB-WASM</span>
+			<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+				<path d="M12 2L4 5.5V11.5C4 16.8 7.4 21.6 12 23C16.6 21.6 20 16.8 20 11.5V5.5L12 2Z" fill="#1E3A8A" stroke="#3B82F6" stroke-width="1.8" stroke-linejoin="round" />
+				<path d="M9 12.2L11 14.2L15.2 10" stroke="#F5F7F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+			</svg>
+			<span class="sl-status-source">IBGE Oficial</span>
+			<span class="sl-status-sep" aria-hidden="true"></span>
+			<span class="sl-status-engine">
+				<svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+					<ellipse cx="12" cy="5.5" rx="8" ry="3" stroke="#9CA3A0" stroke-width="2" />
+					<path d="M4 5.5V12C4 13.66 7.58 15 12 15C16.42 15 20 13.66 20 12V5.5" stroke="#9CA3A0" stroke-width="2" />
+					<path d="M4 12V18.5C4 20.16 7.58 21.5 12 21.5C16.42 21.5 20 20.16 20 18.5V12" stroke="#9CA3A0" stroke-width="2" />
+				</svg>
+				<span>DuckDB-WASM</span>
+			</span>
 		</div>
 	</div>
 </header>
@@ -112,15 +130,16 @@
 	.sl-brand-tag {
 		display: inline-flex;
 		align-items: center;
-		padding: 2px 7px;
-		border-radius: 5px;
-		border: 1px solid #3a403e;
-		background: transparent;
-		color: #9ca3a0;
+		gap: 4px;
+		padding: 3px 8px;
+		border-radius: 9999px;
+		border: 1px solid rgba(37, 99, 235, 0.45);
+		background: #131b2e;
+		color: #60a5fa;
 		font-size: 11px;
-		font-weight: 600;
-		line-height: 1.2;
-		letter-spacing: 0.01em;
+		font-weight: 700;
+		line-height: 1.1;
+		letter-spacing: 0.02em;
 	}
 
 	.sl-nav {
@@ -172,24 +191,36 @@
 	.sl-status-pill {
 		display: inline-flex;
 		align-items: center;
-		gap: 8px;
-		padding: 6px 12px;
-		border-radius: 9999px;
+		gap: 9px;
+		height: 32px;
+		padding: 0 12px;
+		border-radius: 8px;
 		background: #131716;
 		border: 1px solid #2d3231;
-		color: #d4d8d6;
 		font-size: 11.5px;
-		font-weight: 500;
 		white-space: nowrap;
 		flex-shrink: 0;
 	}
 
-	.sl-status-dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 9999px;
-		background: #3b82f6;
+	.sl-status-source {
+		color: #f5f7f6;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+	}
+
+	.sl-status-sep {
+		width: 1px;
+		height: 14px;
+		background: #2d3231;
 		flex-shrink: 0;
+	}
+
+	.sl-status-engine {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		color: #9ca3a0;
+		font-weight: 500;
 	}
 
 	@media (max-width: 1024px) {

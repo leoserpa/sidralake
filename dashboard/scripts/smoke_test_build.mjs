@@ -218,15 +218,28 @@ async function auditRoute(context, origin, route) {
       });
       const renderedCanvases = canvases.filter((c) => c.w > 100 && c.h > 80).length;
 
-      const visibleSqlInspectors = Array.from(document.querySelectorAll('details')).filter((el) => {
-        const style = window.getComputedStyle(el);
-        const text = el.innerText || '';
-        return (
-          style.display !== 'none' &&
-          style.visibility !== 'hidden' &&
-          (/\brecords?\s+with\b/i.test(text) || /\bselect\b[\s\S]+\bfrom\b/i.test(text))
-        );
-      }).length;
+      const visibleSqlInspectors =
+        Array.from(document.querySelectorAll('details')).filter((el) => {
+          const style = window.getComputedStyle(el);
+          const text = el.innerText || '';
+          return (
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            (/\brecords?\s+with\b/i.test(text) || /\bselect\b[\s\S]+\bfrom\b/i.test(text))
+          );
+        }).length +
+        Array.from(
+          document.querySelectorAll('button[aria-label="show-sql"], button[aria-label="view-query"]'),
+        ).filter((el) => {
+          const style = window.getComputedStyle(el);
+          const rect = el.getBoundingClientRect();
+          return (
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            rect.width > 0 &&
+            rect.height > 0
+          );
+        }).length;
 
       // Only audit DataTable columns whose header is a year column (avoids false positives
       // on salary/company counts between 2,010 and 2,029).

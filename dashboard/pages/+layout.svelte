@@ -68,6 +68,15 @@
 		display: none !important;
 	}
 
+	/* Hide Evidence QueryViewer blocks completely (independent of Svelte hash & localStorage) */
+	:global(article#evidence-main-article > div:has(> div > button[aria-label='view-query'])),
+	:global(article#evidence-main-article > div:has(> div > div > button[aria-label='show-sql'])),
+	:global(div:has(> button[aria-label='view-query'])),
+	:global(button[aria-label='show-sql']),
+	:global(button[aria-label='view-query']) {
+		display: none !important;
+	}
+
 	:global(.sl-page-header) {
 		display: flex;
 		align-items: flex-end;

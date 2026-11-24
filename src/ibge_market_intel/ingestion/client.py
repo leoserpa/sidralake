@@ -29,14 +29,15 @@ from ibge_market_intel.logging import get_logger
 
 logger = get_logger(__name__)
 
-_RETRYABLE_STATUS_CODES = frozenset({408, 429, 500, 502, 503, 504})
+_RETRYABLE_STATUS_CODES = frozenset({408, 429})
 
 
 def _is_retryable_error(exc: BaseException) -> bool:
     if isinstance(exc, (httpx.TimeoutException, httpx.NetworkError, httpx.RemoteProtocolError)):
         return True
     if isinstance(exc, httpx.HTTPStatusError):
-        return exc.response.status_code in _RETRYABLE_STATUS_CODES
+        code = exc.response.status_code
+        return code in _RETRYABLE_STATUS_CODES or 500 <= code < 600
     return False
 
 

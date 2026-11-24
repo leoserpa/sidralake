@@ -24,6 +24,7 @@ union all
 select distinct sigla_uf, 1 as ordem
 from sidralake.mart_inteligencia_mercado_municipal
 where is_ultimo_ano_completo
+  and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
 order by ordem, sigla_uf
 ```
 

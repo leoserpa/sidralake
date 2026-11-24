@@ -15,6 +15,7 @@ select 'TODAS' as sigla_uf, 0 as ordem
 union all
 select distinct sigla_uf, 1 as ordem
 from sidralake.mart_mercado_trabalho_uf
+where '${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}'
 order by ordem, sigla_uf
 ```
 

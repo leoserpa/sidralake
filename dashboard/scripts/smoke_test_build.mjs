@@ -262,6 +262,15 @@ async function auditRoute(context, origin, route) {
         }
       }
 
+      const brokenDropdowns = Array.from(document.querySelectorAll('.sl-filter-bar')).reduce(
+        (count, bar) => {
+          const text = (bar.innerText || '').trim();
+          const matches = text.match(/\bDropdown\b/g);
+          return count + (matches ? matches.length : 0);
+        },
+        0,
+      );
+
       const overflowPx = document.documentElement.scrollWidth - window.innerWidth;
 
       return {
@@ -269,6 +278,7 @@ async function auditRoute(context, origin, route) {
         hasLoadingText,
         renderedCanvases,
         visibleSqlInspectors,
+        brokenDropdowns,
         badYearCells: badYearCells.slice(0, 5),
         commaPctMatches: commaPctMatches.slice(0, 5),
         hugePctMatches: hugePctMatches.slice(0, 5),
@@ -291,6 +301,9 @@ async function auditRoute(context, origin, route) {
 
     if (domAudit.visibleSqlInspectors > 0) {
       failures.push(`Found ${domAudit.visibleSqlInspectors} exposed SQL inspector block(s)`);
+    }
+    if (domAudit.brokenDropdowns > 0) {
+      failures.push(`Found ${domAudit.brokenDropdowns} broken Dropdown error badge(s) in filter bar`);
     }
     if (domAudit.renderedCanvases === 0) {
       failures.push('No rendered chart <canvas> (>100x80px) found on page');

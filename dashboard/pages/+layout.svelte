@@ -167,6 +167,20 @@
 		box-sizing: border-box;
 	}
 
+	:global(.sl-filter-bar .sl-outline-pill.sl-city-a) {
+		background: #3b82f6 !important;
+		border-color: #3b82f6 !important;
+		color: #ffffff !important;
+		font-weight: 600 !important;
+	}
+
+	:global(.sl-filter-bar .sl-outline-pill.sl-city-b) {
+		background: #686e6c !important;
+		border-color: #686e6c !important;
+		color: #f5f7f6 !important;
+		font-weight: 600 !important;
+	}
+
 	/* Crisp unfilled outline pill (ZERO blue background shading) */
 	:global(.sl-outline-pill) {
 		display: inline-flex;

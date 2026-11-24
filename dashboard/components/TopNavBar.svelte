@@ -60,12 +60,6 @@
 		</nav>
 
 		<div class="sl-status-pill" title="Dados públicos oficiais IBGE executados localmente no navegador">
-			<svg width="20" height="20" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-				<path d="M64 118C93.8234 118 118 93.8234 118 64C118 34.1766 93.8234 10 64 10C34.1766 10 10 34.1766 10 64C10 93.8234 34.1766 118 64 118Z" fill="#3B82F6" />
-				<path d="M64 11C31 28 31 100 64 117C97 100 97 28 64 11Z" stroke="#F5F7F6" stroke-width="2.5" />
-				<path d="M17 39C43 48 85 48 111 39M10 64H118M17 89C43 80 85 80 111 89" stroke="#F5F7F6" stroke-width="2.5" />
-				<path d="M47 32L57 36L63 32L68 39L78 40L84 46L98 49L96 58L89 63L85 73L77 78L73 88L63 101L58 96L62 86L55 81V73L45 70L41 62L33 57L38 48L46 46L47 32Z" fill="#F5F7F6" stroke="#3B82F6" stroke-width="3.5" stroke-linejoin="round" />
-			</svg>
 			<span class="sl-status-source">IBGE Oficial</span>
 			<span class="sl-status-sep" aria-hidden="true"></span>
 			<span class="sl-status-engine">DuckDB-WASM</span>

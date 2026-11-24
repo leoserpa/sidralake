@@ -47,12 +47,12 @@ order by pop_ord desc, g.nome_municipio asc
 <section class="sl-control-card">
 	<div class="sl-slider-grid-2">
 		<div class="sl-filter-bar">
-			<span class="sl-outline-pill">Cidade A · Foco</span>
+			<span class="sl-outline-pill sl-city-a">Cidade A · Foco</span>
 			<Dropdown data={ufs_comp} name=uf_a value=sigla_uf title="UF A" defaultValue="SP" />
 			<Dropdown data={cidades_a} name=cidade_a value=codigo_ibge_municipio label=nome_municipio title="Município A" defaultValue={3550308} />
 		</div>
 		<div class="sl-filter-bar">
-			<span class="sl-outline-pill">Cidade B · Referência</span>
+			<span class="sl-outline-pill sl-city-b">Cidade B · Referência</span>
 			<Dropdown data={ufs_comp} name=uf_b value=sigla_uf title="UF B" defaultValue="PR" />
 			<Dropdown data={cidades_b} name=cidade_b value=codigo_ibge_municipio label=nome_municipio title="Município B" defaultValue={4106902} />
 		</div>

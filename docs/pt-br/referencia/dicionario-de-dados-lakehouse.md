@@ -119,7 +119,7 @@ Inventário estrutural das camadas **Bronze, Silver e Gold** em Delta Lake e Duc
 - **Assets**: `39` materializáveis (`0` fontes externas desconectadas) distribuídos nos grupos `bronze`, `silver_staging`, `silver_scd2`, `silver_intermediate`, `gold_dimensions`, `gold_facts`, `gold_marts` e `lakehouse_export`.
 - **Asset Checks**: `155` no total (`9` checks Pandera bloqueantes na Bronze + `146` checks integrados do `dbt`).
 - **Jobs**: `dbt_medallion_job`, `macro_refresh_job`, `delta_maintenance_job`.
-- **Sensor**: `ibge_new_period_sensor` (intervalo mínimo `3600s`, monitora `/periodos` para todas as 7 fontes SIDRA — `ipca_mensal`, `pmc_varejo_uf`, `pib_municipal`, `cempre_municipal`, `cempre_setorial_uf`, `estimativa_populacao` e `censo_populacao` — registrando novas partições via `DynamicPartitionsDefinition`).
+- **Sensor**: `ibge_new_period_sensor` (intervalo mínimo `3600s`, monitora `/periodos` para todas as 10 fontes SIDRA — `ipca_mensal`, `pmc_varejo_uf`, `pms_servicos_uf`, `pnad_desocupacao_uf`, `pnad_rendimento_uf`, `pib_municipal`, `cempre_municipal`, `cempre_setorial_uf`, `estimativa_populacao` e `censo_populacao` — registrando novas partições via `DynamicPartitionsDefinition`).
 - **Schedules (`America/Sao_Paulo`)**:
   - `monthly_macro_refresh_schedule`: cron `0 8 15 * *` (executa `macro_refresh_job`)
   - `weekly_delta_maintenance_schedule`: cron `0 3 * * 0` (executa `delta_maintenance_job`)

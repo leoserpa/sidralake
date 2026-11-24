@@ -25,6 +25,9 @@ from ibge_market_intel.ingestion.catalogs import (
     IPCA_MENSAL_SPEC,
     PIB_MUNICIPAL_SPEC,
     PMC_VAREJO_UF_SPEC,
+    PMS_SERVICOS_UF_SPEC,
+    PNAD_DESOCUPACAO_UF_SPEC,
+    PNAD_RENDIMENTO_UF_SPEC,
     AgregadoSpec,
 )
 from ibge_market_intel.ingestion.client import IBGEAsyncClient
@@ -92,6 +95,9 @@ async def _ingest_all_bronze(
             (CEMPRE_SETORIAL_UF_SPEC, 3),
             (IPCA_MENSAL_SPEC, None),
             (PMC_VAREJO_UF_SPEC, 2),
+            (PMS_SERVICOS_UF_SPEC, 2),
+            (PNAD_DESOCUPACAO_UF_SPEC, 2),
+            (PNAD_RENDIMENTO_UF_SPEC, 2),
         ]
 
         for spec, smoke_tail in specs_and_smoke_tail:

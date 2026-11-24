@@ -39,8 +39,8 @@ order by nome_atividade_pmc
 
 <header class="sl-page-header">
 	<div class="sl-page-heading">
-		<h1 class="sl-page-title">Macroeconomia (IPCA) &amp; Pulso do Varejo (PMC)</h1>
-		<p class="sl-page-subtitle">Inflação Oficial IPCA (SIDRA 1737 · 2018+) integrada à Pesquisa Mensal de Comércio Ampliado (PMC · SIDRA 8883)</p>
+		<h1 class="sl-page-title">Macroeconomia (IPCA), Varejo (PMC) &amp; Serviços (PMS)</h1>
+		<p class="sl-page-subtitle">Inflação Oficial IPCA (SIDRA 1737 · 2018+) integrada ao Varejo Ampliado (PMC · SIDRA 8883) e aos Serviços (PMS · SIDRA 5906)</p>
 	</div>
 	<div class="sl-filter-bar">
 		<Dropdown data={ufs_pmc} name=uf value=sigla_uf title="UF" defaultValue="SP" />
@@ -191,6 +191,76 @@ order by data_referencia asc
 			title="Ganho ou Perda Real do Varejo vs. Inflação (p.p.)"
 			subtitle="Spread Volume Acum. 12m − IPCA 12m · Barras em azul superam a inflação"
 			yAxisTitle="Pontos Percentuais (p.p.)"
+		/>
+	</div>
+</div>
+
+```sql servicos_vs_varejo
+select
+    data_referencia,
+    'Serviços (PMS YoY)' as setor,
+    round(var_yoy_volume_pct / 100.0, 4) as valor_pct
+from sidralake.mart_pulso_servicos_uf
+where sigla_uf = '${inputs.uf.value}'
+  and var_yoy_volume_pct is not null
+union all
+select
+    data_referencia,
+    'Varejo (PMC YoY)' as setor,
+    round(var_yoy_volume_pct / 100.0, 4) as valor_pct
+from sidralake.mart_pulso_consumo_macro
+where sigla_uf = '${inputs.uf.value}'
+  and nome_atividade_pmc = '${inputs.atividade.value}'
+  and var_yoy_volume_pct is not null
+order by data_referencia asc, setor asc
+```
+
+```sql pms_mom_sa
+select
+    data_referencia,
+    round(var_mom_sa_volume_pct / 100.0, 4) as mom_sa_pct,
+    case
+        when var_mom_sa_volume_pct >= 0 then 'Alta MoM SA'
+        else 'Queda MoM SA'
+    end as direcao
+from sidralake.mart_pulso_servicos_uf
+where sigla_uf = '${inputs.uf.value}'
+  and var_mom_sa_volume_pct is not null
+order by data_referencia asc
+```
+
+<div class="sl-grid-2">
+	<div class="sl-card">
+		<LineChart
+			data={servicos_vs_varejo}
+			x=data_referencia
+			y=valor_pct
+			series=setor
+			yFmt="0.0%"
+			yGridlines=false
+			xGridlines=false
+			seriesColors={{'Serviços (PMS YoY)': '#3b82f6', 'Varejo (PMC YoY)': '#686e6c'}}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
+			title="Serviços (PMS) vs. Varejo (PMC) — Volume Real YoY (%)"
+			subtitle="Comparação direta na UF selecionada · Serviços (PMS 5906) em azul"
+			yAxisTitle="Variação YoY (%)"
+		/>
+	</div>
+	<div class="sl-card">
+		<BarChart
+			data={pms_mom_sa}
+			x=data_referencia
+			y=mom_sa_pct
+			series=direcao
+			type=stacked
+			yFmt="0.0%"
+			yGridlines=false
+			xGridlines=false
+			seriesColors={{'Alta MoM SA': '#3b82f6', 'Queda MoM SA': '#525755'}}
+			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
+			title="Pulso Mensal de Serviços com Ajuste Sazonal (PMS MoM SA %)"
+			subtitle="Variação mês contra mês imediatamente anterior na UF selecionada · Altas em azul"
+			yAxisTitle="Variação MoM SA (%)"
 		/>
 	</div>
 </div>

@@ -81,6 +81,38 @@ def _seed_gold_delta_tables(gold_dir: Path) -> None:
         source_url="test://mart_pulso",
     )
 
+    mart_servicos = pl.DataFrame(
+        {
+            "sigla_uf": ["SP", "MT"],
+            "ano_mes": ["202609", "202609"],
+            "ano_referencia": [2026, 2026],
+            "var_yoy_volume_pct": [3.2, 1.5],
+            "regime_servicos": ["EXPANSAO_REAL", "ESTABILIDADE"],
+        }
+    )
+    writer.write_full_overwrite(
+        mart_servicos,
+        "mart_pulso_servicos_uf",
+        ingestion_id="seed-1",
+        source_url="test://mart_servicos",
+    )
+
+    mart_trabalho = pl.DataFrame(
+        {
+            "sigla_uf": ["SP", "MT"],
+            "ano_trimestre": ["202603", "202603"],
+            "label_trimestre": ["3T/2026", "3T/2026"],
+            "taxa_desocupacao_pct": [5.4, 3.1],
+            "rendimento_medio_real_brl": [4543.0, 3920.0],
+        }
+    )
+    writer.write_full_overwrite(
+        mart_trabalho,
+        "mart_mercado_trabalho_uf",
+        ingestion_id="seed-1",
+        source_url="test://mart_trabalho",
+    )
+
     dim_geo = pl.DataFrame(
         {
             "codigo_ibge_municipio": [3550308, 3550308],

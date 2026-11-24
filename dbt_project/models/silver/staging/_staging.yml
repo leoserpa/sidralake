@@ -94,3 +94,39 @@ models:
           - accepted_values:
               arguments:
                 values: ["RECEITA_NOMINAL", "VOLUME_VENDAS"]
+
+  - name: stg_ibge__pms_servicos_uf
+    description: "Staging da Pesquisa Mensal de Servicos por UF (SIDRA 5906, base 2022=100)."
+    columns:
+      - name: codigo_uf
+        tests: [not_null]
+      - name: ano_mes
+        tests: [not_null]
+      - name: tipo_indice
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["RECEITA_NOMINAL", "VOLUME_SERVICOS"]
+
+  - name: stg_ibge__pnad_desocupacao_uf
+    description: "Staging da PNAD Continua Trimestral - taxas de desocupacao e subutilizacao por UF (SIDRA 4099)."
+    columns:
+      - name: codigo_uf
+        tests: [not_null]
+      - name: ano_trimestre
+        tests: [not_null]
+
+  - name: stg_ibge__pnad_rendimento_uf
+    description: "Staging da PNAD Continua Trimestral - rendimento medio mensal real por UF e sexo (SIDRA 5436)."
+    columns:
+      - name: codigo_uf
+        tests: [not_null]
+      - name: ano_trimestre
+        tests: [not_null]
+      - name: sexo_grupo
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["TOTAL", "HOMENS", "MULHERES"]

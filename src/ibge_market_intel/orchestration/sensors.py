@@ -23,6 +23,9 @@ from ibge_market_intel.ingestion.catalogs import (
     IPCA_MENSAL_SPEC,
     PIB_MUNICIPAL_SPEC,
     PMC_VAREJO_UF_SPEC,
+    PMS_SERVICOS_UF_SPEC,
+    PNAD_DESOCUPACAO_UF_SPEC,
+    PNAD_RENDIMENTO_UF_SPEC,
     AgregadoSpec,
 )
 from ibge_market_intel.orchestration.partitions import (
@@ -32,12 +35,17 @@ from ibge_market_intel.orchestration.partitions import (
     IPCA_PARTITIONS,
     PIB_PARTITIONS,
     PMC_PARTITIONS,
+    PMS_PARTITIONS,
+    PNAD_PARTITIONS,
 )
 from ibge_market_intel.orchestration.resources import IBGEPipelineResource
 
 _MONITORED_SOURCES: tuple[tuple[AgregadoSpec, DynamicPartitionsDefinition], ...] = (
     (IPCA_MENSAL_SPEC, IPCA_PARTITIONS),
     (PMC_VAREJO_UF_SPEC, PMC_PARTITIONS),
+    (PMS_SERVICOS_UF_SPEC, PMS_PARTITIONS),
+    (PNAD_DESOCUPACAO_UF_SPEC, PNAD_PARTITIONS),
+    (PNAD_RENDIMENTO_UF_SPEC, PNAD_PARTITIONS),
     (PIB_MUNICIPAL_SPEC, PIB_PARTITIONS),
     (CEMPRE_MUNICIPAL_SPEC, CEMPRE_PARTITIONS),
     (CEMPRE_SETORIAL_UF_SPEC, CEMPRE_PARTITIONS),

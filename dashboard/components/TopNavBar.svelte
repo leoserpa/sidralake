@@ -9,6 +9,7 @@
 		{ label: 'Expansão', path: '/expansao/' },
 		{ label: 'Dinamismo', path: '/dinamismo/' },
 		{ label: 'Demografia', path: '/demografia/' },
+		{ label: 'Trabalho', path: '/trabalho/' },
 		{ label: 'CNAE', path: '/clusters-cnae/' },
 		{ label: 'Varejo', path: '/pulso-varejo/' }
 	];

@@ -530,6 +530,165 @@ def test_full_medallion_pipeline_scd2_and_idempotency(
         source_url="mock://8883",
     )
 
+    # 7b. PMS Servicos UF (5906)
+    pms_df = _sidra_df(
+        [
+            {
+                "agregado_id": 5906,
+                "variavel_id": 7167,
+                "localidade_id": "35",
+                "nivel_territorial": "N3",
+                "classificacao_1_id": "11046",
+                "categoria_1_id": "56725",
+                "categoria_1_nome": "Indice de receita nominal de servicos",
+                "periodo_id": "202312",
+                "valor_bruto": "120.0",
+            },
+            {
+                "agregado_id": 5906,
+                "variavel_id": 11624,
+                "localidade_id": "35",
+                "nivel_territorial": "N3",
+                "classificacao_1_id": "11046",
+                "categoria_1_id": "56725",
+                "categoria_1_nome": "Indice de receita nominal de servicos",
+                "periodo_id": "202312",
+                "valor_bruto": "7.5",
+            },
+            {
+                "agregado_id": 5906,
+                "variavel_id": 7167,
+                "localidade_id": "35",
+                "nivel_territorial": "N3",
+                "classificacao_1_id": "11046",
+                "categoria_1_id": "56726",
+                "categoria_1_nome": "Indice de volume de servicos",
+                "periodo_id": "202312",
+                "valor_bruto": "112.0",
+            },
+            {
+                "agregado_id": 5906,
+                "variavel_id": 11623,
+                "localidade_id": "35",
+                "nivel_territorial": "N3",
+                "classificacao_1_id": "11046",
+                "categoria_1_id": "56726",
+                "categoria_1_nome": "Indice de volume de servicos",
+                "periodo_id": "202312",
+                "valor_bruto": "0.8",
+            },
+            {
+                "agregado_id": 5906,
+                "variavel_id": 11624,
+                "localidade_id": "35",
+                "nivel_territorial": "N3",
+                "classificacao_1_id": "11046",
+                "categoria_1_id": "56726",
+                "categoria_1_nome": "Indice de volume de servicos",
+                "periodo_id": "202312",
+                "valor_bruto": "3.2",
+            },
+            {
+                "agregado_id": 5906,
+                "variavel_id": 11626,
+                "localidade_id": "35",
+                "nivel_territorial": "N3",
+                "classificacao_1_id": "11046",
+                "categoria_1_id": "56726",
+                "categoria_1_nome": "Indice de volume de servicos",
+                "periodo_id": "202312",
+                "valor_bruto": "4.0",
+            },
+        ]
+    )
+    assert validate_sidra_contract(pms_df, "pms_servicos_uf").passed
+    writer.write_partition_overwrite(
+        pms_df,
+        "pms_servicos_uf",
+        partition_col="ano_referencia",
+        partition_value="2023",
+        ingestion_id="e2e-1",
+        source_url="mock://5906",
+    )
+
+    # 7c. PNAD Continua Desocupacao (4099) + Rendimento (5436)
+    pnad_desoc_df = _sidra_df(
+        [
+            {
+                "agregado_id": 4099,
+                "variavel_id": 4099,
+                "localidade_id": "35",
+                "nivel_territorial": "N3",
+                "periodo_id": "202304",
+                "valor_bruto": "6.5",
+            },
+            {
+                "agregado_id": 4099,
+                "variavel_id": 4118,
+                "localidade_id": "35",
+                "nivel_territorial": "N3",
+                "periodo_id": "202304",
+                "valor_bruto": "13.2",
+            },
+        ]
+    )
+    assert validate_sidra_contract(pnad_desoc_df, "pnad_desocupacao_uf").passed
+    writer.write_partition_overwrite(
+        pnad_desoc_df,
+        "pnad_desocupacao_uf",
+        partition_col="ano_referencia",
+        partition_value="2023",
+        ingestion_id="e2e-1",
+        source_url="mock://4099",
+    )
+
+    pnad_renda_df = _sidra_df(
+        [
+            {
+                "agregado_id": 5436,
+                "variavel_id": 5933,
+                "localidade_id": "35",
+                "nivel_territorial": "N3",
+                "classificacao_1_id": "2",
+                "categoria_1_id": "6794",
+                "categoria_1_nome": "Total",
+                "periodo_id": "202304",
+                "valor_bruto": "4200",
+            },
+            {
+                "agregado_id": 5436,
+                "variavel_id": 5933,
+                "localidade_id": "35",
+                "nivel_territorial": "N3",
+                "classificacao_1_id": "2",
+                "categoria_1_id": "4",
+                "categoria_1_nome": "Homens",
+                "periodo_id": "202304",
+                "valor_bruto": "4800",
+            },
+            {
+                "agregado_id": 5436,
+                "variavel_id": 5933,
+                "localidade_id": "35",
+                "nivel_territorial": "N3",
+                "classificacao_1_id": "2",
+                "categoria_1_id": "5",
+                "categoria_1_nome": "Mulheres",
+                "periodo_id": "202304",
+                "valor_bruto": "3600",
+            },
+        ]
+    )
+    assert validate_sidra_contract(pnad_renda_df, "pnad_rendimento_uf").passed
+    writer.write_partition_overwrite(
+        pnad_renda_df,
+        "pnad_rendimento_uf",
+        partition_col="ano_referencia",
+        partition_value="2023",
+        ingestion_id="e2e-1",
+        source_url="mock://5436",
+    )
+
     # 8. Executa dbt build completo (Silver + Snapshots SCD2 + Gold + Contracts + Tests)
     env = dict(os.environ)
     env["IBGE_BRONZE_DIR"] = settings.resolved_bronze_dir.as_posix()
@@ -583,6 +742,18 @@ def test_full_medallion_pipeline_scd2_and_idempotency(
             "from gold.mart_pulso_consumo_macro"
         ).fetchone()
         assert pulso == (5.0, "EXPANSAO_REAL")
+
+        # Verifica PMS Servicos e PNAD Mercado de Trabalho
+        pms_row = con.execute(
+            "select var_mom_sa_volume_pct, regime_servicos from gold.mart_pulso_servicos_uf"
+        ).fetchone()
+        assert pms_row == (0.8, "EXPANSAO_REAL")
+
+        pnad_row = con.execute(
+            "select label_trimestre, taxa_desocupacao_pct, hiato_salarial_genero_pct "
+            "from gold.mart_mercado_trabalho_uf"
+        ).fetchone()
+        assert pnad_row == ("4T/2023", 6.5, -25.0)
     finally:
         con.close()
 
@@ -648,4 +819,4 @@ def test_full_medallion_pipeline_scd2_and_idempotency(
     # 12. Prova integridade do grafo Dagster unificado
     ag = defs.resolve_asset_graph()
     assert len(ag.external_asset_keys) == 0
-    assert len(ag.materializable_asset_keys) == 40
+    assert len(ag.materializable_asset_keys) == 48

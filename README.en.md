@@ -2,7 +2,7 @@
 
 # SidraLake — IBGE Market Intelligence 360 (Medallion Data Pipeline)
 
-**SidraLake** is a Data Engineering pipeline built on the **Medallion Architecture (Bronze → Silver → Gold)** for **360° Market Intelligence** powered by official **IBGE** (Brazilian Institute of Geography and Statistics) APIs (Localities, CNAE 2.0, Municipal GDP, 2022 Census, Population Estimates, Municipal & Sectoral CEMPRE Business Registry, IPCA Inflation, and Monthly Retail Survey - PMC).
+**SidraLake** is a Data Engineering pipeline built on the **Medallion Architecture (Bronze → Silver → Gold)** for **360° Market Intelligence** powered by official **IBGE** (Brazilian Institute of Geography and Statistics) APIs (Localities, CNAE 2.0, Municipal GDP, 2022 Census, Population Estimates, Municipal & Sectoral CEMPRE Business Registry, IPCA Inflation, Monthly Retail Survey - PMC, Monthly Services Survey - PMS, and Quarterly PNAD Contínua).
 
 The project implements a **Local-First Modern Data Stack** focused on reliability, data contracts, and governance: **Delta Lake** with ACID transactions and Time Travel, **DuckDB + dbt-duckdb** for Silver/SCD Type 2/Gold modeling, **Polars + Pandera + Pydantic v2** as ingestion quality gates, and **Dagster** for asset-oriented orchestration, partitions, freshness sensors, and end-to-end lineage.
 
@@ -14,7 +14,7 @@ The project implements a **Local-First Modern Data Stack** focused on reliabilit
 - **Analytical Engine, Contracts & Semantic Layer**: DuckDB + `dbt-duckdb` 1.12 (`delta_scan()`, Staging, Intermediate, SCD Type 2 via `dbt snapshot`, Gold Star Schema + 3 OBT Marts with **Enforced Model Contracts** across 100% of Gold models, **dbt Semantic Layer** with 3 semantic models, 12 governed metrics, and `time_spine_daily`, **10 SQL dbt Unit Tests**, and singular accounting tests)
 - **Ingestion & Lazy Analytics**: Python `>=3.12,<3.14` (`uv`), asynchronous `httpx` with semaphore concurrency and adaptive UF/semester chunking, `tenacity` exponential backoff with jitter, `Pydantic v2`, **Polars Lazy API** (`scan_delta` + deterministic Arrow IPC hashing), `Pandera[polars]`
 - **Orchestration & Lineage**: Dagster (`dagster-dbt`, annual dynamic partitions, blocking Asset Checks, **Declarative Automation `AutomationCondition.eager()`** on dbt models and Delta exports, dynamic IBGE API Freshness Sensor, and Schedules)
-- **BI as Code Layer**: **Evidence.dev** (`dashboard/`, 8 pages including Demographics & Regional Poles) in SQL + Markdown compiled to static **DuckDB-WASM** and deployed automatically to **GitHub Pages** (`https://leoserpa.github.io/sidralake/`) via `.github/workflows/pages.yml` with monthly freshness manifest
+- **BI as Code Layer**: **Evidence.dev** (`dashboard/`, 9 pages including Demographics & Regional Poles, PNAD Labor & Income, and PMS Services) in SQL + Markdown compiled to static **DuckDB-WASM** and deployed automatically to **GitHub Pages** (`https://leoserpa.github.io/sidralake/`) via `.github/workflows/pages.yml` with monthly freshness manifest
 - **Quality & Observability**: `structlog` JSON logging, `ruff`, `mypy --strict`, `sqlfluff`, `pytest` (`>85%` coverage) + `respx`, GitHub Actions CI
 
 ---

@@ -19,6 +19,9 @@ Complete catalog of the 9 official IBGE data sources ingested by the pipeline, e
 | `cempre_setorial_uf` | SIDRA `9418` (annual, new series) | `N3` (27 States) | `2585` (Firms), `707` (Total employed), `708` (Salaried), `662` (Payroll k BRL) | `12762` (`21` CNAE sections) | Dynamic (`min_year=2022`) | `N3[all]` per year |
 | `ipca_mensal` | SIDRA `1737` (monthly) | `N1` (Brazil) | `2266` (Index number), `63` (MoM %), `2263` (3m %), `2264` (6m %), `69` (YTD %), `2265` (12m %) | — | Dynamic (`min_year=2018`) | `N1[all]` (12 months/year) |
 | `pmc_varejo_uf` | SIDRA `8883` (monthly) | `N3` (27 States) | `7169` (Index 2022=100), `7170` (SA Index), `11708` (MoM SA %), `11709` (YoY %), `11710` (YTD %), `11711` (12m %) | `11046` (2 index types) + `85` (14 activities) | Dynamic (`min_year=2020`) | `chunk_months_half_year=True` (6 months/req) |
+| `pms_servicos_uf` | SIDRA `5906` (monthly) | `N3` (27 States) | `7167` (Index 2022=100), `7168` (SA Index), `11623` (MoM SA %), `11624` (YoY %), `11625` (YTD %), `11626` (12m %) | `11046` (2 index types: revenue & volume) | Dynamic (`min_year=2020`) | `N3[all]` (12 months/year) |
+| `pnad_desocupacao_uf` | SIDRA `4099` (quarterly) | `N3` (27 States) | `4099` (Unemployment %), `4114` (Unemp. + Underemp.), `4116` (Unemp. + Potential), `4118` (Composite underutilization) | — | Dynamic (`min_year=2018`) | `N3[all]` (4 quarters/year) |
+| `pnad_rendimento_uf` | SIDRA `5436` (quarterly) | `N3` (27 States) | `5933` (Average real monthly earnings across all jobs) | `2` (Sex: Total, Men, Women) | Dynamic (`min_year=2018`) | `N3[all]` (4 quarters/year) |
 
 ---
 

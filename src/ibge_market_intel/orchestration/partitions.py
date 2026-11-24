@@ -10,3 +10,5 @@ ESTIMATIVA_POP_PARTITIONS = DynamicPartitionsDefinition(name="estimativa_pop_yea
 CEMPRE_PARTITIONS = DynamicPartitionsDefinition(name="cempre_years")
 IPCA_PARTITIONS = DynamicPartitionsDefinition(name="ipca_years")
 PMC_PARTITIONS = DynamicPartitionsDefinition(name="pmc_years")
+PMS_PARTITIONS = DynamicPartitionsDefinition(name="pms_years")
+PNAD_PARTITIONS = DynamicPartitionsDefinition(name="pnad_years")

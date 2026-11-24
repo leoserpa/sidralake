@@ -41,7 +41,7 @@ def test_dagster_definitions_validate_loadable() -> None:
     assert AssetKey(["bronze", "localidades"]) in all_keys
     assert AssetKey(["lakehouse", "silver_delta_export"]) in all_keys
     assert AssetKey(["lakehouse", "gold_delta_export"]) in all_keys
-    assert len(BRONZE_ASSET_CHECKS) == 9
+    assert len(BRONZE_ASSET_CHECKS) == 12
 
 
 def test_ibge_dbt_translator_asset_keys_and_groups() -> None:
@@ -90,6 +90,9 @@ def test_ibge_new_period_sensor_emits_runs_registers_dynamic_partitions_and_skip
     fake_periods: dict[int, list[str]] = {
         1737: ["201712", "202401", "202703"],  # inclui 2017 (< min_year) e ano futuro 2027
         8883: ["201912", "202401", "202702"],
+        5906: ["201912", "202609", "202702"],
+        4099: ["201704", "202603", "202701"],
+        5436: ["201704", "202603", "202701"],
         5938: ["2017", "2022", "2025"],
         9509: ["2022", "2025"],
         9418: ["2022", "2025"],
@@ -122,6 +125,9 @@ def test_ibge_new_period_sensor_emits_runs_registers_dynamic_partitions_and_skip
     assert run_keys == {
         "ipca_mensal-202703",
         "pmc_varejo_uf-202702",
+        "pms_servicos_uf-202702",
+        "pnad_desocupacao_uf-202701",
+        "pnad_rendimento_uf-202701",
         "pib_municipal-2025",
         "cempre_municipal-2025",
         "cempre_setorial_uf-2025",
@@ -136,6 +142,8 @@ def test_ibge_new_period_sensor_emits_runs_registers_dynamic_partitions_and_skip
     assert added_by_def == {
         "ipca_years": ["2027"],
         "pmc_years": ["2027"],
+        "pms_years": ["2027"],
+        "pnad_years": ["2027"],
         "pib_years": ["2025"],
         "cempre_years": ["2025"],
         "estimativa_pop_years": ["2027"],

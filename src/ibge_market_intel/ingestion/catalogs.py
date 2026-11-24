@@ -242,6 +242,46 @@ PMC_VAREJO_UF_SPEC = AgregadoSpec(
     min_year=2020,
 )
 
+PMS_SERVICOS_UF_SPEC = AgregadoSpec(
+    table_name="pms_servicos_uf",
+    agregado_id=5906,
+    descricao="PMS Pesquisa Mensal de Servicos por UF (receita nominal e volume, base 2022=100)",
+    variaveis=(7167, 7168, 11623, 11624, 11625, 11626),
+    nivel_territorial="N3",
+    periodicidade="mensal",
+    classificacoes={
+        11046: (56725, 56726),
+    },
+    chunk_by_uf=False,
+    min_year=2020,
+)
+
+PNAD_DESOCUPACAO_UF_SPEC = AgregadoSpec(
+    table_name="pnad_desocupacao_uf",
+    agregado_id=4099,
+    descricao="PNAD Continua Trimestral: taxas de desocupacao e subutilizacao por UF",
+    variaveis=(4099, 4114, 4116, 4118),
+    nivel_territorial="N3",
+    periodicidade="trimestral",
+    classificacoes={},
+    chunk_by_uf=False,
+    min_year=2018,
+)
+
+PNAD_RENDIMENTO_UF_SPEC = AgregadoSpec(
+    table_name="pnad_rendimento_uf",
+    agregado_id=5436,
+    descricao="PNAD Continua Trimestral: rendimento medio mensal real habitual por UF e sexo",
+    variaveis=(5933,),
+    nivel_territorial="N3",
+    periodicidade="trimestral",
+    classificacoes={
+        2: (6794, 4, 5),
+    },
+    chunk_by_uf=False,
+    min_year=2018,
+)
+
 ALL_SIDRA_SPECS: dict[str, AgregadoSpec] = {
     spec.table_name: spec
     for spec in (
@@ -252,5 +292,8 @@ ALL_SIDRA_SPECS: dict[str, AgregadoSpec] = {
         CEMPRE_SETORIAL_UF_SPEC,
         IPCA_MENSAL_SPEC,
         PMC_VAREJO_UF_SPEC,
+        PMS_SERVICOS_UF_SPEC,
+        PNAD_DESOCUPACAO_UF_SPEC,
+        PNAD_RENDIMENTO_UF_SPEC,
     )
 }

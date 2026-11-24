@@ -19,6 +19,9 @@ Catálogo completo das 9 fontes oficiais do IBGE consumidas pelo pipeline, espec
 | `cempre_setorial_uf` | SIDRA `9418` (anual, nova série) | `N3` (27 UFs) | `2585` (Empresas), `707` (Pessoal ocupado), `708` (Assalariado), `662` (Massa salarial Mil R$) | `12762` (`21` seções CNAE) | Dinâmica (`min_year=2022`) | `N3[all]` por ano |
 | `ipca_mensal` | SIDRA `1737` (mensal) | `N1` (Brasil) | `2266` (Número-índice), `63` (Var. mensal), `2263` (3m), `2264` (6m), `69` (Ano), `2265` (12m) | — | Dinâmica (`min_year=2018`) | `N1[all]` (12 meses/ano) |
 | `pmc_varejo_uf` | SIDRA `8883` (mensal) | `N3` (27 UFs) | `7169` (Índice 2022=100), `7170` (Índice SA), `11708` (MoM SA), `11709` (YoY), `11710` (Acum. Ano), `11711` (Acum. 12m) | `11046` (2 tipos índice) + `85` (14 atividades) | Dinâmica (`min_year=2020`) | `chunk_months_half_year=True` (6 meses/req) |
+| `pms_servicos_uf` | SIDRA `5906` (mensal) | `N3` (27 UFs) | `7167` (Índice 2022=100), `7168` (Índice SA), `11623` (MoM SA), `11624` (YoY), `11625` (Acum. Ano), `11626` (Acum. 12m) | `11046` (2 tipos índice: receita e volume) | Dinâmica (`min_year=2020`) | `N3[all]` (12 meses/ano) |
+| `pnad_desocupacao_uf` | SIDRA `4099` (trimestral) | `N3` (27 UFs) | `4099` (Desocupação %), `4114` (Desoc. + Suboc.), `4116` (Desoc. + Potencial), `4118` (Subutilização composta) | — | Dinâmica (`min_year=2018`) | `N3[all]` (4 trimestres/ano) |
+| `pnad_rendimento_uf` | SIDRA `5436` (trimestral) | `N3` (27 UFs) | `5933` (Rendimento médio mensal real habitual em todos os trabalhos) | `2` (Sexo: Total, Homens, Mulheres) | Dinâmica (`min_year=2018`) | `N3[all]` (4 trimestres/ano) |
 
 ---
 

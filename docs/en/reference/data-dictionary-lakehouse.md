@@ -119,7 +119,7 @@ Structural specification of the **Bronze, Silver, and Gold** layers in Delta Lak
 - **Assets**: `39` materializable assets (`0` orphan external assets) grouped into `bronze`, `silver_staging`, `silver_scd2`, `silver_intermediate`, `gold_dimensions`, `gold_facts`, `gold_marts`, and `lakehouse_export`.
 - **Asset Checks**: `155` total checks (`9` blocking Pandera checks in Bronze + `146` dbt checks).
 - **Jobs**: `dbt_medallion_job`, `macro_refresh_job`, `delta_maintenance_job`.
-- **Sensor**: `ibge_new_period_sensor` (`minimum_interval_seconds=3600`, polls `/periodos` across all 7 SIDRA sources — `ipca_mensal`, `pmc_varejo_uf`, `pib_municipal`, `cempre_municipal`, `cempre_setorial_uf`, `estimativa_populacao`, and `censo_populacao` — registering new years via `DynamicPartitionsDefinition`).
+- **Sensor**: `ibge_new_period_sensor` (`minimum_interval_seconds=3600`, polls `/periodos` across all 10 SIDRA sources — `ipca_mensal`, `pmc_varejo_uf`, `pms_servicos_uf`, `pnad_desocupacao_uf`, `pnad_rendimento_uf`, `pib_municipal`, `cempre_municipal`, `cempre_setorial_uf`, `estimativa_populacao`, and `censo_populacao` — registering new years via `DynamicPartitionsDefinition`).
 - **Schedules (`America/Sao_Paulo`)**:
   - `monthly_macro_refresh_schedule`: cron `0 8 15 * *` (runs `macro_refresh_job`)
   - `weekly_delta_maintenance_schedule`: cron `0 3 * * 0` (runs `delta_maintenance_job`)

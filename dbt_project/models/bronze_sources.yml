@@ -71,3 +71,24 @@ sources:
           external_location: "delta_scan('{{ env_var('IBGE_BRONZE_DIR', 'data/bronze') }}/pmc_varejo_uf')"
           dagster:
             asset_key: ["bronze", "pmc_varejo_uf"]
+
+      - name: pms_servicos_uf
+        description: "SIDRA 5906: Pesquisa Mensal de Servicos por UF (receita nominal e volume, base 2022=100)."
+        meta:
+          external_location: "delta_scan('{{ env_var('IBGE_BRONZE_DIR', 'data/bronze') }}/pms_servicos_uf')"
+          dagster:
+            asset_key: ["bronze", "pms_servicos_uf"]
+
+      - name: pnad_desocupacao_uf
+        description: "SIDRA 4099: PNAD Continua Trimestral - taxas de desocupacao e subutilizacao por UF."
+        meta:
+          external_location: "delta_scan('{{ env_var('IBGE_BRONZE_DIR', 'data/bronze') }}/pnad_desocupacao_uf')"
+          dagster:
+            asset_key: ["bronze", "pnad_desocupacao_uf"]
+
+      - name: pnad_rendimento_uf
+        description: "SIDRA 5436: PNAD Continua Trimestral - rendimento medio mensal real por UF e sexo."
+        meta:
+          external_location: "delta_scan('{{ env_var('IBGE_BRONZE_DIR', 'data/bronze') }}/pnad_rendimento_uf')"
+          dagster:
+            asset_key: ["bronze", "pnad_rendimento_uf"]

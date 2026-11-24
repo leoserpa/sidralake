@@ -240,6 +240,65 @@ def _seed_synthetic_bi_parquets(parquet_dir: Path) -> None:
         }
     ).write_parquet(parquet_dir / "mart_pulso_consumo_macro.parquet")
 
+    pl.DataFrame(
+        {
+            "sk_pulso_servicos": ["sk_pms_sp", "sk_pms_pr"],
+            "codigo_uf": [35, 41],
+            "sigla_uf": ["SP", "PR"],
+            "nome_uf": ["São Paulo", "Paraná"],
+            "sigla_regiao": ["SE", "S"],
+            "nome_regiao": ["Sudeste", "Sul"],
+            "ano_mes": ["202609", "202609"],
+            "ano_referencia": [2026, 2026],
+            "mes_referencia": [9, 9],
+            "data_referencia": [dt.date(2026, 9, 1), dt.date(2026, 9, 1)],
+            "indice_receita_nominal": [134.9, 128.4],
+            "indice_receita_nominal_sa": [134.2, 127.8],
+            "var_mom_sa_receita_pct": [0.3, 0.5],
+            "var_yoy_receita_nominal_pct": [5.9, 6.2],
+            "var_acum_12m_receita_pct": [8.4, 7.5],
+            "indice_volume_servicos": [110.9, 108.3],
+            "indice_volume_servicos_sa": [109.9, 107.6],
+            "var_mom_sa_volume_pct": [-0.2, 0.4],
+            "var_yoy_volume_pct": [2.4, 3.1],
+            "var_acum_12m_volume_pct": [3.0, 3.6],
+            "ipca_variacao_mensal_pct": [0.14, 0.14],
+            "ipca_variacao_acum_12m_pct": [4.58, 4.58],
+            "spread_preco_vs_volume_yoy_pp": [3.5, 3.1],
+            "spread_volume_vs_ipca_12m_pp": [-1.58, -0.98],
+            "media_movel_3m_volume": [110.5, 107.9],
+            "media_movel_12m_volume": [109.2, 106.5],
+            "regime_servicos": ["EXPANSAO_REAL", "EXPANSAO_REAL"],
+        }
+    ).write_parquet(parquet_dir / "mart_pulso_servicos_uf.parquet")
+
+    pl.DataFrame(
+        {
+            "sk_mercado_trabalho": ["sk_pnad_sp", "sk_pnad_pr"],
+            "codigo_uf": [35, 41],
+            "sigla_uf": ["SP", "PR"],
+            "nome_uf": ["São Paulo", "Paraná"],
+            "sigla_regiao": ["SE", "S"],
+            "nome_regiao": ["Sudeste", "Sul"],
+            "ano_trimestre": ["202603", "202603"],
+            "label_trimestre": ["3T/2026", "3T/2026"],
+            "ano_referencia": [2026, 2026],
+            "trimestre_referencia": [3, 3],
+            "data_referencia": [dt.date(2026, 7, 1), dt.date(2026, 7, 1)],
+            "is_ultimo_trimestre": [True, True],
+            "taxa_desocupacao_pct": [5.4, 3.9],
+            "taxa_desocupacao_subocupacao_pct": [8.3, 6.1],
+            "taxa_desocupacao_forca_potencial_pct": [8.1, 6.2],
+            "taxa_subutilizacao_composta_pct": [11.0, 8.2],
+            "var_yoy_desocupacao_pp": [-0.8, -0.5],
+            "rendimento_medio_real_brl": [4543.0, 3980.0],
+            "rendimento_homens_real_brl": [5133.0, 4490.0],
+            "rendimento_mulheres_real_brl": [3821.0, 3360.0],
+            "var_yoy_rendimento_real_pct": [4.2, 5.4],
+            "hiato_salarial_genero_pct": [-25.56, -25.17],
+        }
+    ).write_parquet(parquet_dir / "mart_mercado_trabalho_uf.parquet")
+
 
 def test_dashboard_static_contracts_pass() -> None:
     """Garante que configuracao, layout, sources, SQL e componentes Evidence estao integros."""

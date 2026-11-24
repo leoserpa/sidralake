@@ -2,7 +2,7 @@
 
 # SidraLake — Inteligência de Mercado IBGE 360 (Pipeline de Dados Medalhão)
 
-**SidraLake** é um pipeline de Engenharia de Dados em **Arquitetura Medalhão (Bronze → Silver → Gold)** para **Inteligência de Mercado 360°** com dados oficiais do **IBGE** (Localidades, CNAE 2.0, PIB Municipal, Censo Demográfico 2022, Estimativas Populacionais, CEMPRE Municipal/Setorial, IPCA e Pesquisa Mensal de Comércio - PMC).
+**SidraLake** é um pipeline de Engenharia de Dados em **Arquitetura Medalhão (Bronze → Silver → Gold)** para **Inteligência de Mercado 360°** com dados oficiais do **IBGE** (Localidades, CNAE 2.0, PIB Municipal, Censo Demográfico 2022, Estimativas Populacionais, CEMPRE Municipal/Setorial, IPCA, Pesquisa Mensal de Comércio - PMC, Pesquisa Mensal de Serviços - PMS e PNAD Contínua Trimestral).
 
 O projeto adota uma **Arquitetura de Dados Moderna Local-First** com foco em confiabilidade, contratos de dados e governança: **Delta Lake** com transações ACID e histórico temporal (*Time Travel*), **DuckDB + dbt-duckdb** para modelagem Silver/SCD Tipo 2/Gold, **Polars + Pandera + Pydantic v2** como barreiras de qualidade na ingestão e **Dagster** para orquestração orientada a ativos (*assets*), partições, sensores de frescor e linhagem ponta a ponta.
 
@@ -14,7 +14,7 @@ O projeto adota uma **Arquitetura de Dados Moderna Local-First** com foco em con
 - **Motor Analítico, Contratos & Camada Semântica**: DuckDB + `dbt-duckdb` 1.12 (`delta_scan()`, Staging, Intermediate, SCD Tipo 2 via `dbt snapshot`, Esquema Estrela + 3 Data Marts OBT com **Contratos Obrigatórios** em 100% da camada Gold, **dbt Semantic Layer** com 3 modelos semânticos, 12 métricas governadas e `time_spine_daily`, **10 testes unitários SQL** e testes singulares contábeis)
 - **Ingestão & Consultas Lazy**: Python `>=3.12,<3.14` (`uv`), `httpx` assíncrono com semáforo e fatiamento adaptativo por UF/semestre, `tenacity` backoff com jitter, `Pydantic v2`, **Polars Lazy API** (`scan_delta` + hash determinístico Arrow IPC), `Pandera[polars]`
 - **Orquestração & Linhagem**: Dagster (`dagster-dbt`, partições dinâmicas anuais, Verificações de Ativos bloqueantes, **Declarative Automation `AutomationCondition.eager()`** nos modelos dbt e exports Delta, Sensor de Frescor dinâmico na API do IBGE e Agendamentos)
-- **Camada de BI as Code**: **Evidence.dev** (`dashboard/`, 8 páginas incluindo Radar Demográfico & Polos Regionais) em SQL + Markdown compilado para **DuckDB-WASM** estático e publicado automaticamente no **GitHub Pages** (`https://leoserpa.github.io/sidralake/`) via `.github/workflows/pages.yml` com manifesto mensal de frescor
+- **Camada de BI as Code**: **Evidence.dev** (`dashboard/`, 9 páginas incluindo Demografia & Polos Regionais, Trabalho & Renda PNAD e Serviços PMS) em SQL + Markdown compilado para **DuckDB-WASM** estático e publicado automaticamente no **GitHub Pages** (`https://leoserpa.github.io/sidralake/`) via `.github/workflows/pages.yml` com manifesto mensal de frescor
 - **Qualidade & Observabilidade**: `structlog` JSON, `ruff`, `mypy --strict`, `sqlfluff`, `pytest` (`>85%` de cobertura) + `respx`, GitHub Actions CI
 
 ---

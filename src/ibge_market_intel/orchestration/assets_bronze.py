@@ -25,6 +25,9 @@ from ibge_market_intel.ingestion.catalogs import (
     IPCA_MENSAL_SPEC,
     PIB_MUNICIPAL_SPEC,
     PMC_VAREJO_UF_SPEC,
+    PMS_SERVICOS_UF_SPEC,
+    PNAD_DESOCUPACAO_UF_SPEC,
+    PNAD_RENDIMENTO_UF_SPEC,
     AgregadoSpec,
 )
 from ibge_market_intel.orchestration.partitions import (
@@ -34,6 +37,8 @@ from ibge_market_intel.orchestration.partitions import (
     IPCA_PARTITIONS,
     PIB_PARTITIONS,
     PMC_PARTITIONS,
+    PMS_PARTITIONS,
+    PNAD_PARTITIONS,
 )
 from ibge_market_intel.orchestration.resources import IBGEPipelineResource
 from ibge_market_intel.quality.contracts import (
@@ -342,6 +347,66 @@ def bronze_pmc_varejo_uf(
     return _to_materialize_result(metrics)
 
 
+@asset(
+    key_prefix=["bronze"],
+    name="pms_servicos_uf",
+    partitions_def=PMS_PARTITIONS,
+    group_name="bronze",
+    kinds={"python", "polars", "deltalake"},
+    description="SIDRA 5906: PMS Pesquisa Mensal de Servicos por UF (receita e volume, 2022=100).",
+)
+def bronze_pms_servicos_uf(
+    context: AssetExecutionContext,
+    pipeline: IBGEPipelineResource,
+) -> MaterializeResult[Any]:
+    metrics = asyncio.run(
+        _ingest_sidra_partition(
+            pipeline, PMS_SERVICOS_UF_SPEC, context.partition_key, context.run_id
+        )
+    )
+    return _to_materialize_result(metrics)
+
+
+@asset(
+    key_prefix=["bronze"],
+    name="pnad_desocupacao_uf",
+    partitions_def=PNAD_PARTITIONS,
+    group_name="bronze",
+    kinds={"python", "polars", "deltalake"},
+    description="SIDRA 4099: PNAD Continua Trimestral - desocupacao e subutilizacao por UF.",
+)
+def bronze_pnad_desocupacao_uf(
+    context: AssetExecutionContext,
+    pipeline: IBGEPipelineResource,
+) -> MaterializeResult[Any]:
+    metrics = asyncio.run(
+        _ingest_sidra_partition(
+            pipeline, PNAD_DESOCUPACAO_UF_SPEC, context.partition_key, context.run_id
+        )
+    )
+    return _to_materialize_result(metrics)
+
+
+@asset(
+    key_prefix=["bronze"],
+    name="pnad_rendimento_uf",
+    partitions_def=PNAD_PARTITIONS,
+    group_name="bronze",
+    kinds={"python", "polars", "deltalake"},
+    description="SIDRA 5436: PNAD Continua Trimestral - rendimento medio real por UF e sexo.",
+)
+def bronze_pnad_rendimento_uf(
+    context: AssetExecutionContext,
+    pipeline: IBGEPipelineResource,
+) -> MaterializeResult[Any]:
+    metrics = asyncio.run(
+        _ingest_sidra_partition(
+            pipeline, PNAD_RENDIMENTO_UF_SPEC, context.partition_key, context.run_id
+        )
+    )
+    return _to_materialize_result(metrics)
+
+
 # ==================== ASSET CHECKS BLOQUEANTES (CIRCUIT BREAKERS) ====================
 
 
@@ -400,6 +465,9 @@ BRONZE_ASSETS = [
     bronze_cempre_setorial_uf,
     bronze_ipca_mensal,
     bronze_pmc_varejo_uf,
+    bronze_pms_servicos_uf,
+    bronze_pnad_desocupacao_uf,
+    bronze_pnad_rendimento_uf,
 ]
 
 BRONZE_ASSET_CHECKS = [
@@ -415,6 +483,9 @@ BRONZE_ASSET_CHECKS = [
             "cempre_setorial_uf",
             "ipca_mensal",
             "pmc_varejo_uf",
+            "pms_servicos_uf",
+            "pnad_desocupacao_uf",
+            "pnad_rendimento_uf",
         )
     ),
 ]

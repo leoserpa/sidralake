@@ -17,6 +17,8 @@ BI_GOLD_TABLES: tuple[str, ...] = (
     "mart_inteligencia_mercado_municipal",
     "mart_clusters_setoriais_uf",
     "mart_pulso_consumo_macro",
+    "mart_pulso_servicos_uf",
+    "mart_mercado_trabalho_uf",
     "fct_populacao_municipal",
     "fct_ipca_mensal",
     "dim_geografia",
@@ -93,6 +95,8 @@ def write_bi_freshness_manifest(
         "latest_periods": {
             "ipca_mensal": _max_str("fct_ipca_mensal", "ano_mes"),
             "pmc_varejo_uf": _max_str("mart_pulso_consumo_macro", "ano_mes"),
+            "pms_servicos_uf": _max_str("mart_pulso_servicos_uf", "ano_mes"),
+            "pnad_trabalho_uf": _max_str("mart_mercado_trabalho_uf", "ano_trimestre"),
             "pib_municipal": _max_str(
                 "mart_inteligencia_mercado_municipal",
                 "ano_referencia",

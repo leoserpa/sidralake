@@ -856,6 +856,154 @@ models:
         agg: average
         expr: spread_preco_vs_volume_yoy_pp
 
+  - name: mart_pulso_servicos_uf
+    description: >
+      Data Mart mensal da Pesquisa Mensal de Servicos (PMS - SIDRA 5906) por UF cruzada com IPCA,
+      medindo volume, receita, ajuste sazonal MoM SA, medias moveis 3m/12m e regime de servicos.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: sk_pulso_servicos
+        data_type: varchar
+        tests: [unique, not_null]
+      - name: codigo_uf
+        data_type: integer
+        tests: [not_null]
+      - name: sigla_uf
+        data_type: varchar
+        tests: [not_null]
+      - name: nome_uf
+        data_type: varchar
+        tests: [not_null]
+      - name: sigla_regiao
+        data_type: varchar
+        tests: [not_null]
+      - name: nome_regiao
+        data_type: varchar
+        tests: [not_null]
+      - name: ano_mes
+        data_type: varchar
+        tests: [not_null]
+      - name: ano_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: mes_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: data_referencia
+        data_type: date
+        tests: [not_null]
+      - name: indice_receita_nominal
+        data_type: double
+      - name: indice_receita_nominal_sa
+        data_type: double
+      - name: var_mom_sa_receita_pct
+        data_type: double
+      - name: var_yoy_receita_nominal_pct
+        data_type: double
+      - name: var_acum_12m_receita_pct
+        data_type: double
+      - name: indice_volume_servicos
+        data_type: double
+      - name: indice_volume_servicos_sa
+        data_type: double
+      - name: var_mom_sa_volume_pct
+        data_type: double
+      - name: var_yoy_volume_pct
+        data_type: double
+      - name: var_acum_12m_volume_pct
+        data_type: double
+      - name: ipca_variacao_mensal_pct
+        data_type: double
+      - name: ipca_variacao_acum_12m_pct
+        data_type: double
+      - name: spread_preco_vs_volume_yoy_pp
+        data_type: double
+      - name: spread_volume_vs_ipca_12m_pp
+        data_type: double
+      - name: media_movel_3m_volume
+        data_type: double
+      - name: media_movel_12m_volume
+        data_type: double
+      - name: regime_servicos
+        data_type: varchar
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "EXPANSAO_REAL"
+                  - "PRESSAO_INFLACIONARIA"
+                  - "ESTABILIDADE"
+                  - "RETRACAO"
+                  - "SEM_DADO"
+
+  - name: mart_mercado_trabalho_uf
+    description: >
+      Data Mart trimestral da PNAD Continua por UF combinando desocupacao/subutilizacao (SIDRA 4099)
+      e rendimento medio mensal real habitual por genero (SIDRA 5436), incluindo mercado informal.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: sk_mercado_trabalho
+        data_type: varchar
+        tests: [unique, not_null]
+      - name: codigo_uf
+        data_type: integer
+        tests: [not_null]
+      - name: sigla_uf
+        data_type: varchar
+        tests: [not_null]
+      - name: nome_uf
+        data_type: varchar
+        tests: [not_null]
+      - name: sigla_regiao
+        data_type: varchar
+        tests: [not_null]
+      - name: nome_regiao
+        data_type: varchar
+        tests: [not_null]
+      - name: ano_trimestre
+        data_type: varchar
+        tests: [not_null]
+      - name: label_trimestre
+        data_type: varchar
+        tests: [not_null]
+      - name: ano_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: trimestre_referencia
+        data_type: integer
+        tests: [not_null]
+      - name: data_referencia
+        data_type: date
+        tests: [not_null]
+      - name: is_ultimo_trimestre
+        data_type: boolean
+        tests: [not_null]
+      - name: taxa_desocupacao_pct
+        data_type: double
+      - name: taxa_desocupacao_subocupacao_pct
+        data_type: double
+      - name: taxa_desocupacao_forca_potencial_pct
+        data_type: double
+      - name: taxa_subutilizacao_composta_pct
+        data_type: double
+      - name: var_yoy_desocupacao_pp
+        data_type: double
+      - name: rendimento_medio_real_brl
+        data_type: double
+      - name: rendimento_homens_real_brl
+        data_type: double
+      - name: rendimento_mulheres_real_brl
+        data_type: double
+      - name: var_yoy_rendimento_real_pct
+        data_type: double
+      - name: hiato_salarial_genero_pct
+        data_type: double
+
 unit_tests:
   - name: test_quociente_locacional_cluster_especializado
     description: "Valida a formula exata do Quociente Locacional (QL = 1.60 -> CLUSTER_DOMINANTE) na matriz UF x CNAE."

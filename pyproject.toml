@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ibge-market-intel"
-version = "0.2.0"
+version = "0.3.0"
 description = "SidraLake: Pipeline de Inteligencia de Mercado 360 com dados oficiais do IBGE usando Arquitetura Medalhao (Delta Lake, DuckDB, dbt, Dagster, Polars e Pandera)."
 readme = "README.md"
 license = { file = "LICENSE" }

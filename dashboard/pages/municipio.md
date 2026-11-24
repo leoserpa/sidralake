@@ -22,6 +22,28 @@ order by pop_ord desc, g.nome_municipio asc
 ```
 
 ```sql perfil_cidade
+with alvo as (
+    select coalesce(
+        (
+            select g_ok.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_ok
+            where g_ok.codigo_ibge_municipio = try_cast('${inputs.cidade.value}' as integer)
+              and ('${inputs.uf.value}' = '' or g_ok.sigla_uf = '${inputs.uf.value}')
+            limit 1
+        ),
+        (
+            select g_top.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_top
+            left join sidralake.mart_inteligencia_mercado_municipal as m_top
+                on g_top.codigo_ibge_municipio = m_top.codigo_ibge_municipio
+               and m_top.is_ultimo_ano_completo
+            where g_top.sigla_uf = '${inputs.uf.value}'
+            order by coalesce(m_top.populacao_residente, 0) desc, g_top.nome_municipio asc
+            limit 1
+        ),
+        3550308
+    ) as cod_alvo
+)
 select
     g.codigo_ibge_municipio,
     g.nome_municipio || ' - ' || g.sigla_uf as cidade_uf,
@@ -42,12 +64,13 @@ from sidralake.dim_geografia as g
 left join sidralake.mart_inteligencia_mercado_municipal as m
     on g.codigo_ibge_municipio = m.codigo_ibge_municipio
    and m.is_ultimo_ano_completo
-where g.codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
+where g.codigo_ibge_municipio = (select cod_alvo from alvo)
 ```
 
 <CityHero data={perfil_cidade}>
 	<Dropdown data={ufs_cidade} name=uf value=sigla_uf label=sigla_uf title="UF" defaultValue="SP" />
 	<Dropdown data={cidades_da_uf} name=cidade value=codigo_ibge_municipio label=nome_municipio title="Município" defaultValue={3550308} />
+	<ResetFilters />
 </CityHero>
 
 <div class="sl-kpi-grid-6">
@@ -60,24 +83,68 @@ where g.codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as in
 </div>
 
 ```sql serie_pib_cidade
+with alvo as (
+    select coalesce(
+        (
+            select g_ok.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_ok
+            where g_ok.codigo_ibge_municipio = try_cast('${inputs.cidade.value}' as integer)
+              and ('${inputs.uf.value}' = '' or g_ok.sigla_uf = '${inputs.uf.value}')
+            limit 1
+        ),
+        (
+            select g_top.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_top
+            left join sidralake.mart_inteligencia_mercado_municipal as m_top
+                on g_top.codigo_ibge_municipio = m_top.codigo_ibge_municipio
+               and m_top.is_ultimo_ano_completo
+            where g_top.sigla_uf = '${inputs.uf.value}'
+            order by coalesce(m_top.populacao_residente, 0) desc, g_top.nome_municipio asc
+            limit 1
+        ),
+        3550308
+    ) as cod_alvo
+)
 select
     ano_referencia as ano,
     round(pib_real_mil_brl / 1e6, 3) as pib_real_bi
 from sidralake.mart_inteligencia_mercado_municipal
-where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
+where codigo_ibge_municipio = (select cod_alvo from alvo)
   and pib_real_mil_brl is not null
 order by ano_referencia asc
 ```
 
 ```sql pilares_cidade
-with raw_p as (
+with alvo as (
+    select coalesce(
+        (
+            select g_ok.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_ok
+            where g_ok.codigo_ibge_municipio = try_cast('${inputs.cidade.value}' as integer)
+              and ('${inputs.uf.value}' = '' or g_ok.sigla_uf = '${inputs.uf.value}')
+            limit 1
+        ),
+        (
+            select g_top.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_top
+            left join sidralake.mart_inteligencia_mercado_municipal as m_top
+                on g_top.codigo_ibge_municipio = m_top.codigo_ibge_municipio
+               and m_top.is_ultimo_ano_completo
+            where g_top.sigla_uf = '${inputs.uf.value}'
+            order by coalesce(m_top.populacao_residente, 0) desc, g_top.nome_municipio asc
+            limit 1
+        ),
+        3550308
+    ) as cod_alvo
+),
+raw_p as (
     select
         score_tamanho_mercado,
         score_poder_compra,
         score_dinamismo,
         score_maturidade_empresarial
     from sidralake.mart_inteligencia_mercado_municipal
-    where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
+    where codigo_ibge_municipio = (select cod_alvo from alvo)
       and is_ultimo_ano_completo
 ),
 unpiv as (
@@ -152,18 +219,40 @@ order by pos asc
 </div>
 
 ```sql vab_cidade
-with raw_v as (
+with alvo as (
+    select coalesce(
+        (
+            select g_ok.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_ok
+            where g_ok.codigo_ibge_municipio = try_cast('${inputs.cidade.value}' as integer)
+              and ('${inputs.uf.value}' = '' or g_ok.sigla_uf = '${inputs.uf.value}')
+            limit 1
+        ),
+        (
+            select g_top.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_top
+            left join sidralake.mart_inteligencia_mercado_municipal as m_top
+                on g_top.codigo_ibge_municipio = m_top.codigo_ibge_municipio
+               and m_top.is_ultimo_ano_completo
+            where g_top.sigla_uf = '${inputs.uf.value}'
+            order by coalesce(m_top.populacao_residente, 0) desc, g_top.nome_municipio asc
+            limit 1
+        ),
+        3550308
+    ) as cod_alvo
+),
+raw_v as (
     select
         share_vab_agropecuaria,
         share_vab_industria,
         share_vab_servicos_privados,
         share_vab_adm_publica
     from sidralake.mart_inteligencia_mercado_municipal
-    where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
+    where codigo_ibge_municipio = (select cod_alvo from alvo)
       and ano_referencia = (
           select max(ano_referencia)
           from sidralake.mart_inteligencia_mercado_municipal
-          where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
+          where codigo_ibge_municipio = (select cod_alvo from alvo)
             and share_vab_servicos_privados is not null
       )
 ),
@@ -190,6 +279,28 @@ order by pos asc
 ```
 
 ```sql historico_cempre_cidade
+with alvo as (
+    select coalesce(
+        (
+            select g_ok.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_ok
+            where g_ok.codigo_ibge_municipio = try_cast('${inputs.cidade.value}' as integer)
+              and ('${inputs.uf.value}' = '' or g_ok.sigla_uf = '${inputs.uf.value}')
+            limit 1
+        ),
+        (
+            select g_top.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_top
+            left join sidralake.mart_inteligencia_mercado_municipal as m_top
+                on g_top.codigo_ibge_municipio = m_top.codigo_ibge_municipio
+               and m_top.is_ultimo_ano_completo
+            where g_top.sigla_uf = '${inputs.uf.value}'
+            order by coalesce(m_top.populacao_residente, 0) desc, g_top.nome_municipio asc
+            limit 1
+        ),
+        3550308
+    ) as cod_alvo
+)
 select
     cast(cast(ano_referencia as integer) as varchar) as ano,
     num_empresas_atuantes as empresas,
@@ -202,7 +313,7 @@ select
     round(crescimento_empresas_yoy_pct / 100.0, 4) as cresc_emp_pct,
     round(crescimento_emprego_yoy_pct / 100.0, 4) as cresc_trab_pct
 from sidralake.mart_inteligencia_mercado_municipal
-where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
+where codigo_ibge_municipio = (select cod_alvo from alvo)
   and num_empresas_atuantes is not null
 order by ano_referencia desc
 ```
@@ -254,20 +365,64 @@ order by ano_referencia desc
 </div>
 
 ```sql serie_pop_cidade
+with alvo as (
+    select coalesce(
+        (
+            select g_ok.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_ok
+            where g_ok.codigo_ibge_municipio = try_cast('${inputs.cidade.value}' as integer)
+              and ('${inputs.uf.value}' = '' or g_ok.sigla_uf = '${inputs.uf.value}')
+            limit 1
+        ),
+        (
+            select g_top.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_top
+            left join sidralake.mart_inteligencia_mercado_municipal as m_top
+                on g_top.codigo_ibge_municipio = m_top.codigo_ibge_municipio
+               and m_top.is_ultimo_ano_completo
+            where g_top.sigla_uf = '${inputs.uf.value}'
+            order by coalesce(m_top.populacao_residente, 0) desc, g_top.nome_municipio asc
+            limit 1
+        ),
+        3550308
+    ) as cod_alvo
+)
 select
     ano_referencia as ano,
     populacao_residente as populacao
 from sidralake.fct_populacao_municipal
-where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
+where codigo_ibge_municipio = (select cod_alvo from alvo)
 order by ano_referencia asc
 ```
 
 ```sql vizinhos_chart
+with alvo as (
+    select coalesce(
+        (
+            select g_ok.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_ok
+            where g_ok.codigo_ibge_municipio = try_cast('${inputs.cidade.value}' as integer)
+              and ('${inputs.uf.value}' = '' or g_ok.sigla_uf = '${inputs.uf.value}')
+            limit 1
+        ),
+        (
+            select g_top.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_top
+            left join sidralake.mart_inteligencia_mercado_municipal as m_top
+                on g_top.codigo_ibge_municipio = m_top.codigo_ibge_municipio
+               and m_top.is_ultimo_ano_completo
+            where g_top.sigla_uf = '${inputs.uf.value}'
+            order by coalesce(m_top.populacao_residente, 0) desc, g_top.nome_municipio asc
+            limit 1
+        ),
+        3550308
+    ) as cod_alvo
+)
 select
     m.nome_municipio as municipio,
     round(m.ims_score_0_100, 1) as ims,
     case
-        when m.codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308) then 'Cidade Selecionada'
+        when m.codigo_ibge_municipio = (select cod_alvo from alvo) then 'Cidade Selecionada'
         else 'Vizinhos'
     end as destaque
 from sidralake.mart_inteligencia_mercado_municipal as m
@@ -275,7 +430,7 @@ where m.is_ultimo_ano_completo
   and m.nome_regiao_imediata = (
       select nome_regiao_imediata
       from sidralake.dim_geografia
-      where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
+      where codigo_ibge_municipio = (select cod_alvo from alvo)
   )
   and m.ims_score_0_100 is not null
 order by m.ims_score_0_100 desc
@@ -332,6 +487,28 @@ limit 12
 </div>
 
 ```sql vizinhos_tabela
+with alvo as (
+    select coalesce(
+        (
+            select g_ok.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_ok
+            where g_ok.codigo_ibge_municipio = try_cast('${inputs.cidade.value}' as integer)
+              and ('${inputs.uf.value}' = '' or g_ok.sigla_uf = '${inputs.uf.value}')
+            limit 1
+        ),
+        (
+            select g_top.codigo_ibge_municipio
+            from sidralake.dim_geografia as g_top
+            left join sidralake.mart_inteligencia_mercado_municipal as m_top
+                on g_top.codigo_ibge_municipio = m_top.codigo_ibge_municipio
+               and m_top.is_ultimo_ano_completo
+            where g_top.sigla_uf = '${inputs.uf.value}'
+            order by coalesce(m_top.populacao_residente, 0) desc, g_top.nome_municipio asc
+            limit 1
+        ),
+        3550308
+    ) as cod_alvo
+)
 select
     m.rank_nacional_ims as rk_br,
     m.nome_municipio as municipio,
@@ -346,7 +523,7 @@ where m.is_ultimo_ano_completo
   and m.nome_regiao_imediata = (
       select nome_regiao_imediata
       from sidralake.dim_geografia
-      where codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade.value}' as integer), 3550308)
+      where codigo_ibge_municipio = (select cod_alvo from alvo)
   )
   and m.ims_score_0_100 is not null
 order by m.ims_score_0_100 desc

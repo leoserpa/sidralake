@@ -39,6 +39,9 @@ order by pop_ord desc, g.nome_municipio asc
 		<h1 class="sl-page-title">Comparador Head-to-Head (Cidade A × Cidade B)</h1>
 		<p class="sl-page-subtitle">Compare quaisquer duas cidades do Brasil lado a lado · Cidade A em azul pré-atentivo (#3B82F6) × Cidade B em ardósia (#64748B)</p>
 	</div>
+	<div class="sl-filter-bar">
+		<ResetFilters />
+	</div>
 </header>
 
 <section class="sl-control-card">
@@ -57,10 +60,53 @@ order by pop_ord desc, g.nome_municipio asc
 </section>
 
 ```sql comparativo_pilares
-with sel as (
+with sel_ids as (
+    select
+        coalesce(
+            (
+                select g_a.codigo_ibge_municipio
+                from sidralake.dim_geografia as g_a
+                where g_a.codigo_ibge_municipio = try_cast('${inputs.cidade_a.value}' as integer)
+                  and ('${inputs.uf_a.value}' = '' or g_a.sigla_uf = '${inputs.uf_a.value}')
+                limit 1
+            ),
+            (
+                select g_top_a.codigo_ibge_municipio
+                from sidralake.dim_geografia as g_top_a
+                left join sidralake.mart_inteligencia_mercado_municipal as m_top_a
+                    on g_top_a.codigo_ibge_municipio = m_top_a.codigo_ibge_municipio
+                   and m_top_a.is_ultimo_ano_completo
+                where g_top_a.sigla_uf = '${inputs.uf_a.value}'
+                order by coalesce(m_top_a.populacao_residente, 0) desc, g_top_a.nome_municipio asc
+                limit 1
+            ),
+            3550308
+        ) as id_a,
+        coalesce(
+            (
+                select g_b.codigo_ibge_municipio
+                from sidralake.dim_geografia as g_b
+                where g_b.codigo_ibge_municipio = try_cast('${inputs.cidade_b.value}' as integer)
+                  and ('${inputs.uf_b.value}' = '' or g_b.sigla_uf = '${inputs.uf_b.value}')
+                limit 1
+            ),
+            (
+                select g_top_b.codigo_ibge_municipio
+                from sidralake.dim_geografia as g_top_b
+                left join sidralake.mart_inteligencia_mercado_municipal as m_top_b
+                    on g_top_b.codigo_ibge_municipio = m_top_b.codigo_ibge_municipio
+                   and m_top_b.is_ultimo_ano_completo
+                where g_top_b.sigla_uf = '${inputs.uf_b.value}'
+                order by coalesce(m_top_b.populacao_residente, 0) desc, g_top_b.nome_municipio asc
+                limit 1
+            ),
+            4106902
+        ) as id_b
+),
+sel as (
     select
         case
-            when codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade_a.value}' as integer), 3550308) then 'Cidade A'
+            when codigo_ibge_municipio = (select id_a from sel_ids) then 'Cidade A'
             else 'Cidade B'
         end as lado,
         score_tamanho_mercado,
@@ -69,7 +115,7 @@ with sel as (
         score_maturidade_empresarial
     from sidralake.mart_inteligencia_mercado_municipal
     where is_ultimo_ano_completo
-      and codigo_ibge_municipio in (coalesce(try_cast('${inputs.cidade_a.value}' as integer), 3550308), coalesce(try_cast('${inputs.cidade_b.value}' as integer), 4106902))
+      and codigo_ibge_municipio in ((select id_a from sel_ids), (select id_b from sel_ids))
 )
 select 'Tamanho (35%)' as pilar, lado, round(score_tamanho_mercado, 1) as nota from sel
 union all select 'Poder Compra (30%)', lado, round(score_poder_compra, 1) from sel
@@ -78,15 +124,58 @@ union all select 'Maturidade (15%)', lado, round(score_maturidade_empresarial, 1
 ```
 
 ```sql comparativo_pib_serie
+with sel_ids as (
+    select
+        coalesce(
+            (
+                select g_a.codigo_ibge_municipio
+                from sidralake.dim_geografia as g_a
+                where g_a.codigo_ibge_municipio = try_cast('${inputs.cidade_a.value}' as integer)
+                  and ('${inputs.uf_a.value}' = '' or g_a.sigla_uf = '${inputs.uf_a.value}')
+                limit 1
+            ),
+            (
+                select g_top_a.codigo_ibge_municipio
+                from sidralake.dim_geografia as g_top_a
+                left join sidralake.mart_inteligencia_mercado_municipal as m_top_a
+                    on g_top_a.codigo_ibge_municipio = m_top_a.codigo_ibge_municipio
+                   and m_top_a.is_ultimo_ano_completo
+                where g_top_a.sigla_uf = '${inputs.uf_a.value}'
+                order by coalesce(m_top_a.populacao_residente, 0) desc, g_top_a.nome_municipio asc
+                limit 1
+            ),
+            3550308
+        ) as id_a,
+        coalesce(
+            (
+                select g_b.codigo_ibge_municipio
+                from sidralake.dim_geografia as g_b
+                where g_b.codigo_ibge_municipio = try_cast('${inputs.cidade_b.value}' as integer)
+                  and ('${inputs.uf_b.value}' = '' or g_b.sigla_uf = '${inputs.uf_b.value}')
+                limit 1
+            ),
+            (
+                select g_top_b.codigo_ibge_municipio
+                from sidralake.dim_geografia as g_top_b
+                left join sidralake.mart_inteligencia_mercado_municipal as m_top_b
+                    on g_top_b.codigo_ibge_municipio = m_top_b.codigo_ibge_municipio
+                   and m_top_b.is_ultimo_ano_completo
+                where g_top_b.sigla_uf = '${inputs.uf_b.value}'
+                order by coalesce(m_top_b.populacao_residente, 0) desc, g_top_b.nome_municipio asc
+                limit 1
+            ),
+            4106902
+        ) as id_b
+)
 select
     ano_referencia as ano,
     case
-        when codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade_a.value}' as integer), 3550308) then 'Cidade A'
+        when codigo_ibge_municipio = (select id_a from sel_ids) then 'Cidade A'
         else 'Cidade B'
     end as lado,
     round(pib_real_mil_brl / 1e6, 2) as pib_real_bi
 from sidralake.mart_inteligencia_mercado_municipal
-where codigo_ibge_municipio in (coalesce(try_cast('${inputs.cidade_a.value}' as integer), 3550308), coalesce(try_cast('${inputs.cidade_b.value}' as integer), 4106902))
+where codigo_ibge_municipio in ((select id_a from sel_ids), (select id_b from sel_ids))
   and pib_real_mil_brl is not null
 order by ano_referencia asc, lado asc
 ```
@@ -141,9 +230,52 @@ order by ano_referencia asc, lado asc
 </div>
 
 ```sql tabela_head_to_head
+with sel_ids as (
+    select
+        coalesce(
+            (
+                select g_a.codigo_ibge_municipio
+                from sidralake.dim_geografia as g_a
+                where g_a.codigo_ibge_municipio = try_cast('${inputs.cidade_a.value}' as integer)
+                  and ('${inputs.uf_a.value}' = '' or g_a.sigla_uf = '${inputs.uf_a.value}')
+                limit 1
+            ),
+            (
+                select g_top_a.codigo_ibge_municipio
+                from sidralake.dim_geografia as g_top_a
+                left join sidralake.mart_inteligencia_mercado_municipal as m_top_a
+                    on g_top_a.codigo_ibge_municipio = m_top_a.codigo_ibge_municipio
+                   and m_top_a.is_ultimo_ano_completo
+                where g_top_a.sigla_uf = '${inputs.uf_a.value}'
+                order by coalesce(m_top_a.populacao_residente, 0) desc, g_top_a.nome_municipio asc
+                limit 1
+            ),
+            3550308
+        ) as id_a,
+        coalesce(
+            (
+                select g_b.codigo_ibge_municipio
+                from sidralake.dim_geografia as g_b
+                where g_b.codigo_ibge_municipio = try_cast('${inputs.cidade_b.value}' as integer)
+                  and ('${inputs.uf_b.value}' = '' or g_b.sigla_uf = '${inputs.uf_b.value}')
+                limit 1
+            ),
+            (
+                select g_top_b.codigo_ibge_municipio
+                from sidralake.dim_geografia as g_top_b
+                left join sidralake.mart_inteligencia_mercado_municipal as m_top_b
+                    on g_top_b.codigo_ibge_municipio = m_top_b.codigo_ibge_municipio
+                   and m_top_b.is_ultimo_ano_completo
+                where g_top_b.sigla_uf = '${inputs.uf_b.value}'
+                order by coalesce(m_top_b.populacao_residente, 0) desc, g_top_b.nome_municipio asc
+                limit 1
+            ),
+            4106902
+        ) as id_b
+)
 select
     case
-        when codigo_ibge_municipio = coalesce(try_cast('${inputs.cidade_a.value}' as integer), 3550308) then 'Cidade A'
+        when codigo_ibge_municipio = (select id_a from sel_ids) then 'Cidade A'
         else 'Cidade B'
     end as lado,
     nome_municipio || ' - ' || sigla_uf as municipio,
@@ -158,7 +290,7 @@ select
     round(taxa_assalariamento_formal, 4) as formalizacao_pct
 from sidralake.mart_inteligencia_mercado_municipal
 where is_ultimo_ano_completo
-  and codigo_ibge_municipio in (coalesce(try_cast('${inputs.cidade_a.value}' as integer), 3550308), coalesce(try_cast('${inputs.cidade_b.value}' as integer), 4106902))
+  and codigo_ibge_municipio in ((select id_a from sel_ids), (select id_b from sel_ids))
 order by lado asc
 ```
 

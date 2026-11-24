@@ -33,11 +33,12 @@
 	<div class="sl-topbar-inner">
 		<a class="sl-brand" href={addBasePath('/')}>
 			<span class="sl-brand-mark" aria-hidden="true">
-				<svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-					<rect width="26" height="26" rx="6" fill="#3B82F6" />
-					<rect x="6" y="14" width="3" height="6" rx="1" fill="#F8FAFC" />
-					<rect x="11.5" y="10" width="3" height="10" rx="1" fill="#F8FAFC" />
-					<rect x="17" y="6" width="3" height="14" rx="1" fill="#F8FAFC" />
+				<svg width="28" height="28" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M113.445 37.7096C122.779 55.2646 108.209 81.2663 80.901 95.7861C53.5932 110.306 23.8891 107.845 14.5549 90.2904C5.22079 72.7354 19.7913 46.7337 47.099 32.2139C74.4068 17.6941 104.111 20.1546 113.445 37.7096Z" stroke="#3B82F6" stroke-width="6"/>
+					<path d="M64 62L94 78V90L64 107L34 90V78L64 62Z" fill="#3B82F6" stroke="#0B0F0D" stroke-width="4" stroke-linejoin="round"/>
+					<path d="M64 42L94 58V70L64 87L34 70V58L64 42Z" fill="#3B82F6" stroke="#0B0F0D" stroke-width="4" stroke-linejoin="round"/>
+					<path d="M64 22L94 38V50L64 67L34 50V38L64 22Z" fill="#3B82F6" stroke="#0B0F0D" stroke-width="4" stroke-linejoin="round"/>
+					<path d="M64 29L86 41L64 53L42 41L64 29Z" fill="#F5F7F6"/>
 				</svg>
 			</span>
 			<span class="sl-brand-name">SidraLake</span>

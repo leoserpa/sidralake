@@ -6,7 +6,7 @@ title: Radar Demográfico & Polos Regionais (IBGE)
 select 'TODAS' as nome_regiao, 0 as ordem
 union all
 select distinct nome_regiao, 1 as ordem
-from sidralake.dim_geografia
+from sidralake.mart_demografia_municipal
 order by ordem, nome_regiao
 ```
 
@@ -14,7 +14,7 @@ order by ordem, nome_regiao
 select 'TODAS' as sigla_uf, 0 as ordem
 union all
 select distinct sigla_uf, 1 as ordem
-from sidralake.dim_geografia
+from sidralake.mart_demografia_municipal
 where '${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}'
 order by ordem, sigla_uf
 ```
@@ -36,53 +36,34 @@ order by ordem, sigla_uf
 </section>
 
 ```sql kpis_demografia
-with pop_ranked as (
-    select
-        p.codigo_ibge_municipio,
-        cast(p.ano_referencia as integer) as ano,
-        p.populacao_residente,
-        p.area_km2,
-        g.sigla_uf,
-        g.nome_regiao,
-        g.nome_regiao_imediata,
-        row_number() over (partition by p.codigo_ibge_municipio order by p.ano_referencia desc) as rn_ult
-    from sidralake.fct_populacao_municipal as p
-    inner join sidralake.dim_geografia as g
-        on p.codigo_ibge_municipio = g.codigo_ibge_municipio
-    where ('${inputs.regiao.value}' = 'TODAS' or g.nome_regiao = '${inputs.regiao.value}')
-      and (
-          '${inputs.uf.value}' = 'TODAS'
-          or g.sigla_uf = '${inputs.uf.value}'
-          or not exists (
-              select 1
-              from sidralake.dim_geografia as _chk
-              where _chk.sigla_uf = '${inputs.uf.value}'
-                and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
-          )
-      )
-),
-ult as (
-    select * from pop_ranked where rn_ult = 1
-),
-base as (
-    select codigo_ibge_municipio, populacao_residente as pop_base
-    from pop_ranked
-    where ano = 2022
-)
 select
-    sum(u.populacao_residente) as pop_atual,
-    cast(cast(max(u.ano) as integer) as varchar) as ano_atual,
-    sum(case when b.pop_base is not null then u.populacao_residente - b.pop_base end) as saldo_pop,
+    sum(populacao_atual) as pop_atual,
+    case
+        when min(ano_populacao_atual) = max(ano_populacao_atual)
+            then cast(cast(max(ano_populacao_atual) as integer) as varchar)
+        else cast(cast(min(ano_populacao_atual) as integer) as varchar)
+            || '–' || cast(cast(max(ano_populacao_atual) as integer) as varchar)
+    end as ano_atual,
+    sum(saldo_populacional_desde_2022) as saldo_pop,
     round(
-        sum(case when b.pop_base is not null then u.populacao_residente - b.pop_base end) * 1.0
-        / nullif(sum(b.pop_base), 0),
+        sum(saldo_populacional_desde_2022) * 1.0
+        / nullif(sum(case when saldo_populacional_desde_2022 is not null then populacao_censo_2022 end), 0),
         4
     ) as variacao_pop_pct,
-    round(sum(u.populacao_residente) * 1.0 / nullif(sum(u.area_km2), 0), 1) as densidade_media,
-    count(distinct u.nome_regiao_imediata) as total_polos
-from ult as u
-left join base as b
-    on u.codigo_ibge_municipio = b.codigo_ibge_municipio
+    round(sum(populacao_atual) * 1.0 / nullif(sum(area_km2), 0), 1) as densidade_media,
+    count(distinct codigo_regiao_imediata) as total_polos
+from sidralake.mart_demografia_municipal
+where ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
+  and (
+      '${inputs.uf.value}' = 'TODAS'
+      or sigla_uf = '${inputs.uf.value}'
+      or not exists (
+          select 1
+          from sidralake.dim_geografia as _chk
+          where _chk.sigla_uf = '${inputs.uf.value}'
+            and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
+      )
+  )
 ```
 
 <div class="sl-kpi-grid-5">
@@ -94,21 +75,19 @@ left join base as b
 </div>
 
 ```sql cresc_pop_uf
-with pop_ranked as (
+with agg as (
     select
-        p.codigo_ibge_municipio,
-        cast(p.ano_referencia as integer) as ano,
-        p.populacao_residente,
-        g.sigla_uf,
-        g.nome_regiao,
-        row_number() over (partition by p.codigo_ibge_municipio order by p.ano_referencia desc) as rn_ult
-    from sidralake.fct_populacao_municipal as p
-    inner join sidralake.dim_geografia as g
-        on p.codigo_ibge_municipio = g.codigo_ibge_municipio
-    where ('${inputs.regiao.value}' = 'TODAS' or g.nome_regiao = '${inputs.regiao.value}')
+        sigla_uf as uf,
+        round(
+            sum(saldo_populacional_desde_2022) * 1.0
+            / nullif(sum(case when saldo_populacional_desde_2022 is not null then populacao_censo_2022 end), 0),
+            4
+        ) as cresc_pct
+    from sidralake.mart_demografia_municipal
+    where ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
       and (
           '${inputs.uf.value}' = 'TODAS'
-          or g.sigla_uf = '${inputs.uf.value}'
+          or sigla_uf = '${inputs.uf.value}'
           or not exists (
               select 1
               from sidralake.dim_geografia as _chk
@@ -116,18 +95,6 @@ with pop_ranked as (
                 and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
           )
       )
-),
-agg as (
-    select
-        u.sigla_uf as uf,
-        round(
-            sum(case when b.populacao_residente is not null then u.populacao_residente - b.populacao_residente end) * 1.0
-            / nullif(sum(b.populacao_residente), 0),
-            4
-        ) as cresc_pct
-    from (select * from pop_ranked where rn_ult = 1) as u
-    left join (select codigo_ibge_municipio, populacao_residente from pop_ranked where ano = 2022) as b
-        on u.codigo_ibge_municipio = b.codigo_ibge_municipio
     group by 1
 ),
 ranked as (
@@ -149,22 +116,18 @@ order by pos asc
 ```
 
 ```sql top_cidades_demo
-with pop_ranked as (
+with ranked as (
     select
-        p.codigo_ibge_municipio,
-        cast(p.ano_referencia as integer) as ano,
-        p.populacao_residente,
-        g.nome_municipio,
-        g.sigla_uf,
-        g.nome_regiao,
-        row_number() over (partition by p.codigo_ibge_municipio order by p.ano_referencia desc) as rn_ult
-    from sidralake.fct_populacao_municipal as p
-    inner join sidralake.dim_geografia as g
-        on p.codigo_ibge_municipio = g.codigo_ibge_municipio
-    where ('${inputs.regiao.value}' = 'TODAS' or g.nome_regiao = '${inputs.regiao.value}')
+        nome_municipio || ' - ' || sigla_uf as municipio,
+        round(crescimento_populacional_desde_2022_pct / 100.0, 4) as cresc_pct,
+        row_number() over (order by crescimento_populacional_desde_2022_pct desc) as pos
+    from sidralake.mart_demografia_municipal
+    where crescimento_populacional_desde_2022_pct is not null
+      and coalesce(populacao_atual, 0) >= coalesce(try_cast('${inputs.min_pop_demo}' as double), 50000)
+      and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
       and (
           '${inputs.uf.value}' = 'TODAS'
-          or g.sigla_uf = '${inputs.uf.value}'
+          or sigla_uf = '${inputs.uf.value}'
           or not exists (
               select 1
               from sidralake.dim_geografia as _chk
@@ -172,29 +135,6 @@ with pop_ranked as (
                 and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
           )
       )
-),
-cresc as (
-    select
-        u.nome_municipio || ' - ' || u.sigla_uf as municipio,
-        round(
-            (u.populacao_residente - b.populacao_residente) * 1.0
-            / nullif(b.populacao_residente, 0),
-            4
-        ) as cresc_pct
-    from (select * from pop_ranked where rn_ult = 1) as u
-    inner join (select codigo_ibge_municipio, populacao_residente from pop_ranked where ano = 2022) as b
-        on u.codigo_ibge_municipio = b.codigo_ibge_municipio
-    where u.ano > 2022
-      and u.populacao_residente >= coalesce(try_cast('${inputs.min_pop_demo}' as double), 50000)
-      and b.populacao_residente > 0
-),
-ranked as (
-    select
-        municipio,
-        cresc_pct,
-        row_number() over (order by cresc_pct desc) as pos
-    from cresc
-    where cresc_pct is not null
     order by pos asc
     limit 10
 )
@@ -266,12 +206,12 @@ order by pos asc
 ```sql top_polos_regionais
 with base as (
     select
+        codigo_regiao_imediata,
         nome_regiao_imediata || ' - ' || sigla_uf as polo_regional,
         round(sum(pib_real_mil_brl) / 1e6, 1) as pib_bi,
         row_number() over (order by sum(pib_real_mil_brl) desc nulls last) as pos
-    from sidralake.mart_inteligencia_mercado_municipal
-    where is_ultimo_ano_completo
-      and pib_real_mil_brl is not null
+    from sidralake.mart_demografia_municipal
+    where pib_real_mil_brl is not null
       and ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
       and (
           '${inputs.uf.value}' = 'TODAS'
@@ -283,7 +223,7 @@ with base as (
                 and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
           )
       )
-    group by 1
+    group by 1, 2
     order by pos asc
     limit 12
 )
@@ -324,52 +264,26 @@ order by pos asc
 </div>
 
 ```sql tabela_polos_regionais
-with pop_ranked as (
-    select
-        p.codigo_ibge_municipio,
-        cast(p.ano_referencia as integer) as ano,
-        p.populacao_residente,
-        p.area_km2,
-        row_number() over (partition by p.codigo_ibge_municipio order by p.ano_referencia desc) as rn_ult
-    from sidralake.fct_populacao_municipal as p
-),
-pop_mun as (
-    select
-        u.codigo_ibge_municipio,
-        u.populacao_residente as pop_atual,
-        b.populacao_residente as pop_base,
-        u.area_km2
-    from (select * from pop_ranked where rn_ult = 1) as u
-    left join (select codigo_ibge_municipio, populacao_residente from pop_ranked where ano = 2022) as b
-        on u.codigo_ibge_municipio = b.codigo_ibge_municipio
-)
 select
-    row_number() over (order by sum(m.pib_real_mil_brl) desc nulls last) as rk,
-    m.nome_regiao_imediata as regiao_imediata,
-    m.sigla_uf as uf,
+    row_number() over (order by sum(pib_real_mil_brl) desc nulls last) as rk,
+    nome_regiao_imediata as regiao_imediata,
+    sigla_uf as uf,
     count(*) as municipios,
-    sum(coalesce(pm.pop_atual, m.populacao_residente)) as pop_atual,
+    sum(populacao_atual) as pop_atual,
     round(
-        sum(case when pm.pop_base is not null then pm.pop_atual - pm.pop_base end) * 1.0
-        / nullif(sum(pm.pop_base), 0),
+        sum(saldo_populacional_desde_2022) * 1.0
+        / nullif(sum(case when saldo_populacional_desde_2022 is not null then populacao_censo_2022 end), 0),
         4
     ) as cresc_pop_pct,
-    round(
-        sum(coalesce(pm.pop_atual, m.populacao_residente)) * 1.0
-        / nullif(sum(coalesce(pm.area_km2, m.area_km2)), 0),
-        1
-    ) as densidade,
-    round(sum(m.pib_real_mil_brl) / 1e6, 2) as pib_bi,
-    round(sum(m.massa_salarial_real_mil_brl) / 1e6, 2) as massa_bi,
-    round(avg(m.ims_score_0_100), 2) as ims_medio
-from sidralake.mart_inteligencia_mercado_municipal as m
-left join pop_mun as pm
-    on m.codigo_ibge_municipio = pm.codigo_ibge_municipio
-where m.is_ultimo_ano_completo
-  and ('${inputs.regiao.value}' = 'TODAS' or m.nome_regiao = '${inputs.regiao.value}')
+    round(sum(populacao_atual) * 1.0 / nullif(sum(area_km2), 0), 1) as densidade,
+    round(sum(pib_real_mil_brl) / 1e6, 2) as pib_bi,
+    round(sum(massa_salarial_real_mil_brl) / 1e6, 2) as massa_bi,
+    round(avg(ims_score_0_100), 2) as ims_medio
+from sidralake.mart_demografia_municipal
+where ('${inputs.regiao.value}' = 'TODAS' or nome_regiao = '${inputs.regiao.value}')
   and (
       '${inputs.uf.value}' = 'TODAS'
-      or m.sigla_uf = '${inputs.uf.value}'
+      or sigla_uf = '${inputs.uf.value}'
       or not exists (
           select 1
           from sidralake.dim_geografia as _chk
@@ -377,7 +291,7 @@ where m.is_ultimo_ano_completo
             and ('${inputs.regiao.value}' = 'TODAS' or _chk.nome_regiao = '${inputs.regiao.value}')
       )
   )
-group by 2, 3
+group by codigo_regiao_imediata, nome_regiao_imediata, sigla_uf
 order by pib_bi desc nulls last
 ```
 

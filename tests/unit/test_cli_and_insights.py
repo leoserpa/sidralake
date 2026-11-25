@@ -113,6 +113,34 @@ def _seed_gold_delta_tables(gold_dir: Path) -> None:
         source_url="test://mart_trabalho",
     )
 
+    mart_demo = pl.DataFrame(
+        {
+            "codigo_ibge_municipio": [3550308],
+            "nome_municipio": ["São Paulo"],
+            "sigla_uf": ["SP"],
+            "nome_regiao": ["Sudeste"],
+            "codigo_regiao_imediata": [350001],
+            "nome_regiao_imediata": ["São Paulo"],
+            "ano_populacao_atual": [2025],
+            "populacao_atual": [11_895_578],
+            "populacao_censo_2022": [11_451_999],
+            "saldo_populacional_desde_2022": [443_579],
+            "crescimento_populacional_desde_2022_pct": [3.87],
+            "rank_populacao_uf": [1],
+            "area_km2": [1521.1],
+            "densidade_demografica": [7820.4],
+            "pib_real_mil_brl": [1_000_000_000.0],
+            "massa_salarial_real_mil_brl": [500_000_000.0],
+            "ims_score_0_100": [92.5],
+        }
+    )
+    writer.write_full_overwrite(
+        mart_demo,
+        "mart_demografia_municipal",
+        ingestion_id="seed-1",
+        source_url="test://mart_demografia",
+    )
+
     dim_geo = pl.DataFrame(
         {
             "codigo_ibge_municipio": [3550308, 3550308],

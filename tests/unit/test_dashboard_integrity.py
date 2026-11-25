@@ -323,6 +323,33 @@ def _seed_synthetic_bi_parquets(parquet_dir: Path) -> None:
         }
     ).write_parquet(parquet_dir / "mart_mercado_trabalho_uf.parquet")
 
+    pl.DataFrame(
+        {
+            "codigo_ibge_municipio": [3550308, 4106902, 3545803, 5101837],
+            "nome_municipio": [
+                "São Paulo",
+                "Curitiba",
+                "Santa Bárbara d'Oeste",
+                "Boa Esperança do Norte",
+            ],
+            "sigla_uf": ["SP", "PR", "SP", "MT"],
+            "nome_regiao": ["Sudeste", "Sul", "Sudeste", "Centro-Oeste"],
+            "codigo_regiao_imediata": [350001, 410001, 350038, 510014],
+            "nome_regiao_imediata": ["São Paulo", "Curitiba", "Campinas", "Sorriso"],
+            "ano_populacao_atual": [2023, 2023, 2023, 2025],
+            "populacao_atual": [11_673_789, 1_801_472, 183_347, 5_500],
+            "populacao_censo_2022": [11_451_999, 1_773_718, None, None],
+            "saldo_populacional_desde_2022": [221_790, 27_754, None, None],
+            "crescimento_populacional_desde_2022_pct": [1.94, 1.56, None, None],
+            "rank_populacao_uf": [1, 1, 2, 1],
+            "area_km2": [1521.1, 434.9, 271.0, 4700.0],
+            "densidade_demografica": [7674.5, 4142.3, 676.5, 1.17],
+            "pib_real_mil_brl": [1_234_259_000.0, 142_000_000.0, 11_200_000.0, None],
+            "massa_salarial_real_mil_brl": [310_000_000.0, 45_000_000.0, 3_500_000.0, None],
+            "ims_score_0_100": [78.33, 77.15, 65.4, None],
+        }
+    ).write_parquet(parquet_dir / "mart_demografia_municipal.parquet")
+
 
 def test_dashboard_static_contracts_pass() -> None:
     """Garante que configuracao, layout, sources, SQL e componentes Evidence estao integros."""

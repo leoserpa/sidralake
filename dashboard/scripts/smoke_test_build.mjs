@@ -347,6 +347,149 @@ async function auditRoute(context, origin, route) {
   return failures;
 }
 
+async function selectNonDefaultOption(page, comboboxLocator, excludeTexts = []) {
+  await comboboxLocator.click();
+  await page.waitForTimeout(250);
+  const options = page.locator('[role="option"]');
+  const count = await options.count();
+  for (let i = 0; i < count; i += 1) {
+    const opt = options.nth(i);
+    const label = ((await opt.innerText()) || '').trim();
+    if (!label || excludeTexts.includes(label)) continue;
+    await opt.click();
+    return label;
+  }
+  await page.keyboard.press('Escape');
+  return null;
+}
+
+async function auditInteractiveFilters(context, origin) {
+  const failures = [];
+
+  // 1. Demografia: cascading Região filter + ResetFilters
+  {
+    const page = await context.newPage();
+    const errors = [];
+    page.on('console', (m) => {
+      if (m.type() === 'error') errors.push(m.text());
+    });
+    page.on('pageerror', (e) => errors.push(e.message));
+    try {
+      await page.goto(`${origin}${BASE_PATH}/demografia/`, { waitUntil: 'domcontentloaded' });
+      await waitForEvidenceHydration(page);
+      const resetBtn = page.locator('button.sl-reset-filters-btn');
+      if ((await resetBtn.count()) === 0) {
+        failures.push('/demografia/ interactive: missing ResetFilters button');
+      } else {
+        const combos = page.locator('.sl-filter-bar button[role="combobox"]');
+        if ((await combos.count()) >= 2) {
+          const pickedUf = await selectNonDefaultOption(page, combos.nth(1), ['TODAS']);
+          await page.waitForTimeout(600);
+          const pickedReg = await selectNonDefaultOption(page, combos.nth(0), ['TODAS']);
+          await page.waitForTimeout(800);
+          const bodyAfter = (await page.evaluate(() => document.body.innerText)) || '';
+          if (pickedUf && pickedReg && /\bNo Records\b/i.test(bodyAfter)) {
+            failures.push(
+              `/demografia/ interactive: "No Records" after UF=${pickedUf} -> Região=${pickedReg}`,
+            );
+          }
+        }
+        await Promise.all([
+          page.waitForLoadState('domcontentloaded'),
+          resetBtn.first().click(),
+        ]);
+        await waitForEvidenceHydration(page);
+      }
+      if (errors.length > 0) {
+        failures.push(`/demografia/ interactive console/page errors: ${errors.join(' | ')}`);
+      }
+    } finally {
+      await page.close();
+    }
+  }
+
+  // 2. Raio-X (/municipio/): UF cascade + ResetFilters
+  {
+    const page = await context.newPage();
+    const errors = [];
+    page.on('console', (m) => {
+      if (m.type() === 'error') errors.push(m.text());
+    });
+    page.on('pageerror', (e) => errors.push(e.message));
+    try {
+      await page.goto(`${origin}${BASE_PATH}/municipio/`, { waitUntil: 'domcontentloaded' });
+      await waitForEvidenceHydration(page);
+      const resetBtn = page.locator('button.sl-reset-filters-btn');
+      const ufCombo = page.locator('.sl-filter-bar button[role="combobox"]').first();
+      const pickedUf = await selectNonDefaultOption(page, ufCombo, ['SP']);
+      await page.waitForTimeout(900);
+      if (pickedUf) {
+        const titleText = ((await page.locator('h1.sl-page-title').first().innerText()) || '').trim();
+        if (!titleText.endsWith(`- ${pickedUf}`)) {
+          failures.push(
+            `/municipio/ interactive: after switching UF to ${pickedUf}, hero title stayed "${titleText}"`,
+          );
+        }
+      }
+      if ((await resetBtn.count()) > 0) {
+        await Promise.all([
+          page.waitForLoadState('domcontentloaded'),
+          resetBtn.first().click(),
+        ]);
+        await waitForEvidenceHydration(page);
+      } else {
+        failures.push('/municipio/ interactive: missing ResetFilters button');
+      }
+      if (errors.length > 0) {
+        failures.push(`/municipio/ interactive console/page errors: ${errors.join(' | ')}`);
+      }
+    } finally {
+      await page.close();
+    }
+  }
+
+  // 3. Comparador (/comparador/): city pills + both sides preserved + ResetFilters
+  {
+    const page = await context.newPage();
+    const errors = [];
+    page.on('console', (m) => {
+      if (m.type() === 'error') errors.push(m.text());
+    });
+    page.on('pageerror', (e) => errors.push(e.message));
+    try {
+      await page.goto(`${origin}${BASE_PATH}/comparador/`, { waitUntil: 'domcontentloaded' });
+      await waitForEvidenceHydration(page);
+      if ((await page.locator('.sl-city-a').count()) === 0 || (await page.locator('.sl-city-b').count()) === 0) {
+        failures.push('/comparador/ interactive: missing .sl-city-a or .sl-city-b pills');
+      }
+      const ufACombo = page.locator('.sl-control-card button[role="combobox"]').first();
+      await selectNonDefaultOption(page, ufACombo, ['SP']);
+      await page.waitForTimeout(900);
+      const rowCount = await page.locator('table tbody tr').count();
+      if (rowCount < 2) {
+        failures.push(`/comparador/ interactive: expected 2 comparison rows, got ${rowCount}`);
+      }
+      const resetBtn = page.locator('button.sl-reset-filters-btn');
+      if ((await resetBtn.count()) > 0) {
+        await Promise.all([
+          page.waitForLoadState('domcontentloaded'),
+          resetBtn.first().click(),
+        ]);
+        await waitForEvidenceHydration(page);
+      } else {
+        failures.push('/comparador/ interactive: missing ResetFilters button');
+      }
+      if (errors.length > 0) {
+        failures.push(`/comparador/ interactive console/page errors: ${errors.join(' | ')}`);
+      }
+    } finally {
+      await page.close();
+    }
+  }
+
+  return failures;
+}
+
 async function main() {
   if (!fs.existsSync(BUILD_DIR)) {
     console.error(`FAIL: build directory not found at ${BUILD_DIR}`);
@@ -384,6 +527,18 @@ async function main() {
           console.error(`    - ${f}`);
           allFailures.push(`${route}: ${f}`);
         }
+      }
+    }
+    const interactiveStart = Date.now();
+    const interactiveFailures = await auditInteractiveFilters(context, origin);
+    const interactiveElapsed = ((Date.now() - interactiveStart) / 1000).toFixed(1);
+    if (interactiveFailures.length === 0) {
+      console.log(`  PASS interactive filters (${interactiveElapsed}s)`);
+    } else {
+      console.error(`  FAIL interactive filters (${interactiveElapsed}s):`);
+      for (const f of interactiveFailures) {
+        console.error(`    - ${f}`);
+        allFailures.push(f);
       }
     }
   } finally {

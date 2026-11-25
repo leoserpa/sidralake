@@ -20,7 +20,7 @@ from ibge_market_intel.analytics.bi_export import BI_GOLD_TABLES
 _SQL_BLOCK_RE = re.compile(r"```sql\s+(\w+)\s*\n(.*?)```", re.DOTALL)
 _COMPONENT_OPEN_RE = re.compile(
     r"<(?P<tag>BarChart|LineChart|AreaChart|ScatterPlot|BubbleChart|Heatmap|DataTable|"
-    r"BigValue|Dropdown|Slider|Value|ECharts|KpiCard|ExecTable|DonutPanel|CityHero)(?=[\s/>])"
+    r"BigValue|Dropdown|Slider|Value|ECharts|KpiCard|ExecTable|DonutPanel|CityHero|DataFooter)(?=[\s/>])"
 )
 _TABLE_REF_RE = re.compile(r"\bsidralake\.(\w+)\b")
 _DATA_ATTR_RE = re.compile(r"\bdata=\{\s*(\w+)\s*\}")

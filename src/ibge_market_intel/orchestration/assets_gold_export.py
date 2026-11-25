@@ -40,6 +40,7 @@ GOLD_EXPORT_TABLES: tuple[str, ...] = (
     "mart_pulso_consumo_macro",
     "mart_pulso_servicos_uf",
     "mart_mercado_trabalho_uf",
+    "mart_demografia_municipal",
 )
 
 

@@ -754,6 +754,13 @@ def test_full_medallion_pipeline_scd2_and_idempotency(
             "from gold.mart_mercado_trabalho_uf"
         ).fetchone()
         assert pnad_row == ("4T/2023", 6.5, -25.0)
+
+        demo_rows = con.execute(
+            "select codigo_ibge_municipio, populacao_censo_2022, saldo_populacional_desde_2022 "
+            "from gold.mart_demografia_municipal order by codigo_ibge_municipio"
+        ).fetchall()
+        assert len(demo_rows) == 3
+        assert demo_rows[-1] == (5101837, None, None)
     finally:
         con.close()
 
@@ -819,4 +826,4 @@ def test_full_medallion_pipeline_scd2_and_idempotency(
     # 12. Prova integridade do grafo Dagster unificado
     ag = defs.resolve_asset_graph()
     assert len(ag.external_asset_keys) == 0
-    assert len(ag.materializable_asset_keys) == 48
+    assert len(ag.materializable_asset_keys) == 49

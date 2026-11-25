@@ -1004,6 +1004,58 @@ models:
       - name: hiato_salarial_genero_pct
         data_type: double
 
+  - name: mart_demografia_municipal
+    description: >
+      Mart consolidado de demografia e polos regionais por municipio atual do IBGE,
+      combinando populacao mais recente, linha de base estrita do Censo 2022 (sem
+      substituir por outros anos), saldo/crescimento desde 2022, ranking populacional
+      por UF e metricas economicas do ultimo ano completo.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: codigo_ibge_municipio
+        data_type: integer
+        tests: [unique, not_null]
+      - name: nome_municipio
+        data_type: varchar
+        tests: [not_null]
+      - name: sigla_uf
+        data_type: varchar
+        tests: [not_null]
+      - name: nome_regiao
+        data_type: varchar
+        tests: [not_null]
+      - name: codigo_regiao_imediata
+        data_type: integer
+        tests: [not_null]
+      - name: nome_regiao_imediata
+        data_type: varchar
+        tests: [not_null]
+      - name: ano_populacao_atual
+        data_type: integer
+      - name: populacao_atual
+        data_type: bigint
+      - name: populacao_censo_2022
+        data_type: bigint
+      - name: saldo_populacional_desde_2022
+        data_type: bigint
+      - name: crescimento_populacional_desde_2022_pct
+        data_type: double
+      - name: rank_populacao_uf
+        data_type: integer
+        tests: [not_null]
+      - name: area_km2
+        data_type: double
+      - name: densidade_demografica
+        data_type: double
+      - name: pib_real_mil_brl
+        data_type: double
+      - name: massa_salarial_real_mil_brl
+        data_type: double
+      - name: ims_score_0_100
+        data_type: double
+
 unit_tests:
   - name: test_quociente_locacional_cluster_especializado
     description: "Valida a formula exata do Quociente Locacional (QL = 1.60 -> CLUSTER_DOMINANTE) na matriz UF x CNAE."
@@ -1163,3 +1215,54 @@ unit_tests:
           rank_nacional_ims: 3
           rank_estadual_ims: 1
           tier_mercado: "SEM_CLASSIFICACAO"
+
+  - name: test_mart_demografia_municipal
+    description: "Valida base estrita do Censo 2022 (NULL para emancipado pos-2022), preservacao de codigo_regiao_imediata em regioes homonimas (Valenca BA vs RJ) e rank_populacao_uf."
+    model: mart_demografia_municipal
+    given:
+      - input: ref('dim_geografia')
+        format: sql
+        rows: |
+          select 2932903::integer as codigo_ibge_municipio, 'Valença'::varchar as nome_municipio, 'BA'::varchar as sigla_uf, 'Nordeste'::varchar as nome_regiao, 290005::integer as codigo_regiao_imediata, 'Valença'::varchar as nome_regiao_imediata, true::boolean as is_current
+          union all select 3306107::integer, 'Valença'::varchar, 'RJ'::varchar, 'Sudeste'::varchar, 330009::integer, 'Valença'::varchar, true::boolean
+          union all select 5101837::integer, 'Boa Esperança do Norte'::varchar, 'MT'::varchar, 'Centro-Oeste'::varchar, 510014::integer, 'Sorriso'::varchar, true::boolean
+      - input: ref('fct_populacao_municipal')
+        format: sql
+        rows: |
+          select 2932903::integer as codigo_ibge_municipio, 2022::integer as ano_referencia, 85000::bigint as populacao_residente, 1100.0::double as area_km2, 77.3::double as densidade_demografica
+          union all select 2932903::integer, 2025::integer, 93500::bigint, 1100.0::double, 85.0::double
+          union all select 3306107::integer, 2022::integer, 70000::bigint, 1300.0::double, 53.8::double
+          union all select 3306107::integer, 2025::integer, 70000::bigint, 1300.0::double, 53.8::double
+          union all select 5101837::integer, 2025::integer, 5500::bigint, 4700.0::double, 1.17::double
+      - input: ref('mart_inteligencia_mercado_municipal')
+        format: sql
+        rows: |
+          select 2932903::integer as codigo_ibge_municipio, true::boolean as is_ultimo_ano_completo, 2000000.0::double as pib_real_mil_brl, 400000.0::double as massa_salarial_real_mil_brl, 55.0::double as ims_score_0_100
+          union all select 3306107::integer, true::boolean, 2500000.0::double, 500000.0::double, 60.0::double
+    expect:
+      format: dict
+      rows:
+        - codigo_ibge_municipio: 2932903
+          codigo_regiao_imediata: 290005
+          ano_populacao_atual: 2025
+          populacao_atual: 93500
+          populacao_censo_2022: 85000
+          saldo_populacional_desde_2022: 8500
+          crescimento_populacional_desde_2022_pct: 10.0
+          rank_populacao_uf: 1
+        - codigo_ibge_municipio: 3306107
+          codigo_regiao_imediata: 330009
+          ano_populacao_atual: 2025
+          populacao_atual: 70000
+          populacao_censo_2022: 70000
+          saldo_populacional_desde_2022: 0
+          crescimento_populacional_desde_2022_pct: 0.0
+          rank_populacao_uf: 1
+        - codigo_ibge_municipio: 5101837
+          codigo_regiao_imediata: 510014
+          ano_populacao_atual: 2025
+          populacao_atual: 5500
+          populacao_censo_2022: null
+          saldo_populacional_desde_2022: null
+          crescimento_populacional_desde_2022_pct: null
+          rank_populacao_uf: 1

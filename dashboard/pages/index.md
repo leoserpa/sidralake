@@ -367,7 +367,28 @@ order by rank_nacional_ims asc
 	]}
 />
 
-<footer class="sl-footer">
-	<span><strong>Fonte dos Dados:</strong> Instituto Brasileiro de Geografia e Estatística (IBGE) · Dados públicos abertos.</span>
-	<span>SidraLake 360° · GNU GPL v3.0</span>
-</footer>
+```sql frescor_ibge
+select
+    (
+        select substr(ano_mes, 5, 2) || '/' || substr(ano_mes, 1, 4)
+        from sidralake.fct_ipca_mensal
+        order by data_referencia desc
+        limit 1
+    ) as ipca_ref,
+    (
+        select max(label_trimestre)
+        from sidralake.mart_mercado_trabalho_uf
+        where is_ultimo_trimestre
+    ) as pnad_ref,
+    (
+        select cast(cast(max(ano_referencia) as integer) as varchar)
+        from sidralake.mart_inteligencia_mercado_municipal
+        where pib_real_mil_brl is not null
+    ) as pib_ano,
+    (
+        select cast(cast(max(ano_populacao_atual) as integer) as varchar)
+        from sidralake.mart_demografia_municipal
+    ) as pop_ano
+```
+
+<DataFooter data={frescor_ibge} />

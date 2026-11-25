@@ -10,28 +10,22 @@ order by sigla_uf
 
 ```sql cidades_a
 select
-    g.codigo_ibge_municipio,
-    g.nome_municipio,
-    coalesce(m.populacao_residente, 0) as pop_ord
-from sidralake.dim_geografia as g
-left join sidralake.mart_inteligencia_mercado_municipal as m
-    on g.codigo_ibge_municipio = m.codigo_ibge_municipio
-   and m.is_ultimo_ano_completo
-where g.sigla_uf = '${inputs.uf_a.value}'
-order by pop_ord desc, g.nome_municipio asc
+    codigo_ibge_municipio,
+    nome_municipio,
+    coalesce(populacao_atual, 0) as pop_ord
+from sidralake.mart_demografia_municipal
+where sigla_uf = '${inputs.uf_a.value}'
+order by rank_populacao_uf asc, nome_municipio asc
 ```
 
 ```sql cidades_b
 select
-    g.codigo_ibge_municipio,
-    g.nome_municipio,
-    coalesce(m.populacao_residente, 0) as pop_ord
-from sidralake.dim_geografia as g
-left join sidralake.mart_inteligencia_mercado_municipal as m
-    on g.codigo_ibge_municipio = m.codigo_ibge_municipio
-   and m.is_ultimo_ano_completo
-where g.sigla_uf = '${inputs.uf_b.value}'
-order by pop_ord desc, g.nome_municipio asc
+    codigo_ibge_municipio,
+    nome_municipio,
+    coalesce(populacao_atual, 0) as pop_ord
+from sidralake.mart_demografia_municipal
+where sigla_uf = '${inputs.uf_b.value}'
+order by rank_populacao_uf asc, nome_municipio asc
 ```
 
 <header class="sl-page-header">
@@ -71,13 +65,10 @@ with sel_ids as (
                 limit 1
             ),
             (
-                select g_top_a.codigo_ibge_municipio
-                from sidralake.dim_geografia as g_top_a
-                left join sidralake.mart_inteligencia_mercado_municipal as m_top_a
-                    on g_top_a.codigo_ibge_municipio = m_top_a.codigo_ibge_municipio
-                   and m_top_a.is_ultimo_ano_completo
-                where g_top_a.sigla_uf = '${inputs.uf_a.value}'
-                order by coalesce(m_top_a.populacao_residente, 0) desc, g_top_a.nome_municipio asc
+                select codigo_ibge_municipio
+                from sidralake.mart_demografia_municipal
+                where sigla_uf = '${inputs.uf_a.value}'
+                  and rank_populacao_uf = 1
                 limit 1
             ),
             3550308
@@ -91,13 +82,10 @@ with sel_ids as (
                 limit 1
             ),
             (
-                select g_top_b.codigo_ibge_municipio
-                from sidralake.dim_geografia as g_top_b
-                left join sidralake.mart_inteligencia_mercado_municipal as m_top_b
-                    on g_top_b.codigo_ibge_municipio = m_top_b.codigo_ibge_municipio
-                   and m_top_b.is_ultimo_ano_completo
-                where g_top_b.sigla_uf = '${inputs.uf_b.value}'
-                order by coalesce(m_top_b.populacao_residente, 0) desc, g_top_b.nome_municipio asc
+                select codigo_ibge_municipio
+                from sidralake.mart_demografia_municipal
+                where sigla_uf = '${inputs.uf_b.value}'
+                  and rank_populacao_uf = 1
                 limit 1
             ),
             4106902
@@ -138,13 +126,10 @@ with sel_ids as (
                 limit 1
             ),
             (
-                select g_top_a.codigo_ibge_municipio
-                from sidralake.dim_geografia as g_top_a
-                left join sidralake.mart_inteligencia_mercado_municipal as m_top_a
-                    on g_top_a.codigo_ibge_municipio = m_top_a.codigo_ibge_municipio
-                   and m_top_a.is_ultimo_ano_completo
-                where g_top_a.sigla_uf = '${inputs.uf_a.value}'
-                order by coalesce(m_top_a.populacao_residente, 0) desc, g_top_a.nome_municipio asc
+                select codigo_ibge_municipio
+                from sidralake.mart_demografia_municipal
+                where sigla_uf = '${inputs.uf_a.value}'
+                  and rank_populacao_uf = 1
                 limit 1
             ),
             3550308
@@ -158,13 +143,10 @@ with sel_ids as (
                 limit 1
             ),
             (
-                select g_top_b.codigo_ibge_municipio
-                from sidralake.dim_geografia as g_top_b
-                left join sidralake.mart_inteligencia_mercado_municipal as m_top_b
-                    on g_top_b.codigo_ibge_municipio = m_top_b.codigo_ibge_municipio
-                   and m_top_b.is_ultimo_ano_completo
-                where g_top_b.sigla_uf = '${inputs.uf_b.value}'
-                order by coalesce(m_top_b.populacao_residente, 0) desc, g_top_b.nome_municipio asc
+                select codigo_ibge_municipio
+                from sidralake.mart_demografia_municipal
+                where sigla_uf = '${inputs.uf_b.value}'
+                  and rank_populacao_uf = 1
                 limit 1
             ),
             4106902
@@ -247,13 +229,10 @@ with sel_ids as (
                 limit 1
             ),
             (
-                select g_top_a.codigo_ibge_municipio
-                from sidralake.dim_geografia as g_top_a
-                left join sidralake.mart_inteligencia_mercado_municipal as m_top_a
-                    on g_top_a.codigo_ibge_municipio = m_top_a.codigo_ibge_municipio
-                   and m_top_a.is_ultimo_ano_completo
-                where g_top_a.sigla_uf = '${inputs.uf_a.value}'
-                order by coalesce(m_top_a.populacao_residente, 0) desc, g_top_a.nome_municipio asc
+                select codigo_ibge_municipio
+                from sidralake.mart_demografia_municipal
+                where sigla_uf = '${inputs.uf_a.value}'
+                  and rank_populacao_uf = 1
                 limit 1
             ),
             3550308
@@ -267,13 +246,10 @@ with sel_ids as (
                 limit 1
             ),
             (
-                select g_top_b.codigo_ibge_municipio
-                from sidralake.dim_geografia as g_top_b
-                left join sidralake.mart_inteligencia_mercado_municipal as m_top_b
-                    on g_top_b.codigo_ibge_municipio = m_top_b.codigo_ibge_municipio
-                   and m_top_b.is_ultimo_ano_completo
-                where g_top_b.sigla_uf = '${inputs.uf_b.value}'
-                order by coalesce(m_top_b.populacao_residente, 0) desc, g_top_b.nome_municipio asc
+                select codigo_ibge_municipio
+                from sidralake.mart_demografia_municipal
+                where sigla_uf = '${inputs.uf_b.value}'
+                  and rank_populacao_uf = 1
                 limit 1
             ),
             4106902

@@ -113,6 +113,28 @@
 		return s;
 	}
 
+	function badgeTone(raw) {
+		if (raw === null || raw === undefined || raw === '') return '';
+		const s = String(raw);
+		if (
+			s === 'Tier 1' ||
+			s === 'Tier 1 - Polo Nacional' ||
+			s === 'Cidade A' ||
+			s === 'Expansão Real'
+		) {
+			return 'accent';
+		}
+		if (
+			s === 'Tier 4' ||
+			s === 'Tier 4 - Local / Nicho' ||
+			s === 'Retração' ||
+			s === 'Pressão Inflac.'
+		) {
+			return 'muted';
+		}
+		return '';
+	}
+
 	function barPercent(val, maxVal) {
 		const num = Number(val);
 		if (Number.isNaN(num) || !maxVal) return 0;
@@ -303,8 +325,11 @@
 									{:else if col.kind === 'databar'}
 										{@const hitBar =
 											!Number.isNaN(numVal) &&
-											((col.barThreshold !== undefined && numVal >= col.barThreshold) ||
-												(col.barThreshold === undefined && isLeader))}
+											(col.barThreshold !== undefined
+												? col.barInvert
+													? numVal <= col.barThreshold
+													: numVal >= col.barThreshold
+												: isLeader)}
 										<div class="sl-bar-cell">
 											<span class="sl-bar-num" class:is-accent={hitBar}>
 												{formatCell(rawVal, col.fmt || 'dec2')}
@@ -318,18 +343,33 @@
 											</div>
 										</div>
 									{:else if col.kind === 'growth'}
+										{@const isInv = Boolean(col.invert)}
 										{@const hitGrowth =
 											!Number.isNaN(numVal) &&
 											col.highlightThreshold !== undefined &&
-											numVal >= col.highlightThreshold}
-										<span class="sl-growth-cell" class:is-accent={hitGrowth}>
+											(isInv ? numVal <= col.highlightThreshold : numVal >= col.highlightThreshold)}
+										{@const isAdverse = !Number.isNaN(numVal) && (isInv ? numVal > 0 : numVal < 0)}
+										<span
+											class="sl-growth-cell"
+											class:is-accent={hitGrowth}
+											class:is-neg={!hitGrowth && isAdverse}
+										>
 											{#if hitGrowth}
-												<span class="sl-tri" aria-hidden="true">▲</span>
+												<span class="sl-tri" aria-hidden="true">{isInv ? '▼' : '▲'}</span>
+											{:else if isAdverse}
+												<span class="sl-tri" aria-hidden="true">{isInv ? '▲' : '▼'}</span>
 											{/if}
 											{formatCell(rawVal, col.fmt || 'signed_pct1')}
 										</span>
 									{:else if col.kind === 'tier_badge'}
-										<span class="sl-outline-pill">{formatTierBadge(rawVal)}</span>
+										{@const tone = badgeTone(rawVal)}
+										<span
+											class="sl-outline-pill"
+											class:sl-badge-accent={tone === 'accent'}
+											class:sl-badge-muted={tone === 'muted'}
+										>
+											{formatTierBadge(rawVal)}
+										</span>
 									{:else if col.kind === 'sigilo_badge'}
 										{#if rawVal === true || rawVal === 'true'}
 											<span class="sl-outline-pill">Sigilo (X)</span>
@@ -639,6 +679,22 @@
 	.sl-growth-cell.is-accent {
 		color: #3b82f6;
 		font-weight: 600;
+	}
+
+	.sl-growth-cell.is-neg {
+		color: #858d8a;
+	}
+
+	.sl-badge-accent {
+		border-color: rgba(59, 130, 246, 0.55) !important;
+		background: rgba(59, 130, 246, 0.12) !important;
+		color: #60a5fa !important;
+		font-weight: 600 !important;
+	}
+
+	.sl-badge-muted {
+		border-color: #262b29 !important;
+		color: #7c8380 !important;
 	}
 
 	.sl-tri {

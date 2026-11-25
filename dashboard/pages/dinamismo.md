@@ -294,7 +294,7 @@ order by hhi_div desc
 <ExecTable
 	data={vab_por_uf}
 	title="Estrutura Produtiva Média por UF (Último VAB Setorial Publicado)"
-	subtitle="Estados ordenados pelo Índice de Diversificação Setorial (HHI) · Destaque azul: UF líder e HHI ≥ 0,65"
+	subtitle="Estados ordenados pelo Índice de Diversificação Setorial (HHI) · Destaque azul: UF líder, HHI ≥ 0,65 e vocação setorial dominante"
 	search={true}
 	searchPlaceholder="Buscar UF ou região..."
 	exportCsv={true}
@@ -306,9 +306,9 @@ order by hhi_div desc
 		{ key: 'uf', label: 'UF', kind: 'primary', align: 'center' },
 		{ key: 'regiao', label: 'Região' },
 		{ key: 'municipios', label: 'Municípios', align: 'right', fmt: 'int' },
-		{ key: 'agro_pct', label: 'Agro %', align: 'right', fmt: 'pct1' },
-		{ key: 'ind_pct', label: 'Indústria %', align: 'right', fmt: 'pct1' },
-		{ key: 'servicos_pct', label: 'Serviços %', align: 'right', fmt: 'pct1' },
+		{ key: 'agro_pct', label: 'Agro %', align: 'right', kind: 'databar', fmt: 'pct1', barMax: 0.7, barThreshold: 0.25 },
+		{ key: 'ind_pct', label: 'Indústria %', align: 'right', kind: 'databar', fmt: 'pct1', barMax: 0.7, barThreshold: 0.25 },
+		{ key: 'servicos_pct', label: 'Serviços %', align: 'right', kind: 'databar', fmt: 'pct1', barMax: 0.7, barThreshold: 0.5 },
 		{ key: 'adm_pub_pct', label: 'Adm. Púb. %', align: 'right', fmt: 'pct1' },
 		{ key: 'hhi_div', label: 'HHI Div.', align: 'right', kind: 'databar', fmt: 'dec3', barMax: 0.75, barThreshold: 0.65 }
 	]}

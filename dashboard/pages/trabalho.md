@@ -304,7 +304,7 @@ order by rendimento_medio_real_brl desc nulls last
 <ExecTable
 	data={tabela_pnad_uf}
 	title="Panorama Estadual do Mercado de Trabalho (PNAD Contínua — Último Trimestre)"
-	subtitle="Rendimento real inclui mercado formal e informal · Destaque azul: UF líder em renda e cresc. real ≥ +5%"
+	subtitle="Rendimento real inclui mercado formal e informal · Destaque azul: UF líder em renda, Desocup. ≤ 4%, queda ≥ 0,5 p.p. e Renda YoY ≥ +5%"
 	search={true}
 	searchPlaceholder="Buscar UF ou região..."
 	exportCsv={true}
@@ -315,13 +315,13 @@ order by rendimento_medio_real_brl desc nulls last
 		{ key: 'trimestre', label: 'Trim.', kind: 'year' },
 		{ key: 'uf', label: 'UF', kind: 'primary', align: 'center' },
 		{ key: 'regiao', label: 'Região' },
-		{ key: 'desocupacao_pct', label: 'Desocup.', align: 'right', fmt: 'pct1' },
-		{ key: 'var_desoc_pp', label: 'Var. YoY', align: 'right', fmt: 'signed_pp' },
+		{ key: 'desocupacao_pct', label: 'Desocup.', align: 'right', kind: 'databar', fmt: 'pct1', barMax: 0.15, barThreshold: 0.04, barInvert: true },
+		{ key: 'var_desoc_pp', label: 'Var. YoY', align: 'right', kind: 'growth', fmt: 'signed_pp', highlightThreshold: -0.5, invert: true },
 		{ key: 'subutilizacao_pct', label: 'Subutil.', align: 'right', fmt: 'pct1' },
 		{ key: 'rendimento_brl', label: 'Rendimento', align: 'right', fmt: 'brl_int' },
 		{ key: 'cresc_renda_yoy_pct', label: 'Renda YoY', align: 'right', kind: 'growth', highlightThreshold: 0.05 },
 		{ key: 'homens_brl', label: 'Homens', align: 'right', fmt: 'brl_int' },
 		{ key: 'mulheres_brl', label: 'Mulheres', align: 'right', fmt: 'brl_int' },
-		{ key: 'hiato_genero_pct', label: 'Hiato M×H', align: 'right', fmt: 'signed_pct1' }
+		{ key: 'hiato_genero_pct', label: 'Hiato M×H', align: 'right', kind: 'growth', fmt: 'signed_pct1' }
 	]}
 />

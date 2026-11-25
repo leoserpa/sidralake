@@ -422,7 +422,7 @@ order by data_referencia desc
 <ExecTable
 	data={tabela_mensal_pmc}
 	title="Histórico Mensal Detalhado da Série Selecionada"
-	subtitle="Destaque azul: competência mais recente e Volume Real YoY ≥ +5%"
+	subtitle="Destaque azul: competência mais recente, Expansão Real, Volume YoY ≥ +5% e Receita YoY ≥ +8%"
 	search={true}
 	searchPlaceholder="Buscar competência ou regime..."
 	exportCsv={true}
@@ -432,9 +432,9 @@ order by data_referencia desc
 	columns={[
 		{ key: 'competencia', label: 'Competência', kind: 'year' },
 		{ key: 'volume_yoy_pct', label: 'Volume YoY', align: 'right', kind: 'growth', highlightThreshold: 0.05 },
-		{ key: 'receita_yoy_pct', label: 'Receita YoY', align: 'right', fmt: 'signed_pct1' },
+		{ key: 'receita_yoy_pct', label: 'Receita YoY', align: 'right', kind: 'growth', highlightThreshold: 0.08 },
 		{ key: 'ipca_12m_pct', label: 'IPCA 12m', align: 'right', fmt: 'pct2' },
-		{ key: 'spread_pp', label: 'Spread Preço×Vol', align: 'right', fmt: 'signed_pp' },
+		{ key: 'spread_pp', label: 'Spread Preço×Vol', align: 'right', kind: 'growth', fmt: 'signed_pp' },
 		{ key: 'regime', label: 'Regime de Consumo', align: 'center', kind: 'tier_badge' }
 	]}
 />

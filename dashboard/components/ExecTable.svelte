@@ -116,10 +116,11 @@
 	function badgeTone(raw) {
 		if (raw === null || raw === undefined || raw === '') return '';
 		const s = String(raw);
+		if (s === 'Cidade A') return 'city_a';
+		if (s === 'Cidade B') return 'city_b';
 		if (
 			s === 'Tier 1' ||
 			s === 'Tier 1 - Polo Nacional' ||
-			s === 'Cidade A' ||
 			s === 'Expansão Real' ||
 			s === 'Cluster Dominante' ||
 			s === 'Especializado'
@@ -369,6 +370,8 @@
 										{@const tone = badgeTone(rawVal)}
 										<span
 											class="sl-outline-pill"
+											class:sl-badge-city-a={tone === 'city_a'}
+											class:sl-badge-city-b={tone === 'city_b'}
 											class:sl-badge-accent={tone === 'accent'}
 											class:sl-badge-muted={tone === 'muted'}
 										>
@@ -687,6 +690,20 @@
 
 	.sl-growth-cell.is-neg {
 		color: #858d8a;
+	}
+
+	.sl-badge-city-a {
+		border-color: #3b82f6 !important;
+		background: #3b82f6 !important;
+		color: #ffffff !important;
+		font-weight: 600 !important;
+	}
+
+	.sl-badge-city-b {
+		border-color: #686e6c !important;
+		background: #686e6c !important;
+		color: #f5f7f6 !important;
+		font-weight: 600 !important;
 	}
 
 	.sl-badge-accent {

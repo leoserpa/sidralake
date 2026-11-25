@@ -1,9 +1,20 @@
 <script>
 	import '@evidence-dev/tailwind/fonts.css';
 	import '../app.css';
+	import { browser } from '$app/environment';
+	import { page } from '$app/stores';
 	import { EvidenceDefaultLayout } from '@evidence-dev/core-components';
+	import { setQueryFunction } from '@evidence-dev/component-utilities/buildQuery';
 	import TopNavBar from '../components/TopNavBar.svelte';
 	export let data;
+
+	// Garante que todos os <Dropdown> aguardem database_initialization via data.__db.query
+	// em vez de chamar client-duckdb diretamente (evitando timeout de 5s no mobile/4G).
+	let activeQueryFn = data?.__db?.query;
+	$: activeQueryFn = data?.__db?.query ?? activeQueryFn;
+	if (browser && activeQueryFn) {
+		setQueryFunction((sql, opts) => activeQueryFn(sql, opts));
+	}
 </script>
 
 <svelte:head>
@@ -30,7 +41,11 @@
 	githubRepo="https://github.com/leoserpa/sidralake"
 >
 	<TopNavBar />
-	<slot slot="content" />
+	<svelte:fragment slot="content">
+		{#key $page.url.pathname}
+			<slot />
+		{/key}
+	</svelte:fragment>
 </EvidenceDefaultLayout>
 
 <style>

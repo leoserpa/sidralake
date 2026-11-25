@@ -509,6 +509,27 @@ async function auditMobileViewport(browser, origin, routes) {
         if (drawerLinks < routes.length) {
           failures.push(`mobile 390x844: expected ${routes.length} links in drawer, got ${drawerLinks}`);
         }
+        // Test real mobile SPA navigation across pages via mobile menu (catches stale Dropdown errors)
+        for (const tabLabel of ['Trabalho', 'Demografia', 'Raio-X', 'Varejo', 'CNAE']) {
+          if ((await navPage.locator('.sl-mobile-drawer').count()) === 0) {
+            await menuBtn.first().click();
+            await navPage.waitForTimeout(200);
+          }
+          await navPage.locator('.sl-mobile-drawer a.sl-mobile-link', { hasText: tabLabel }).click();
+          await navPage.waitForTimeout(1500);
+          await waitForEvidenceHydration(navPage);
+          const brokenOnMobileNav = await navPage.evaluate(() =>
+            Array.from(document.querySelectorAll('.sl-filter-bar')).reduce((count, bar) => {
+              const matches = (bar.innerText || '').trim().match(/\bDropdown\b/g);
+              return count + (matches ? matches.length : 0);
+            }, 0),
+          );
+          if (brokenOnMobileNav > 0) {
+            failures.push(
+              `mobile 390x844 SPA nav -> ${tabLabel}: found ${brokenOnMobileNav} broken Dropdown badge(s)`,
+            );
+          }
+        }
       }
     } finally {
       await navPage.close();

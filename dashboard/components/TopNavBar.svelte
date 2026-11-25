@@ -24,16 +24,9 @@
 
 	$: currentPath = normalizePath($page?.url?.pathname ?? '/');
 
-	let mobileMenuOpen = false;
-	$: if (currentPath) {
-		mobileMenuOpen = false;
-	}
-
 	function isActive(targetPath, activePath) {
 		return normalizePath(targetPath) === activePath;
 	}
-
-	$: activeLabel = NAV_ITEMS.find((i) => isActive(i.path, currentPath))?.label ?? 'Menu';
 </script>
 
 <header class="sl-topbar">
@@ -72,48 +65,7 @@
 			<span class="sl-status-sep" aria-hidden="true"></span>
 			<span class="sl-status-engine">DuckDB-WASM</span>
 		</div>
-
-		<button
-			type="button"
-			class="sl-mobile-menu-btn"
-			aria-expanded={mobileMenuOpen}
-			aria-label={mobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
-			on:click={() => (mobileMenuOpen = !mobileMenuOpen)}
-		>
-			<span class="sl-mobile-current">{activeLabel}</span>
-			{#if mobileMenuOpen}
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<path d="M18 6 6 18" />
-					<path d="m6 6 12 12" />
-				</svg>
-			{:else}
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<line x1="4" x2="20" y1="6" y2="6" />
-					<line x1="4" x2="20" y1="12" y2="12" />
-					<line x1="4" x2="20" y1="18" y2="18" />
-				</svg>
-			{/if}
-		</button>
 	</div>
-
-	{#if mobileMenuOpen}
-		<nav class="sl-mobile-drawer" aria-label="Navegação mobile">
-			<div class="sl-mobile-grid">
-				{#each NAV_ITEMS as item}
-					{@const active = isActive(item.path, currentPath)}
-					<a
-						class="sl-mobile-link"
-						class:is-active={active}
-						href={addBasePath(item.path)}
-						aria-current={active ? 'page' : undefined}
-					>
-						{item.label}
-					</a>
-				{/each}
-			</div>
-			<div class="sl-mobile-meta">IBGE Oficial · DuckDB-WASM</div>
-		</nav>
-	{/if}
 </header>
 
 <style>
@@ -247,11 +199,6 @@
 		font-weight: 500;
 	}
 
-	.sl-mobile-menu-btn,
-	.sl-mobile-drawer {
-		display: none;
-	}
-
 	@media (max-width: 1024px) {
 		.sl-topbar-inner {
 			padding: 0 18px;
@@ -261,80 +208,6 @@
 		}
 		.sl-nav {
 			gap: 18px;
-		}
-	}
-
-	@media (max-width: 768px) {
-		.sl-topbar-inner {
-			padding: 0 14px;
-			gap: 12px;
-		}
-		.sl-nav {
-			display: none;
-		}
-		.sl-mobile-menu-btn {
-			display: inline-flex;
-			align-items: center;
-			gap: 8px;
-			height: 36px;
-			padding: 0 12px;
-			border-radius: 6px;
-			border: 1px solid #2d3231;
-			background: #131716;
-			color: #f5f7f6;
-			font-size: 12.5px;
-			font-weight: 600;
-			cursor: pointer;
-			flex-shrink: 0;
-		}
-		.sl-mobile-current {
-			color: #d4d8d6;
-		}
-		.sl-mobile-drawer {
-			display: block;
-			position: absolute;
-			top: 60px;
-			left: 0;
-			right: 0;
-			background: #0b0f0d;
-			border-bottom: 1px solid #2d3231;
-			padding: 12px 14px 14px;
-			box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
-		}
-		.sl-mobile-grid {
-			display: grid;
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-			gap: 8px;
-		}
-		.sl-mobile-link {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			height: 38px;
-			padding: 0 8px;
-			border-radius: 6px;
-			border: 1px solid #232826;
-			background: #131716;
-			color: #9ca3a0;
-			font-size: 12.5px;
-			font-weight: 500;
-			text-decoration: none;
-			white-space: nowrap;
-		}
-		.sl-mobile-link.is-active {
-			border-color: #3b82f6;
-			background: rgba(59, 130, 246, 0.14);
-			color: #f5f7f6;
-			font-weight: 600;
-		}
-		.sl-mobile-meta {
-			margin-top: 10px;
-			padding-top: 10px;
-			border-top: 1px solid #1d2220;
-			text-align: center;
-			color: #7c8380;
-			font-size: 11px;
-			font-weight: 500;
 		}
 	}
 </style>

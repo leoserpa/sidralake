@@ -1,19 +1,9 @@
 <script>
 	import '@evidence-dev/tailwind/fonts.css';
 	import '../app.css';
-	import { browser } from '$app/environment';
 	import { EvidenceDefaultLayout } from '@evidence-dev/core-components';
-	import { setQueryFunction } from '@evidence-dev/component-utilities/buildQuery';
 	import TopNavBar from '../components/TopNavBar.svelte';
 	export let data;
-
-	// Garante que todos os <Dropdown> aguardem database_initialization via data.__db.query
-	// em vez de chamar client-duckdb diretamente (evitando timeout de 5s no mobile/4G).
-	let activeQueryFn = data?.__db?.query;
-	$: activeQueryFn = data?.__db?.query ?? activeQueryFn;
-	if (browser && activeQueryFn) {
-		setQueryFunction((sql, opts) => activeQueryFn(sql, opts));
-	}
 </script>
 
 <svelte:head>
@@ -352,37 +342,6 @@
 		:global(.sl-kpi-grid-6),
 		:global(.sl-kpi-grid-4) {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	@media (max-width: 768px) {
-		:global(main) {
-			margin-top: 14px !important;
-			padding-bottom: 24px;
-		}
-		:global(.sl-page-header) {
-			align-items: stretch;
-			gap: 12px;
-			margin-bottom: 14px;
-		}
-		:global(.sl-page-title) {
-			font-size: 19px !important;
-		}
-		:global(.sl-page-subtitle) {
-			font-size: 12.5px !important;
-		}
-		:global(.sl-filter-bar) {
-			width: 100%;
-			gap: 8px;
-		}
-		:global(.sl-card),
-		:global(.sl-control-card) {
-			padding: 14px 14px;
-		}
-		:global(.sl-footer) {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 6px;
 		}
 	}
 

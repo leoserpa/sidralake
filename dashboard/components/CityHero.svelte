@@ -141,18 +141,4 @@
 		background: #2563eb;
 		border-color: #2563eb;
 	}
-
-	@media (max-width: 640px) {
-		.sl-hero-card {
-			padding: 16px;
-			gap: 14px;
-		}
-		.sl-hero-actions {
-			width: 100%;
-		}
-		.sl-primary-btn {
-			width: 100%;
-			justify-content: center;
-		}
-	}
 </style>

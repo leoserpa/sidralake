@@ -490,72 +490,6 @@ async function auditInteractiveFilters(context, origin) {
   return failures;
 }
 
-async function auditMobileViewport(browser, origin, routes) {
-  const failures = [];
-  const mobileCtx = await browser.newContext({ viewport: { width: 390, height: 844 } });
-  try {
-    // Verify mobile hamburger menu opens and exposes all 9 routes
-    const navPage = await mobileCtx.newPage();
-    try {
-      await navPage.goto(`${origin}${BASE_PATH}/`, { waitUntil: 'domcontentloaded' });
-      await waitForEvidenceHydration(navPage);
-      const menuBtn = navPage.locator('button.sl-mobile-menu-btn');
-      if ((await menuBtn.count()) === 0 || !(await menuBtn.first().isVisible())) {
-        failures.push('mobile 390x844: .sl-mobile-menu-btn not visible on /');
-      } else {
-        await menuBtn.first().click();
-        await navPage.waitForTimeout(200);
-        const drawerLinks = await navPage.locator('.sl-mobile-drawer a.sl-mobile-link').count();
-        if (drawerLinks < routes.length) {
-          failures.push(`mobile 390x844: expected ${routes.length} links in drawer, got ${drawerLinks}`);
-        }
-        // Test real mobile SPA navigation across pages via mobile menu (catches stale Dropdown errors)
-        for (const tabLabel of ['Trabalho', 'Demografia', 'Raio-X', 'Varejo', 'CNAE']) {
-          if ((await navPage.locator('.sl-mobile-drawer').count()) === 0) {
-            await menuBtn.first().click();
-            await navPage.waitForTimeout(200);
-          }
-          await navPage.locator('.sl-mobile-drawer a.sl-mobile-link', { hasText: tabLabel }).click();
-          await navPage.waitForTimeout(1500);
-          await waitForEvidenceHydration(navPage);
-          const brokenOnMobileNav = await navPage.evaluate(() =>
-            Array.from(document.querySelectorAll('.sl-filter-bar')).reduce((count, bar) => {
-              const matches = (bar.innerText || '').trim().match(/\bDropdown\b/g);
-              return count + (matches ? matches.length : 0);
-            }, 0),
-          );
-          if (brokenOnMobileNav > 0) {
-            failures.push(
-              `mobile 390x844 SPA nav -> ${tabLabel}: found ${brokenOnMobileNav} broken Dropdown badge(s)`,
-            );
-          }
-        }
-      }
-    } finally {
-      await navPage.close();
-    }
-
-    for (const route of routes) {
-      const page = await mobileCtx.newPage();
-      try {
-        await page.goto(`${origin}${route}`, { waitUntil: 'domcontentloaded' });
-        await waitForEvidenceHydration(page);
-        const overflowPx = await page.evaluate(
-          () => document.documentElement.scrollWidth - window.innerWidth,
-        );
-        if (overflowPx > 4) {
-          failures.push(`mobile 390x844 ${route}: horizontal overflow +${overflowPx}px`);
-        }
-      } finally {
-        await page.close();
-      }
-    }
-  } finally {
-    await mobileCtx.close();
-  }
-  return failures;
-}
-
 async function main() {
   if (!fs.existsSync(BUILD_DIR)) {
     console.error(`FAIL: build directory not found at ${BUILD_DIR}`);
@@ -603,18 +537,6 @@ async function main() {
     } else {
       console.error(`  FAIL interactive filters (${interactiveElapsed}s):`);
       for (const f of interactiveFailures) {
-        console.error(`    - ${f}`);
-        allFailures.push(f);
-      }
-    }
-    const mobileStart = Date.now();
-    const mobileFailures = await auditMobileViewport(browser, origin, routes);
-    const mobileElapsed = ((Date.now() - mobileStart) / 1000).toFixed(1);
-    if (mobileFailures.length === 0) {
-      console.log(`  PASS mobile 390x844 (${mobileElapsed}s)`);
-    } else {
-      console.error(`  FAIL mobile 390x844 (${mobileElapsed}s):`);
-      for (const f of mobileFailures) {
         console.error(`    - ${f}`);
         allFailures.push(f);
       }

@@ -120,7 +120,9 @@
 			s === 'Tier 1' ||
 			s === 'Tier 1 - Polo Nacional' ||
 			s === 'Cidade A' ||
-			s === 'Expansão Real'
+			s === 'Expansão Real' ||
+			s === 'Cluster Dominante' ||
+			s === 'Especializado'
 		) {
 			return 'accent';
 		}
@@ -128,7 +130,9 @@
 			s === 'Tier 4' ||
 			s === 'Tier 4 - Local / Nicho' ||
 			s === 'Retração' ||
-			s === 'Pressão Inflac.'
+			s === 'Pressão Inflac.' ||
+			s === 'Sub-representado' ||
+			s === 'Sigilo (X)'
 		) {
 			return 'muted';
 		}

@@ -27,11 +27,15 @@ BI_GOLD_TABLES: tuple[str, ...] = (
 )
 
 
+_TECHNICAL_DROP_EXACT: frozenset[str] = frozenset({"valid_from", "valid_to", "is_current"})
+_BI_SORT_PREFERENCE: tuple[str, ...] = ("ano_referencia", "data_referencia", "sigla_uf")
+
+
 def export_gold_for_bi(
     gold_dir: Path,
     output_dir: Path,
 ) -> dict[str, dict[str, int | float | str]]:
-    """Exporta tabelas Gold Delta Lake para Parquet Snappy (compativel com Evidence/DuckDB-WASM)."""
+    """Exporta tabelas Gold Delta Lake para Parquet ZSTD otimizado para Evidence/DuckDB-WASM."""
     output_dir = output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     summary: dict[str, dict[str, int | float | str]] = {}
@@ -47,13 +51,21 @@ def export_gold_for_bi(
         lf = pl.scan_delta(str(delta_path))
         if table_name in ("dim_geografia", "dim_cnae"):
             lf = lf.filter(pl.col("is_current"))
-        drop_audit = [c for c in lf.collect_schema().names() if c.startswith("_")]
-        if drop_audit:
-            lf = lf.drop(drop_audit)
+        schema_names = lf.collect_schema().names()
+        drop_cols = [
+            c for c in schema_names if c.startswith(("_", "sk_")) or c in _TECHNICAL_DROP_EXACT
+        ]
+        if drop_cols:
+            lf = lf.drop(drop_cols)
+
+        remaining = [c for c in schema_names if c not in drop_cols]
+        sort_cols = [c for c in _BI_SORT_PREFERENCE if c in remaining]
+        if sort_cols:
+            lf = lf.sort(sort_cols)
 
         df = lf.collect()
         target_parquet = output_dir / f"{table_name}.parquet"
-        df.write_parquet(target_parquet, compression="snappy")
+        df.write_parquet(target_parquet, compression="zstd")
 
         size_kb = round(target_parquet.stat().st_size / 1024.0, 2)
         summary[table_name] = {

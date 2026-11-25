@@ -364,6 +364,54 @@ order by pos asc
 	</div>
 </div>
 
+```sql ranking_servicos_uf
+with base as (
+    select
+        sigla_uf as uf,
+        round(var_yoy_volume_pct / 100.0, 4) as pms_yoy_pct,
+        row_number() over (order by var_yoy_volume_pct desc) as pos
+    from sidralake.mart_pulso_servicos_uf
+    where ano_mes = (select max(ano_mes) from sidralake.mart_pulso_servicos_uf)
+      and var_yoy_volume_pct is not null
+    order by pos asc
+    limit 12
+)
+select
+    uf,
+    pms_yoy_pct,
+    case when pos = 1 then 'Destaque' else 'Demais' end as destaque
+from base
+order by pos asc
+```
+
+<div class="sl-card sl-stack">
+	<BarChart
+		data={ranking_servicos_uf}
+		x=uf
+		y=pms_yoy_pct
+		series=destaque
+		type=stacked
+		swapXY=true
+		sort=false
+		labels=true
+		stackTotalLabel=false
+		labelPosition=outside
+		showAllLabels=true
+		labelFmt="0.0%"
+		leftPadding=14
+		rightPadding=44
+		legend=false
+		yGridlines=false
+		xGridlines=false
+		yAxisLabels=false
+		yBaseline=false
+		seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
+		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
+		title="Quais UFs lideram o crescimento real de Serviços (PMS)?"
+		subtitle="Top 12 UFs por variação YoY do volume de serviços na última competência PMS (SIDRA 5906) · Líder em azul"
+	/>
+</div>
+
 ```sql heatmap_varejo_uf
 select
     sigla_uf as uf,
@@ -400,29 +448,40 @@ order by sigla_uf asc, grupo asc
 
 ```sql tabela_mensal_pmc
 select
-    substr(ano_mes, 5, 2) || '/' || substr(ano_mes, 1, 4) as competencia,
-    round(var_yoy_volume_pct / 100.0, 4) as volume_yoy_pct,
-    round(var_yoy_receita_nominal_pct / 100.0, 4) as receita_yoy_pct,
-    round(ipca_variacao_acum_12m_pct / 100.0, 4) as ipca_12m_pct,
-    round(spread_preco_vs_volume_yoy_pp, 2) as spread_pp,
-    case regime_consumo
+    substr(c.ano_mes, 5, 2) || '/' || substr(c.ano_mes, 1, 4) as competencia,
+    round(c.var_yoy_volume_pct / 100.0, 4) as volume_yoy_pct,
+    round(c.var_yoy_receita_nominal_pct / 100.0, 4) as receita_yoy_pct,
+    round(c.ipca_variacao_acum_12m_pct / 100.0, 4) as ipca_12m_pct,
+    round(c.spread_preco_vs_volume_yoy_pp, 2) as spread_pp,
+    case c.regime_consumo
         when 'EXPANSAO_REAL' then 'Expansão Real'
         when 'PRESSAO_INFLACIONARIA' then 'Pressão Inflac.'
         when 'ESTABILIDADE' then 'Estabilidade'
         when 'RETRACAO' then 'Retração'
-        else regime_consumo
-    end as regime
-from sidralake.mart_pulso_consumo_macro
-where sigla_uf = '${inputs.uf.value}'
-  and nome_atividade_pmc = '${inputs.atividade.value}'
-  and var_yoy_volume_pct is not null
-order by data_referencia desc
+        else c.regime_consumo
+    end as regime,
+    round(s.var_yoy_volume_pct / 100.0, 4) as pms_yoy_pct,
+    case s.regime_servicos
+        when 'EXPANSAO_REAL' then 'Expansão Real'
+        when 'PRESSAO_INFLACIONARIA' then 'Pressão Inflac.'
+        when 'ESTABILIDADE' then 'Estabilidade'
+        when 'RETRACAO' then 'Retração'
+        else s.regime_servicos
+    end as regime_serv
+from sidralake.mart_pulso_consumo_macro as c
+left join sidralake.mart_pulso_servicos_uf as s
+    on c.sigla_uf = s.sigla_uf
+   and c.ano_mes = s.ano_mes
+where c.sigla_uf = '${inputs.uf.value}'
+  and c.nome_atividade_pmc = '${inputs.atividade.value}'
+  and c.var_yoy_volume_pct is not null
+order by c.data_referencia desc
 ```
 
 <ExecTable
 	data={tabela_mensal_pmc}
-	title="Histórico Mensal Detalhado da Série Selecionada"
-	subtitle="Destaque azul: competência mais recente, Expansão Real, Volume YoY ≥ +5% e Receita YoY ≥ +8%"
+	title="Histórico Mensal Detalhado (Varejo PMC × Serviços PMS)"
+	subtitle="Destaque azul: competência mais recente, Expansão Real, Volume/Serviços YoY ≥ +5% e Receita YoY ≥ +8%"
 	search={true}
 	searchPlaceholder="Buscar competência ou regime..."
 	exportCsv={true}
@@ -435,6 +494,8 @@ order by data_referencia desc
 		{ key: 'receita_yoy_pct', label: 'Receita YoY', align: 'right', kind: 'growth', highlightThreshold: 0.08 },
 		{ key: 'ipca_12m_pct', label: 'IPCA 12m', align: 'right', fmt: 'pct2' },
 		{ key: 'spread_pp', label: 'Spread Preço×Vol', align: 'right', kind: 'growth', fmt: 'signed_pp' },
-		{ key: 'regime', label: 'Regime de Consumo', align: 'center', kind: 'tier_badge' }
+		{ key: 'regime', label: 'Regime Varejo', align: 'center', kind: 'tier_badge' },
+		{ key: 'pms_yoy_pct', label: 'Serviços YoY', align: 'right', kind: 'growth', highlightThreshold: 0.05 },
+		{ key: 'regime_serv', label: 'Regime Serviços', align: 'center', kind: 'tier_badge' }
 	]}
 />

@@ -38,7 +38,7 @@
 
 <footer class="sl-footer">
 	<span>
-		<strong>Fonte dos Dados:</strong> Instituto Brasileiro de Geografia e Estatística (IBGE) · Dados públicos abertos.
+		<strong>Fonte dos Dados:</strong> Instituto Brasileiro de Geografia e Estatística (IBGE) · Dados públicos abertos · Defasagens entre séries seguem o calendário oficial de divulgação do IBGE.
 	</span>
 	{#if parts.length > 0}
 		<span class="sl-footer-freshness">Competências oficiais: {parts.join(' · ')}</span>

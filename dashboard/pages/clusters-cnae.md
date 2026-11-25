@@ -266,7 +266,107 @@ limit 400
 	/>
 </div>
 
+```sql top_especializacoes_ql
+with base as (
+    select
+        sigla_uf,
+        codigo_secao_cnae,
+        pessoal_ocupado_total,
+        sum(pessoal_ocupado_total) over (partition by sigla_uf) as emp_uf,
+        sum(pessoal_ocupado_total) over (partition by codigo_secao_cnae) as emp_setor,
+        sum(pessoal_ocupado_total) over () as emp_br
+    from sidralake.mart_clusters_setoriais_uf
+    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_clusters_setoriais_uf))
+      and not has_sigilo_estatistico
+      and pessoal_ocupado_total is not null
+      and pessoal_ocupado_total > 0
+),
+ql_calc as (
+    select
+        sigla_uf || ' · ' || codigo_secao_cnae as uf_setor,
+        sigla_uf,
+        codigo_secao_cnae,
+        pessoal_ocupado_total,
+        round(
+            (cast(pessoal_ocupado_total as double) / nullif(emp_uf, 0))
+            / nullif(cast(emp_setor as double) / nullif(emp_br, 0), 0),
+            2
+        ) as ql_obs
+    from base
+),
+ranked as (
+    select
+        uf_setor,
+        ql_obs,
+        row_number() over (order by ql_obs desc, pessoal_ocupado_total desc) as pos
+    from ql_calc
+    where ql_obs is not null
+      and pessoal_ocupado_total >= 1000
+      and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+      and ('${inputs.cnae.value}' = 'TODAS' or codigo_secao_cnae = '${inputs.cnae.value}')
+    order by pos asc
+    limit 12
+)
+select
+    uf_setor,
+    ql_obs,
+    case when pos = 1 then 'Destaque' else 'Demais' end as destaque
+from ranked
+order by pos asc
+```
+
+<div class="sl-card sl-stack">
+	<BarChart
+		data={top_especializacoes_ql}
+		x=uf_setor
+		y=ql_obs
+		series=destaque
+		type=stacked
+		swapXY=true
+		sort=false
+		labels=true
+		stackTotalLabel=false
+		labelPosition=outside
+		showAllLabels=true
+		labelFmt="#,##0.00"
+		leftPadding=18
+		rightPadding=44
+		legend=false
+		yGridlines=false
+		xGridlines=false
+		yAxisLabels=false
+		yBaseline=false
+		seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
+		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
+		title="Onde cada setor CNAE é proporcionalmente mais especializado (QL)?"
+		subtitle="Quociente Locacional sobre emprego formal divulgado (excl. células com sigilo X; ≥ 1 mil ocupados) · QL ≥ 1,50 = Cluster Dominante · Líder em azul"
+	/>
+</div>
+
 ```sql tabela_clusters
+with base_ano as (
+    select
+        *,
+        sum(case when not has_sigilo_estatistico then pessoal_ocupado_total end) over (partition by sigla_uf) as emp_uf_obs,
+        sum(case when not has_sigilo_estatistico then pessoal_ocupado_total end) over (partition by codigo_secao_cnae) as emp_setor_obs,
+        sum(case when not has_sigilo_estatistico then pessoal_ocupado_total end) over () as emp_br_obs
+    from sidralake.mart_clusters_setoriais_uf
+    where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_clusters_setoriais_uf))
+),
+enriquecido as (
+    select
+        *,
+        case
+            when not has_sigilo_estatistico and pessoal_ocupado_total > 0
+                then round(
+                    (cast(pessoal_ocupado_total as double) / nullif(emp_uf_obs, 0))
+                    / nullif(cast(emp_setor_obs as double) / nullif(emp_br_obs, 0), 0),
+                    2
+                )
+            else null
+        end as ql_obs
+    from base_ano
+)
 select
     cast(cast(ano_referencia as integer) as varchar) as ano,
     sigla_uf as uf,
@@ -299,11 +399,17 @@ select
     pessoal_ocupado_total as emprego,
     round(massa_salarial_real_mil_brl / 1e3, 1) as massa_mi,
     round(market_share_uf_no_setor_pct / 100.0, 4) as share_br_pct,
-    round(crescimento_emprego_setor_yoy_pct / 100.0, 4) as cresc_yoy_pct,
-    has_sigilo_estatistico as sigilo_x
-from sidralake.mart_clusters_setoriais_uf
-where ano_referencia = coalesce(try_cast('${inputs.ano.value}' as integer), (select cast(max(ano_referencia) as integer) from sidralake.mart_clusters_setoriais_uf))
-  and ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
+    ql_obs,
+    case
+        when has_sigilo_estatistico or ql_obs is null then 'Sigilo (X)'
+        when ql_obs >= 1.50 then 'Cluster Dominante'
+        when ql_obs >= 1.25 then 'Especializado'
+        when ql_obs >= 0.85 then 'Equilibrado'
+        else 'Sub-representado'
+    end as perfil,
+    round(crescimento_emprego_setor_yoy_pct / 100.0, 4) as cresc_yoy_pct
+from enriquecido
+where ('${inputs.uf.value}' = 'TODAS' or sigla_uf = '${inputs.uf.value}')
   and ('${inputs.cnae.value}' = 'TODAS' or codigo_secao_cnae = '${inputs.cnae.value}')
 order by pessoal_ocupado_total desc nulls last
 ```
@@ -311,9 +417,9 @@ order by pessoal_ocupado_total desc nulls last
 <ExecTable
 	data={tabela_clusters}
 	title="Matriz Completa UF × Seção CNAE 2.0"
-	subtitle="Destaque azul: maior cluster, Share BR ≥ 25% e Cresc. YoY ≥ +8%"
+	subtitle="Destaque azul: maior cluster, Share BR ≥ 25%, QL ≥ 1,50 (Cluster Dominante) e Cresc. YoY ≥ +8%"
 	search={true}
-	searchPlaceholder="Buscar UF ou setor CNAE..."
+	searchPlaceholder="Buscar UF, setor CNAE ou perfil..."
 	exportCsv={true}
 	csvFilename="sidralake_clusters_cnae.csv"
 	rowsPerPage={20}
@@ -327,7 +433,8 @@ order by pessoal_ocupado_total desc nulls last
 		{ key: 'emprego', label: 'Emprego', align: 'right', fmt: 'int' },
 		{ key: 'massa_mi', label: 'Massa (R$ Mi)', align: 'right', fmt: 'brl_mi' },
 		{ key: 'share_br_pct', label: 'Share BR', align: 'right', kind: 'databar', fmt: 'pct1', barMax: 0.6, barThreshold: 0.25 },
-		{ key: 'cresc_yoy_pct', label: 'Cresc. YoY', align: 'right', kind: 'growth', highlightThreshold: 0.08 },
-		{ key: 'sigilo_x', label: 'Sigilo', align: 'center', kind: 'sigilo_badge' }
+		{ key: 'ql_obs', label: 'QL', align: 'right', kind: 'databar', fmt: 'dec2', barMax: 3.0, barThreshold: 1.5 },
+		{ key: 'perfil', label: 'Especialização', align: 'center', kind: 'tier_badge' },
+		{ key: 'cresc_yoy_pct', label: 'Cresc. YoY', align: 'right', kind: 'growth', highlightThreshold: 0.08 }
 	]}
 />

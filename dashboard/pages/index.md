@@ -391,4 +391,6 @@ select
     ) as pop_ano
 ```
 
+<MethodologyCard />
+
 <DataFooter data={frescor_ibge} />

@@ -779,4 +779,37 @@
 		border-color: #464d4b;
 		color: #f5f7f6;
 	}
+
+	@media (max-width: 640px) {
+		.sl-table-card {
+			padding: 14px;
+			gap: 12px;
+		}
+		.sl-table-controls {
+			width: 100%;
+		}
+		.sl-search-box {
+			flex: 1 1 100%;
+		}
+		.sl-search-box input {
+			width: 100%;
+			min-width: 0;
+		}
+		.sl-export-btn {
+			width: 100%;
+			justify-content: center;
+		}
+		.sl-table tbody td {
+			padding: 10px 10px;
+			font-size: 12.5px;
+		}
+		.sl-table-footer {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 10px;
+		}
+		.sl-page-btns {
+			justify-content: space-between;
+		}
+	}
 </style>

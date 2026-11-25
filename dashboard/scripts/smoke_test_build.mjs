@@ -490,6 +490,92 @@ async function auditInteractiveFilters(context, origin) {
   return failures;
 }
 
+async function auditMobileViewport(browser, origin, routes) {
+  const failures = [];
+  const mobileCtx = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    hasTouch: true,
+    isMobile: true,
+  });
+  try {
+    const page = await mobileCtx.newPage();
+    const consoleErrors = [];
+    page.on('console', (m) => {
+      if (m.type() === 'error') consoleErrors.push(m.text());
+    });
+    page.on('pageerror', (e) => consoleErrors.push(e.message));
+
+    // 1. Direct load check across all 9 routes on 390x844
+    for (const route of routes) {
+      await page.goto(`${origin}${route}`, { waitUntil: 'domcontentloaded' });
+      const timedOut = !(await waitForEvidenceHydration(page));
+      const audit = await page.evaluate(() => {
+        const overflowPx = document.documentElement.scrollWidth - window.innerWidth;
+        const menuBtn = document.querySelector('button.sl-mobile-menu-btn');
+        const menuRect = menuBtn ? menuBtn.getBoundingClientRect() : null;
+        const brandEl = document.querySelector('a.sl-brand');
+        const brandRect = brandEl ? brandEl.getBoundingClientRect() : null;
+        let brokenDropdowns = 0;
+        for (const el of document.querySelectorAll('.sl-filter-bar *, .sl-control-card *, .sl-hero-actions *')) {
+          if (el.children.length <= 2 && /^Dropdown$/i.test((el.innerText || '').trim())) {
+            const r = el.getBoundingClientRect();
+            if (r.width > 0 && r.height > 0) brokenDropdowns += 1;
+          }
+        }
+        return {
+          overflowPx,
+          hasVisibleMenuBtn: Boolean(menuRect && menuRect.width > 0 && menuRect.height > 0),
+          menuIsLeftOfBrand: Boolean(menuRect && brandRect && menuRect.left < brandRect.left),
+          brokenDropdowns,
+        };
+      });
+      if (timedOut) failures.push(`mobile ${route}: hydration timed out`);
+      if (!audit.hasVisibleMenuBtn) failures.push(`mobile ${route}: mobile menu button not visible`);
+      if (!audit.menuIsLeftOfBrand) failures.push(`mobile ${route}: mobile menu button must be on the left of brand`);
+      if (audit.overflowPx > 4) failures.push(`mobile ${route}: horizontal overflow +${audit.overflowPx}px at 390x844`);
+      if (audit.brokenDropdowns > 0) failures.push(`mobile ${route}: ${audit.brokenDropdowns} broken Dropdown badge(s)`);
+    }
+
+    // 2. Navigation via left mobile menu drawer across key filterable pages
+    await page.goto(`${origin}${BASE_PATH}/`, { waitUntil: 'domcontentloaded' });
+    await waitForEvidenceHydration(page);
+    for (const label of ['Trabalho', 'Demografia', 'Raio-X', 'Varejo', 'CNAE']) {
+      const btn = page.locator('button.sl-mobile-menu-btn');
+      await btn.click();
+      await page.waitForTimeout(120);
+      const link = page.locator('a.sl-mobile-link', { hasText: label }).first();
+      await Promise.all([
+        page.waitForLoadState('domcontentloaded'),
+        link.click(),
+      ]);
+      const timedOut = !(await waitForEvidenceHydration(page));
+      const navAudit = await page.evaluate(() => {
+        let brokenDropdowns = 0;
+        for (const el of document.querySelectorAll('.sl-filter-bar *, .sl-control-card *, .sl-hero-actions *')) {
+          if (el.children.length <= 2 && /^Dropdown$/i.test((el.innerText || '').trim())) {
+            const r = el.getBoundingClientRect();
+            if (r.width > 0 && r.height > 0) brokenDropdowns += 1;
+          }
+        }
+        return { brokenDropdowns, combos: document.querySelectorAll('button[role="combobox"]').length };
+      });
+      if (timedOut) failures.push(`mobile nav -> ${label}: hydration timed out`);
+      if (navAudit.brokenDropdowns > 0) {
+        failures.push(`mobile nav -> ${label}: ${navAudit.brokenDropdowns} broken Dropdown badge(s)`);
+      }
+      if (navAudit.combos === 0) failures.push(`mobile nav -> ${label}: no dropdown comboboxes rendered`);
+    }
+
+    if (consoleErrors.length > 0) {
+      failures.push(`mobile console/page errors: ${consoleErrors.slice(0, 5).join(' | ')}`);
+    }
+    await page.close();
+  } finally {
+    await mobileCtx.close();
+  }
+  return failures;
+}
+
 async function main() {
   if (!fs.existsSync(BUILD_DIR)) {
     console.error(`FAIL: build directory not found at ${BUILD_DIR}`);
@@ -537,6 +623,18 @@ async function main() {
     } else {
       console.error(`  FAIL interactive filters (${interactiveElapsed}s):`);
       for (const f of interactiveFailures) {
+        console.error(`    - ${f}`);
+        allFailures.push(f);
+      }
+    }
+    const mobileStart = Date.now();
+    const mobileFailures = await auditMobileViewport(browser, origin, routes);
+    const mobileElapsed = ((Date.now() - mobileStart) / 1000).toFixed(1);
+    if (mobileFailures.length === 0) {
+      console.log(`  PASS mobile 390x844 (${mobileElapsed}s)`);
+    } else {
+      console.error(`  FAIL mobile 390x844 (${mobileElapsed}s):`);
+      for (const f of mobileFailures) {
         console.error(`    - ${f}`);
         allFailures.push(f);
       }

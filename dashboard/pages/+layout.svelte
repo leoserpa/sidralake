@@ -345,6 +345,37 @@
 		}
 	}
 
+	@media (max-width: 768px) {
+		:global(main) {
+			margin-top: 14px !important;
+			padding-bottom: 24px;
+		}
+		:global(.sl-page-header) {
+			align-items: stretch;
+			gap: 12px;
+			margin-bottom: 14px;
+		}
+		:global(.sl-page-title) {
+			font-size: 19px !important;
+		}
+		:global(.sl-page-subtitle) {
+			font-size: 12.5px !important;
+		}
+		:global(.sl-filter-bar) {
+			width: 100%;
+			gap: 8px;
+		}
+		:global(.sl-card),
+		:global(.sl-control-card) {
+			padding: 14px 14px;
+		}
+		:global(.sl-footer) {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 6px;
+		}
+	}
+
 	@media (max-width: 560px) {
 		:global(.sl-kpi-grid-5),
 		:global(.sl-kpi-grid-6),

@@ -170,6 +170,10 @@ order by m.ano_referencia asc, l.lado asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Pilares do Score IMS: Cidade A × Cidade B</h3>
+			<p class="sl-card-subtitle">Notas normalizadas (0–100) · Cidade A em azul</p>
+		</div>
 		<BarChart
 			data={comparativo_pilares}
 			x=pilar
@@ -192,11 +196,13 @@ order by m.ano_referencia asc, l.lado asc
 			yBaseline=false
 			seriesColors={{'Cidade A': '#3b82f6', 'Cidade B': '#686e6c'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Pilares do Score IMS: Cidade A × Cidade B"
-			subtitle="Notas normalizadas (0–100) · Cidade A em azul"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Trajetória do PIB Real (2018+)</h3>
+			<p class="sl-card-subtitle">Valores constantes em R$ Bilhões · Linhas puras sem sombreado</p>
+		</div>
 		<LineChart
 			data={comparativo_pib_serie}
 			x=ano
@@ -210,8 +216,6 @@ order by m.ano_referencia asc, l.lado asc
 			xGridlines=false
 			seriesColors={{'Cidade A': '#3b82f6', 'Cidade B': '#9ca3a0'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1, axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Trajetória do PIB Real (2018+)"
-			subtitle="Valores constantes em R$ Bilhões · Linhas puras sem sombreado"
 			yAxisTitle="R$ Bilhões"
 		/>
 	</div>

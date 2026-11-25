@@ -120,6 +120,10 @@ order by data_referencia asc, grupo asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Trajetória da Desocupação vs. Subutilização (2018+)</h3>
+			<p class="sl-card-subtitle">Série trimestral PNAD Contínua · Taxa de desocupação em azul</p>
+		</div>
 		<LineChart
 			data={serie_desocupacao}
 			x=data_referencia
@@ -130,12 +134,14 @@ order by data_referencia asc, grupo asc
 			xGridlines=false
 			seriesColors={{'Taxa de Desocupação': '#3b82f6', 'Subutilização Composta': '#686e6c'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Trajetória da Desocupação vs. Subutilização (2018+)"
-			subtitle="Série trimestral PNAD Contínua · Taxa de desocupação em azul"
 			yAxisTitle="Percentual (%)"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Evolução do Rendimento Médio Real por Gênero (R$/mês)</h3>
+			<p class="sl-card-subtitle">Rendimento habitual em todos os trabalhos (preços constantes IBGE) · Total em azul</p>
+		</div>
 		<LineChart
 			data={serie_rendimento_genero}
 			x=data_referencia
@@ -146,8 +152,6 @@ order by data_referencia asc, grupo asc
 			xGridlines=false
 			seriesColors={{'Total': '#3b82f6', 'Homens': '#9ca3a0', 'Mulheres': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Evolução do Rendimento Médio Real por Gênero (R$/mês)"
-			subtitle="Rendimento habitual em todos os trabalhos (preços constantes IBGE) · Total em azul"
 			yAxisTitle="R$ / mês"
 		/>
 	</div>
@@ -217,6 +221,10 @@ order by pos asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Quais UFs têm maior rendimento médio real?</h3>
+			<p class="sl-card-subtitle">Último trimestre PNAD Contínua (R$/mês) · UF líder em azul</p>
+		</div>
 		<BarChart
 			data={ranking_renda_uf}
 			x=uf
@@ -239,11 +247,13 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Quais UFs têm maior rendimento médio real?"
-			subtitle="Último trimestre PNAD Contínua (R$/mês) · UF líder em azul"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Quais UFs têm menor taxa de desocupação?</h3>
+			<p class="sl-card-subtitle">Top 12 menores taxas no último trimestre PNAD · Menor taxa em azul</p>
+		</div>
 		<BarChart
 			data={ranking_desocupacao_uf}
 			x=uf
@@ -266,8 +276,6 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Quais UFs têm menor taxa de desocupação?"
-			subtitle="Top 12 menores taxas no último trimestre PNAD · Menor taxa em azul"
 		/>
 	</div>
 </div>

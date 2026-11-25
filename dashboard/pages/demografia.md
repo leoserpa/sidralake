@@ -148,6 +148,10 @@ order by pos asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Quais UFs mais crescem em população?</h3>
+			<p class="sl-card-subtitle">Variação acumulada desde o Censo 2022 · UF líder em azul</p>
+		</div>
 		<BarChart
 			data={cresc_pop_uf}
 			x=uf
@@ -170,11 +174,13 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Quais UFs mais crescem em população?"
-			subtitle="Variação acumulada desde o Censo 2022 · UF líder em azul"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Quais municípios têm maior crescimento populacional (%)?</h3>
+			<p class="sl-card-subtitle">Variação percentual desde o Censo 2022 no porte filtrado · Líder em azul</p>
+		</div>
 		<BarChart
 			data={top_cidades_demo}
 			x=municipio
@@ -197,8 +203,6 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Quais municípios têm maior crescimento populacional (%)?"
-			subtitle="Variação percentual desde o Censo 2022 no porte filtrado · Líder em azul"
 		/>
 	</div>
 </div>
@@ -236,6 +240,10 @@ order by pos asc
 ```
 
 <div class="sl-card sl-stack">
+	<div class="sl-chart-head">
+		<h3 class="sl-card-title">Quais Regiões Imediatas concentram o maior PIB real combinado?</h3>
+		<p class="sl-card-subtitle">Mercado somado de todos os municípios da área de influência (R$ Bilhões constantes IPCA) · Polo líder em azul</p>
+	</div>
 	<BarChart
 		data={top_polos_regionais}
 		x=polo_regional
@@ -258,8 +266,6 @@ order by pos asc
 		yBaseline=false
 		seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-		title="Quais Regiões Imediatas concentram o maior PIB real combinado?"
-		subtitle="Mercado somado de todos os municípios da área de influência (R$ Bilhões constantes IPCA) · Polo líder em azul"
 	/>
 </div>
 

@@ -155,6 +155,10 @@ order by pos asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Quais municípios lideram o Score IMS?</h3>
+			<p class="sl-card-subtitle">Top 10 no recorte (0–100) · Líder em azul pré-atentivo</p>
+		</div>
 		<BarChart
 			data={top_12_ims}
 			x=municipio
@@ -177,8 +181,6 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Quais municípios lideram o Score IMS?"
-			subtitle="Top 10 no recorte (0–100) · Líder em azul pré-atentivo"
 		/>
 	</div>
 	<div class="sl-card">
@@ -253,6 +255,10 @@ order by pos asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Quais municípios têm maior PIB real?</h3>
+			<p class="sl-card-subtitle">Top 8 no recorte (R$ Bilhões) · Valores constantes IPCA</p>
+		</div>
 		<BarChart
 			data={top_12_pib}
 			x=municipio
@@ -275,11 +281,13 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Quais municípios têm maior PIB real?"
-			subtitle="Top 8 no recorte (R$ Bilhões) · Valores constantes IPCA"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Qual regime domina o varejo nacional (PMC × IPCA)?</h3>
+			<p class="sl-card-subtitle">Participação das séries UF × Atividade (PMC × IPCA) · Líder em azul</p>
+		</div>
 		<BarChart
 			data={regimes_varejo_home}
 			x=regime
@@ -302,8 +310,6 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Qual regime domina o varejo nacional (PMC × IPCA)?"
-			subtitle="Participação das séries UF × Atividade (PMC × IPCA) · Líder em azul"
 		/>
 	</div>
 </div>

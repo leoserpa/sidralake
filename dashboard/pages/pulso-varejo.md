@@ -94,6 +94,10 @@ order by data_referencia asc, indicador asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Trajetória da Inflação Oficial (IPCA Brasil · 2018+)</h3>
+			<p class="sl-card-subtitle">IPCA acumulado em 12 meses em azul · Variação mensal em ardósia</p>
+		</div>
 		<LineChart
 			data={serie_ipca}
 			x=data_referencia
@@ -104,12 +108,14 @@ order by data_referencia asc, indicador asc
 			xGridlines=false
 			seriesColors={{'IPCA Acum. 12m': '#3b82f6', 'IPCA Mensal': '#686e6c'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Trajetória da Inflação Oficial (IPCA Brasil · 2018+)"
-			subtitle="IPCA acumulado em 12 meses em azul · Variação mensal em ardósia"
 			yAxisTitle="Variação (%)"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Volume Real do Varejo vs. Receita Nominal e IPCA (YoY %)</h3>
+			<p class="sl-card-subtitle">Volume Real em azul pré-atentivo · Receita Nominal e IPCA 12m em ardósia</p>
+		</div>
 		<LineChart
 			data={serie_mensal_pmc}
 			x=data_referencia
@@ -120,8 +126,6 @@ order by data_referencia asc, indicador asc
 			xGridlines=false
 			seriesColors={{'Volume Real YoY': '#3b82f6', 'Receita Nominal YoY': '#9ca3a0', 'IPCA Acum. 12m': '#3f4543'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Volume Real do Varejo vs. Receita Nominal e IPCA (YoY %)"
-			subtitle="Volume Real em azul pré-atentivo · Receita Nominal e IPCA 12m em ardósia"
 			yAxisTitle="Variação (%)"
 		/>
 	</div>
@@ -162,6 +166,10 @@ order by data_referencia asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Tendência de Volume do Varejo (MM 3m × MM 12m)</h3>
+			<p class="sl-card-subtitle">Índice base 2022=100 · Curto prazo (MM 3m) acima da MM 12m indica aceleração</p>
+		</div>
 		<LineChart
 			data={tendencia_volume_pmc}
 			x=data_referencia
@@ -172,12 +180,14 @@ order by data_referencia asc
 			xGridlines=false
 			seriesColors={{'Média Móvel 3m (Curto Prazo)': '#3b82f6', 'Média Móvel 12m (Tendência)': '#686e6c'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Tendência de Volume do Varejo (MM 3m × MM 12m)"
-			subtitle="Índice base 2022=100 · Curto prazo (MM 3m) acima da MM 12m indica aceleração"
 			yAxisTitle="Índice (2022 = 100)"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Spread de Taxas: Volume do Varejo vs. IPCA (p.p.)</h3>
+			<p class="sl-card-subtitle">Diferença entre variação acumulada em 12m do volume (PMC) e do IPCA · Barras em azul indicam ritmo de volume acima da inflação</p>
+		</div>
 		<BarChart
 			data={spread_real_varejo}
 			x=data_referencia
@@ -189,8 +199,6 @@ order by data_referencia asc
 			xGridlines=false
 			seriesColors={{'Acima do IPCA': '#3b82f6', 'Abaixo do IPCA': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Spread de Taxas: Volume do Varejo vs. IPCA (p.p.)"
-			subtitle="Diferença entre variação acumulada em 12m do volume (PMC) e do IPCA · Barras em azul indicam ritmo de volume acima da inflação"
 			yAxisTitle="Pontos Percentuais (p.p.)"
 		/>
 	</div>
@@ -232,6 +240,10 @@ order by data_referencia asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Serviços (PMS) vs. Varejo (PMC) — Volume Real YoY (%)</h3>
+			<p class="sl-card-subtitle">Comparação direta na UF selecionada · Serviços (PMS 5906) em azul</p>
+		</div>
 		<LineChart
 			data={servicos_vs_varejo}
 			x=data_referencia
@@ -242,12 +254,14 @@ order by data_referencia asc
 			xGridlines=false
 			seriesColors={{'Serviços (PMS YoY)': '#3b82f6', 'Varejo (PMC YoY)': '#686e6c'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Serviços (PMS) vs. Varejo (PMC) — Volume Real YoY (%)"
-			subtitle="Comparação direta na UF selecionada · Serviços (PMS 5906) em azul"
 			yAxisTitle="Variação YoY (%)"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Pulso Mensal de Serviços com Ajuste Sazonal (PMS MoM SA %)</h3>
+			<p class="sl-card-subtitle">Variação mês contra mês imediatamente anterior na UF selecionada · Altas em azul</p>
+		</div>
 		<BarChart
 			data={pms_mom_sa}
 			x=data_referencia
@@ -259,8 +273,6 @@ order by data_referencia asc
 			xGridlines=false
 			seriesColors={{'Alta MoM SA': '#3b82f6', 'Queda MoM SA': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Pulso Mensal de Serviços com Ajuste Sazonal (PMS MoM SA %)"
-			subtitle="Variação mês contra mês imediatamente anterior na UF selecionada · Altas em azul"
 			yAxisTitle="Variação MoM SA (%)"
 		/>
 	</div>
@@ -309,6 +321,10 @@ order by pos asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Qual regime domina o varejo nacional (PMC × IPCA)?</h3>
+			<p class="sl-card-subtitle">Distribuição das séries UF × Atividade · Regime dominante em azul</p>
+		</div>
 		<BarChart
 			data={regimes_ultimo_mes}
 			x=regime
@@ -331,11 +347,13 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Qual regime domina o varejo nacional (PMC × IPCA)?"
-			subtitle="Distribuição das séries UF × Atividade · Regime dominante em azul"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Qual o ritmo médio de volume real em cada regime?</h3>
+			<p class="sl-card-subtitle">Variação média YoY do volume de vendas (%) · Maior expansão em azul</p>
+		</div>
 		<BarChart
 			data={regimes_ultimo_mes}
 			x=regime
@@ -358,8 +376,6 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Qual o ritmo médio de volume real em cada regime?"
-			subtitle="Variação média YoY do volume de vendas (%) · Maior expansão em azul"
 		/>
 	</div>
 </div>
@@ -385,6 +401,10 @@ order by pos asc
 ```
 
 <div class="sl-card sl-stack">
+	<div class="sl-chart-head">
+		<h3 class="sl-card-title">Quais UFs lideram o crescimento real de Serviços (PMS)?</h3>
+		<p class="sl-card-subtitle">Top 12 UFs por variação YoY do volume de serviços na última competência PMS (SIDRA 5906) · Líder em azul</p>
+	</div>
 	<BarChart
 		data={ranking_servicos_uf}
 		x=uf
@@ -407,8 +427,6 @@ order by pos asc
 		yBaseline=false
 		seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-		title="Quais UFs lideram o crescimento real de Serviços (PMS)?"
-		subtitle="Top 12 UFs por variação YoY do volume de serviços na última competência PMS (SIDRA 5906) · Líder em azul"
 	/>
 </div>
 
@@ -432,6 +450,10 @@ order by sigla_uf asc, grupo asc
 ```
 
 <div class="sl-card sl-stack">
+	<div class="sl-chart-head">
+		<h3 class="sl-card-title">Volume Real YoY (%) — UF × Grupo de Consumo</h3>
+		<p class="sl-card-subtitle">Última competência PMC · Intensidade azul indica maior expansão real</p>
+	</div>
 	<Heatmap
 		data={heatmap_varejo_uf}
 		x=grupo
@@ -441,8 +463,6 @@ order by sigla_uf asc, grupo asc
 		xLabelRotation=0
 		colorScale={['#131716', '#2d3231', '#3b82f6']}
 		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' } } }}
-		title="Volume Real YoY (%) — UF × Grupo de Consumo"
-		subtitle="Última competência PMC · Intensidade azul indica maior expansão real"
 	/>
 </div>
 

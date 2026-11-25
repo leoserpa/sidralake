@@ -159,6 +159,10 @@ order by pos asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Evolução do PIB Real (2018+)</h3>
+			<p class="sl-card-subtitle">Valores constantes (R$ Bi · IPCA) · Linha limpa sem preenchimento</p>
+		</div>
 		<LineChart
 			data={serie_pib_cidade}
 			x=ano
@@ -171,12 +175,14 @@ order by pos asc
 			xGridlines=false
 			colorPalette={['#3b82f6']}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, grid: { containLabel: true }, xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1, axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Evolução do PIB Real (2018+)"
-			subtitle="Valores constantes (R$ Bi · IPCA) · Linha limpa sem preenchimento"
 			yAxisTitle="R$ Bilhões"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Onde a cidade é mais forte no IMS?</h3>
+			<p class="sl-card-subtitle">4 Pilares normalizados (0–100) · Pilar líder em azul</p>
+		</div>
 		<BarChart
 			data={pilares_cidade}
 			x=pilar
@@ -200,8 +206,6 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Onde a cidade é mais forte no IMS?"
-			subtitle="4 Pilares normalizados (0–100) · Pilar líder em azul"
 		/>
 	</div>
 </div>
@@ -302,6 +306,10 @@ order by ano_referencia desc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Qual é a vocação produtiva (VAB)?</h3>
+			<p class="sl-card-subtitle">Participação no Valor Adicionado Bruto (%) · Último VAB IBGE (2021)</p>
+		</div>
 		<BarChart
 			data={vab_cidade}
 			x=setor
@@ -324,8 +332,6 @@ order by ano_referencia desc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Qual é a vocação produtiva (VAB)?"
-			subtitle="Participação no Valor Adicionado Bruto (%) · Último VAB IBGE (2021)"
 		/>
 	</div>
 	<ExecTable
@@ -415,6 +421,10 @@ limit 12
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Curva Demográfica (2018+)</h3>
+			<p class="sl-card-subtitle">Censo 2022 + Estimativas IBGE · Série contínua sem área sombreada</p>
+		</div>
 		<LineChart
 			data={serie_pop_cidade}
 			x=ano
@@ -428,12 +438,14 @@ limit 12
 			xGridlines=false
 			colorPalette={['#3b82f6']}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, grid: { left: 16, containLabel: true }, xAxis: { min: 'dataMin', max: 'dataMax', minInterval: 1, axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-			title="Curva Demográfica (2018+)"
-			subtitle="Censo 2022 + Estimativas IBGE · Série contínua sem área sombreada"
 			yAxisTitle="Habitantes"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Benchmarking na Mesma Região Imediata</h3>
+			<p class="sl-card-subtitle">Score IMS (0–100) · Cidade selecionada em azul pré-atentivo</p>
+		</div>
 		<BarChart
 			data={vizinhos_chart}
 			x=municipio
@@ -456,8 +468,6 @@ limit 12
 			yBaseline=false
 			seriesColors={{'Cidade Selecionada': '#3b82f6', 'Vizinhos': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Benchmarking na Mesma Região Imediata"
-			subtitle="Score IMS (0–100) · Cidade selecionada em azul pré-atentivo"
 		/>
 	</div>
 </div>

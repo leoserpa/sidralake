@@ -133,6 +133,10 @@ order by pos asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Quais UFs lideram o share setorial?</h3>
+			<p class="sl-card-subtitle">Participação no emprego nacional do setor · Líder em azul</p>
+		</div>
 		<BarChart
 			data={top_shares_setoriais}
 			x=uf_setor
@@ -155,11 +159,13 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Quais UFs lideram o share setorial?"
-			subtitle="Participação no emprego nacional do setor · Líder em azul"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Quais seções CNAE mais empregam?</h3>
+			<p class="sl-card-subtitle">Pessoal ocupado formal (milhões) · Seção líder em azul</p>
+		</div>
 		<BarChart
 			data={emprego_por_secao}
 			x=setor
@@ -182,8 +188,6 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Quais seções CNAE mais empregam?"
-			subtitle="Pessoal ocupado formal (milhões) · Seção líder em azul"
 		/>
 	</div>
 </div>
@@ -211,6 +215,10 @@ order by m.sigla_uf asc, m.codigo_secao_cnae asc
 ```
 
 <div class="sl-card sl-stack">
+	<div class="sl-chart-head">
+		<h3 class="sl-card-title">Concentração Estadual (%) no Emprego Brasileiro por Seção CNAE</h3>
+		<p class="sl-card-subtitle">Top 12 UFs · A=Agro · C=Indústria · F=Construção · G=Comércio · H=Transporte · J=TI · K=Finanças · N=Adm · P=Educação · Q=Saúde</p>
+	</div>
 	<Heatmap
 		data={heatmap_uf_cnae}
 		x=cnae
@@ -219,8 +227,6 @@ order by m.sigla_uf asc, m.codigo_secao_cnae asc
 		valueFmt="0.0%"
 		colorScale={['#131716', '#1e3a8a', '#2563eb', '#3b82f6']}
 		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' } } }}
-		title="Concentração Estadual (%) no Emprego Brasileiro por Seção CNAE"
-		subtitle="Top 12 UFs · A=Agro · C=Indústria · F=Construção · G=Comércio · H=Transporte · J=TI · K=Finanças · N=Adm · P=Educação · Q=Saúde"
 	/>
 </div>
 
@@ -247,6 +253,10 @@ limit 400
 ```
 
 <div class="sl-card sl-stack">
+	<div class="sl-chart-head">
+		<h3 class="sl-card-title">Quais clusters combinam expansão de emprego com salários elevados?</h3>
+		<p class="sl-card-subtitle">Clusters com ≥ 5 mil ocupados · Eixo X: Cresc. Emprego YoY (%) · Eixo Y: Remuneração Mensal Real Implícita (Massa / 13 meses)</p>
+	</div>
 	<ScatterPlot
 		data={scatter_renda_crescimento_cnae}
 		x=cresc_emp_yoy_pct
@@ -259,8 +269,6 @@ limit 400
 		xGridlines=false
 		seriesColors={{'Alta Expansão (≥ +8% YoY)': '#3b82f6', 'Demais Clusters': '#525755'}}
 		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { left: 20, right: 24, top: 44, bottom: 40, containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-		title="Quais clusters combinam expansão de emprego com salários elevados?"
-		subtitle="Clusters com ≥ 5 mil ocupados · Eixo X: Cresc. Emprego YoY (%) · Eixo Y: Remuneração Mensal Real Implícita (Massa / 13 meses)"
 		xAxisTitle="Crescimento de Emprego YoY (%)"
 		yAxisTitle="Remuneração Mensal Real Implícita (R$)"
 	/>
@@ -316,6 +324,10 @@ order by pos asc
 ```
 
 <div class="sl-card sl-stack">
+	<div class="sl-chart-head">
+		<h3 class="sl-card-title">Onde cada setor CNAE é proporcionalmente mais especializado (QL)?</h3>
+		<p class="sl-card-subtitle">Quociente Locacional sobre emprego formal divulgado (excl. células com sigilo X; ≥ 1 mil ocupados) · QL ≥ 1,50 = Cluster Dominante · Líder em azul</p>
+	</div>
 	<BarChart
 		data={top_especializacoes_ql}
 		x=uf_setor
@@ -338,8 +350,6 @@ order by pos asc
 		yBaseline=false
 		seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-		title="Onde cada setor CNAE é proporcionalmente mais especializado (QL)?"
-		subtitle="Quociente Locacional sobre emprego formal divulgado (excl. células com sigilo X; ≥ 1 mil ocupados) · QL ≥ 1,50 = Cluster Dominante · Líder em azul"
 	/>
 </div>
 

@@ -249,19 +249,33 @@
 		min-width: 0;
 	}
 
+	:global(.sl-chart-head) {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		margin-bottom: 8px;
+		min-width: 0;
+	}
+
 	:global(.sl-card-title) {
 		color: #f5f7f6;
-		font-size: 15px;
+		font-size: 0.9375rem;
 		font-weight: 600;
-		line-height: 1.3;
+		line-height: 1.35;
 		letter-spacing: -0.015em;
+		margin: 0 !important;
+		text-wrap: balance;
+		overflow-wrap: break-word;
 	}
 
 	:global(.sl-card-subtitle) {
 		color: #9ca3a0;
-		font-size: 12px;
+		font-size: 0.78125rem;
 		font-weight: 400;
-		line-height: 1.4;
+		line-height: 1.45;
+		margin: 0 !important;
+		text-wrap: pretty;
+		overflow-wrap: break-word;
 	}
 
 	/* Filter strip card for sliders / side-by-side selectors */

@@ -74,6 +74,10 @@ order by regiao asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Quais municípios mais cresceram?</h3>
+			<p class="sl-card-subtitle">CAGR real 3 anos (IPCA) · Líder em azul pré-atentivo</p>
+		</div>
 		<BarChart
 			data={top_cagr}
 			x=municipio
@@ -96,11 +100,13 @@ order by regiao asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Quais municípios mais cresceram?"
-			subtitle="CAGR real 3 anos (IPCA) · Líder em azul pré-atentivo"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Composição setorial do VAB por Região</h3>
+			<p class="sl-card-subtitle">Proporção 100% · Serviços em destaque azul · Último VAB setorial publicado pelo IBGE</p>
+		</div>
 		<BarChart
 			data={vab_empilhado_regiao}
 			x=regiao
@@ -116,8 +122,6 @@ order by regiao asc
 			yBaseline=false
 			seriesColors={{'Serviços': '#3b82f6', 'Indústria': '#9ca3a0', 'Agro': '#686e6c', 'Adm. Púb.': '#2d3231'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Composição setorial do VAB por Região"
-			subtitle="Proporção 100% · Serviços em destaque azul · Último VAB setorial publicado pelo IBGE"
 		/>
 	</div>
 </div>
@@ -176,6 +180,10 @@ order by pos asc
 
 <div class="sl-grid-2">
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Onde há maior densidade empreendedora?</h3>
+			<p class="sl-card-subtitle">Empresas atuantes por 1.000 habitantes (último CEMPRE) · Líder em azul</p>
+		</div>
 		<BarChart
 			data={top_densidade_emp}
 			x=municipio
@@ -198,11 +206,13 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Onde há maior densidade empreendedora?"
-			subtitle="Empresas atuantes por 1.000 habitantes (último CEMPRE) · Líder em azul"
 		/>
 	</div>
 	<div class="sl-card">
+		<div class="sl-chart-head">
+			<h3 class="sl-card-title">Quais cidades mais abriram empresas no último ano?</h3>
+			<p class="sl-card-subtitle">Crescimento anual de empresas atuantes (CEMPRE YoY %) · Líder em azul</p>
+		</div>
 		<BarChart
 			data={top_cresc_empresas}
 			x=municipio
@@ -225,8 +235,6 @@ order by pos asc
 			yBaseline=false
 			seriesColors={{'Destaque': '#3b82f6', 'Demais': '#525755'}}
 			echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' }, axisLine: { lineStyle: { color: '#2d3231' } } } }}
-			title="Quais cidades mais abriram empresas no último ano?"
-			subtitle="Crescimento anual de empresas atuantes (CEMPRE YoY %) · Líder em azul"
 		/>
 	</div>
 </div>
@@ -251,6 +259,10 @@ limit 500
 ```
 
 <div class="sl-card sl-stack">
+	<div class="sl-chart-head">
+		<h3 class="sl-card-title">Polos Nacionais (Tier 1) concentram alto poder de compra e Score IMS</h3>
+		<p class="sl-card-subtitle">Dispersão PIB Per Capita Real (R$) × Score IMS · Polos Tier 1 em azul</p>
+	</div>
 	<ScatterPlot
 		data={scatter_poder_compra}
 		x=pib_per_capita_real
@@ -262,8 +274,6 @@ limit 500
 		xGridlines=false
 		seriesColors={{'Tier 1 · Polo': '#3b82f6', 'Demais Municípios': '#525755'}}
 		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, legend: { textStyle: { color: '#f5f7f6' } }, grid: { left: 20, right: 24, top: 44, bottom: 40, containLabel: true }, xAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' }, axisLine: { lineStyle: { color: '#2d3231' } } }, yAxis: { axisLabel: { color: '#f5f7f6' }, nameTextStyle: { color: '#d4d8d6' } } }}
-		title="Polos Nacionais (Tier 1) concentram alto poder de compra e Score IMS"
-		subtitle="Dispersão PIB Per Capita Real (R$) × Score IMS · Polos Tier 1 em azul"
 		xAxisTitle="PIB Per Capita Real (R$)"
 		yAxisTitle="Score IMS (0–100)"
 	/>

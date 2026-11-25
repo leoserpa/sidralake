@@ -432,6 +432,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
+		min-inline-size: 0;
+		inline-size: 100%;
+		max-inline-size: 100%;
+		box-sizing: border-box;
 	}
 
 	.sl-table-card.is-compact {
@@ -445,12 +449,15 @@
 		justify-content: space-between;
 		gap: 16px;
 		flex-wrap: wrap;
+		min-inline-size: 0;
 	}
 
 	.sl-table-heading {
 		display: flex;
 		flex-direction: column;
 		gap: 3px;
+		min-inline-size: 0;
+		flex: 1 1 auto;
 	}
 
 	.sl-table-controls {
@@ -507,8 +514,10 @@
 	}
 
 	.sl-table-scroll {
-		width: 100%;
+		inline-size: 100%;
+		max-inline-size: 100%;
 		overflow-x: auto;
+		overscroll-behavior-x: contain;
 	}
 
 	.sl-table {

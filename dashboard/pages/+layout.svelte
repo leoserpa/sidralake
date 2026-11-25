@@ -236,6 +236,11 @@
 		margin-bottom: 18px;
 	}
 
+	:global(.sl-grid-2 > *) {
+		min-inline-size: 0;
+		max-inline-size: 100%;
+	}
+
 	:global(.sl-stack) {
 		margin-bottom: 18px;
 	}
@@ -246,7 +251,9 @@
 		border: 1px solid #2d3231;
 		border-radius: 10px;
 		padding: 20px 22px;
-		min-width: 0;
+		min-inline-size: 0;
+		max-inline-size: 100%;
+		box-sizing: border-box;
 	}
 
 	:global(.sl-chart-head) {
@@ -350,7 +357,7 @@
 		:global(.sl-grid-2),
 		:global(.sl-slider-grid-3),
 		:global(.sl-slider-grid-2) {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
 		}
 		:global(.sl-kpi-grid-5),
 		:global(.sl-kpi-grid-6),
@@ -394,7 +401,7 @@
 		:global(.sl-kpi-grid-5),
 		:global(.sl-kpi-grid-6),
 		:global(.sl-kpi-grid-4) {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 </style>

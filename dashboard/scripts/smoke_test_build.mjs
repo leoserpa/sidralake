@@ -522,11 +522,19 @@ async function auditMobileViewport(browser, origin, routes) {
             if (r.width > 0 && r.height > 0) brokenDropdowns += 1;
           }
         }
+        let overflowingCards = 0;
+        for (const el of document.querySelectorAll('.sl-card, .sl-table-card, .sl-control-card')) {
+          const r = el.getBoundingClientRect();
+          if (r.width > 0 && (r.right > window.innerWidth + 2 || r.left < -2)) {
+            overflowingCards += 1;
+          }
+        }
         return {
           overflowPx,
           hasVisibleMenuBtn: Boolean(menuRect && menuRect.width > 0 && menuRect.height > 0),
           menuIsLeftOfBrand: Boolean(menuRect && brandRect && menuRect.left < brandRect.left),
           brokenDropdowns,
+          overflowingCards,
         };
       });
       if (timedOut) failures.push(`mobile ${route}: hydration timed out`);
@@ -534,6 +542,9 @@ async function auditMobileViewport(browser, origin, routes) {
       if (!audit.menuIsLeftOfBrand) failures.push(`mobile ${route}: mobile menu button must be on the left of brand`);
       if (audit.overflowPx > 4) failures.push(`mobile ${route}: horizontal overflow +${audit.overflowPx}px at 390x844`);
       if (audit.brokenDropdowns > 0) failures.push(`mobile ${route}: ${audit.brokenDropdowns} broken Dropdown badge(s)`);
+      if (audit.overflowingCards > 0) {
+        failures.push(`mobile ${route}: ${audit.overflowingCards} card(s) overflowing viewport bounds at 390x844`);
+      }
     }
 
     // 2. Navigation via left mobile menu drawer across key filterable pages

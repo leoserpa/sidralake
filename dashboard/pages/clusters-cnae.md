@@ -217,7 +217,7 @@ order by m.sigla_uf asc, m.codigo_secao_cnae asc
 <div class="sl-card sl-stack">
 	<div class="sl-chart-head">
 		<h3 class="sl-card-title">Concentração Estadual (%) no Emprego Brasileiro por Seção CNAE</h3>
-		<p class="sl-card-subtitle">Top 12 UFs · A=Agro · C=Indústria · F=Construção · G=Comércio · H=Transporte · J=TI · K=Finanças · N=Adm · P=Educação · Q=Saúde</p>
+		<p class="sl-card-subtitle">Top 12 UFs · A=Agropecuária · C=Indústria · F=Construção · G=Comércio · H=Transporte · I=Alojamento e Alimentação · J=Informação e TI · K=Finanças · M=Serviços Profissionais · N=Serviços Administrativos · P=Educação · Q=Saúde</p>
 	</div>
 	<Heatmap
 		data={heatmap_uf_cnae}

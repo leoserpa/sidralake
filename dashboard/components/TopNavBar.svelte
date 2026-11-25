@@ -59,7 +59,7 @@
 					class="sl-nav-link"
 					class:is-active={active}
 					href={addBasePath(item.path)}
-					data-sveltekit-preload-code="hover"
+					data-sveltekit-preload-data="hover"
 					aria-current={active ? 'page' : undefined}
 				>
 					{item.label}

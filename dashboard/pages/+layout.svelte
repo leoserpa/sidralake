@@ -2,7 +2,6 @@
 	import '@evidence-dev/tailwind/fonts.css';
 	import '../app.css';
 	import { browser } from '$app/environment';
-	import { page } from '$app/stores';
 	import { EvidenceDefaultLayout } from '@evidence-dev/core-components';
 	import { setQueryFunction } from '@evidence-dev/component-utilities/buildQuery';
 	import TopNavBar from '../components/TopNavBar.svelte';
@@ -41,11 +40,7 @@
 	githubRepo="https://github.com/leoserpa/sidralake"
 >
 	<TopNavBar />
-	<svelte:fragment slot="content">
-		{#key $page.url.pathname}
-			<slot />
-		{/key}
-	</svelte:fragment>
+	<slot slot="content" />
 </EvidenceDefaultLayout>
 
 <style>

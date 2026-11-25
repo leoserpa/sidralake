@@ -97,7 +97,7 @@
 	}
 
 	.sl-method-title svg {
-		color: #3b82f6;
+		color: #9ca3a0;
 		flex-shrink: 0;
 	}
 

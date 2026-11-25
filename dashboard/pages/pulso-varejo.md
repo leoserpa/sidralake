@@ -454,16 +454,21 @@ order by sigla_uf asc, grupo asc
 		<h3 class="sl-card-title">Volume Real YoY (%) — UF × Grupo de Consumo</h3>
 		<p class="sl-card-subtitle">Última competência PMC · Intensidade azul indica maior expansão real</p>
 	</div>
-	<Heatmap
-		data={heatmap_varejo_uf}
-		x=grupo
-		y=uf
-		value=vol_yoy_pct
-		valueFmt="0.0%"
-		xLabelRotation=0
-		colorScale={['#131716', '#2d3231', '#3b82f6']}
-		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' } } }}
-	/>
+	<p class="sl-mobile-scroll-hint">Arraste lateralmente para ver todas as colunas →</p>
+	<div class="sl-heatmap-scroll">
+		<div class="sl-heatmap-inner sl-heatmap-inner--compact">
+			<Heatmap
+				data={heatmap_varejo_uf}
+				x=grupo
+				y=uf
+				value=vol_yoy_pct
+				valueFmt="0.0%"
+				xLabelRotation=0
+				colorScale={['#131716', '#2d3231', '#3b82f6']}
+				echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' } } }}
+			/>
+		</div>
+	</div>
 </div>
 
 ```sql tabela_mensal_pmc

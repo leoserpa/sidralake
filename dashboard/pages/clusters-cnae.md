@@ -219,15 +219,20 @@ order by m.sigla_uf asc, m.codigo_secao_cnae asc
 		<h3 class="sl-card-title">Concentração Estadual (%) no Emprego Brasileiro por Seção CNAE</h3>
 		<p class="sl-card-subtitle">Top 12 UFs · A=Agropecuária · C=Indústria · F=Construção · G=Comércio · H=Transporte · I=Alojamento e Alimentação · J=Informação e TI · K=Finanças · M=Serviços Profissionais · N=Serviços Administrativos · P=Educação · Q=Saúde</p>
 	</div>
-	<Heatmap
-		data={heatmap_uf_cnae}
-		x=cnae
-		y=uf
-		value=share_pct
-		valueFmt="0.0%"
-		colorScale={['#131716', '#1e3a8a', '#2563eb', '#3b82f6']}
-		echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' } } }}
-	/>
+	<p class="sl-mobile-scroll-hint">Arraste lateralmente para ver todas as colunas →</p>
+	<div class="sl-heatmap-scroll">
+		<div class="sl-heatmap-inner">
+			<Heatmap
+				data={heatmap_uf_cnae}
+				x=cnae
+				y=uf
+				value=share_pct
+				valueFmt="0.0%"
+				colorScale={['#131716', '#1e3a8a', '#2563eb', '#3b82f6']}
+				echartsOptions={{ backgroundColor: 'transparent', title: { textStyle: { color: '#f5f7f6' }, subtextStyle: { color: '#9ca3a0' } }, xAxis: { axisLabel: { color: '#f5f7f6' } }, yAxis: { axisLabel: { color: '#f5f7f6' } } }}
+			/>
+		</div>
+	</div>
 </div>
 
 ```sql scatter_renda_crescimento_cnae

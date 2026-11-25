@@ -321,6 +321,19 @@
 		width: 100% !important;
 	}
 
+	:global(.sl-heatmap-scroll) {
+		inline-size: 100%;
+		max-inline-size: 100%;
+	}
+
+	:global(.sl-heatmap-inner) {
+		inline-size: 100%;
+	}
+
+	:global(.sl-mobile-scroll-hint) {
+		display: none;
+	}
+
 	:global(.sl-card h3),
 	:global(.sl-card h4) {
 		color: #f5f7f6 !important;
@@ -394,6 +407,24 @@
 			flex-direction: column;
 			align-items: flex-start;
 			gap: 6px;
+		}
+		:global(.sl-heatmap-scroll) {
+			overflow-x: auto;
+			overscroll-behavior-x: contain;
+			padding-bottom: 4px;
+		}
+		:global(.sl-heatmap-inner) {
+			min-inline-size: 640px;
+		}
+		:global(.sl-heatmap-inner.sl-heatmap-inner--compact) {
+			min-inline-size: 480px;
+		}
+		:global(.sl-mobile-scroll-hint) {
+			display: block;
+			color: #7c8380;
+			font-size: 0.72rem;
+			line-height: 1.3;
+			margin: 0 0 6px !important;
 		}
 	}
 

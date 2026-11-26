@@ -32,10 +32,10 @@ This command performs two actions:
 Confirm the CLI entrypoint is ready:
 
 ```bash
-uv run ibge-pipeline --help
+uv run sidralake --help
 ```
 
-You should see the `run`, `maintain`, and `inspect` subcommands.
+You should see all 7 subcommands: `run`, `maintain`, `inspect`, `insights`, `export-bi`, `validate-bi`, and `test` (the legacy alias `ibge-pipeline` targets the same CLI).
 
 ---
 
@@ -70,7 +70,7 @@ The output displays:
 - Validation of *Boa Esperança do Norte - MT* (`5101837`) inside `gold.dim_geografia`
 - **Top state sector clusters** by Location Quotient (`QL`)
 - **Monthly retail pulse (PMC × IPCA)** for the latest available period
-- Row counts and Delta versions (`_delta_log`) for the 3 Gold Data Marts
+- Row counts and Delta versions (`_delta_log`) for all 6 Gold Data Marts
 
 Next, run an ad-hoc SQL query directly against the Gold **Delta Lake** table using DuckDB:
 
@@ -110,8 +110,8 @@ make dagster-dev
 ```
 
 Open the URL printed in your terminal (typically `http://127.0.0.1:3000`). Inside the UI:
-- Open **Assets → Global Asset Lineage** to inspect the unified **39-asset graph** linking `bronze/*` → `silver/*` → `gold/*` → `lakehouse/*`.
-- Click any Bronze asset (e.g., `bronze/pib_municipal`) to inspect year partitions (`ano_referencia`), materialization metadata (`rows_written`, `delta_version`, `payload_hash`), and Pandera **Asset Checks**.
+- Open **Assets → Global Asset Lineage** to inspect the unified **49-asset graph** linking `bronze/*` → `silver/*` → `gold/*` → `lakehouse/*`.
+- Click any Bronze asset (e.g., `bronze/pib_municipal`) to inspect year partitions (`ano_referencia`), materialization metadata (`rows_written`, `delta_version`, `payload_hash`), and blocking Pandera **Asset Checks** (`204` total checks across the graph).
 - Open **Automation** to view the `ibge_new_period_sensor` freshness sensor and recurring schedules.
 
 Stop the server with `Ctrl+C` when finished.
@@ -125,6 +125,15 @@ make dbt-docs
 ```
 
 Open `http://127.0.0.1:8080` in your browser to browse model descriptions, enforced column contracts, macros, and SQL lineage across `bronze_ibge`, `silver`, `snapshots`, and `gold`. Stop with `Ctrl+C`.
+
+### 4.3 Export BI Parquets and Validate DuckDB-WASM Queries (Optional)
+
+To export all 10 ZSTD Parquet tables consumed by the Evidence.dev dashboard and validate its 78 SQL queries:
+
+```bash
+uv run sidralake export-bi
+uv run sidralake validate-bi --allow-empty   # omit --allow-empty after a --mode full run
+```
 
 ---
 

@@ -32,10 +32,10 @@ Esse comando executa duas ações:
 Para confirmar que os executáveis foram instalados corretamente, valide o CLI:
 
 ```bash
-uv run ibge-pipeline --help
+uv run sidralake --help
 ```
 
-Você verá os subcomandos `run`, `maintain` e `inspect`.
+Você verá os 7 subcomandos: `run`, `maintain`, `inspect`, `insights`, `export-bi`, `validate-bi` e `test` (o alias legado `ibge-pipeline` aponta para o mesmo entrypoint).
 
 ---
 
@@ -70,7 +70,7 @@ A saída no terminal exibe:
 - Presença de *Boa Esperança do Norte - MT* (`5101837`) em `gold.dim_geografia`
 - **Top clusters setoriais estaduais** por Quociente Locacional (`QL`)
 - **Pulso do varejo (PMC × IPCA)** na última competência mensal disponível
-- Contagem de linhas e versão Delta (`_delta_log`) dos 3 Data Marts Gold
+- Contagem de linhas e versão Delta (`_delta_log`) dos 6 Data Marts Gold
 
 Agora execute uma consulta SQL ad-hoc lendo diretamente a tabela **Delta Lake** da camada Gold via DuckDB (sem depender do arquivo `.duckdb` aberto em modo escrita):
 
@@ -110,8 +110,8 @@ make dagster-dev
 ```
 
 Abra o endereço exibido no terminal (por padrão `http://127.0.0.1:3000`). Na interface:
-- Acesse **Assets → Global Asset Lineage** para visualizar o grafo completo de **39 assets** conectando `bronze/*` → `silver/*` → `gold/*` → `lakehouse/*`.
-- Clique em qualquer asset da Bronze (como `bronze/pib_municipal`) para inspecionar as partições por `ano_referencia`, métricas de execução (`rows_written`, `delta_version`, `payload_hash`) e o status dos **Asset Checks** do Pandera.
+- Acesse **Assets → Global Asset Lineage** para visualizar o grafo completo de **49 assets** conectando `bronze/*` → `silver/*` → `gold/*` → `lakehouse/*`.
+- Clique em qualquer asset da Bronze (como `bronze/pib_municipal`) para inspecionar as partições por `ano_referencia`, métricas de execução (`rows_written`, `delta_version`, `payload_hash`) e o status dos **Asset Checks** bloqueantes do Pandera (`204` checks no grafo completo).
 - Acesse **Automation** para visualizar o sensor `ibge_new_period_sensor` e os *schedules* mensais/semanais.
 
 Encerre o servidor com `Ctrl+C` quando terminar.
@@ -125,6 +125,15 @@ make dbt-docs
 ```
 
 Abra `http://127.0.0.1:8080` no navegador para inspecionar descrições de modelos, contratos tipados, macros e o grafo de dependências SQL entre `bronze_ibge`, `silver`, `snapshots` e `gold`. Encerre com `Ctrl+C`.
+
+### 4.3 Exportar Parquets BI e Validar Queries DuckDB-WASM (Opcional)
+
+Para gerar os 10 Parquets ZSTD consumidos pelo dashboard Evidence.dev e validar as 78 queries SQL:
+
+```bash
+uv run sidralake export-bi
+uv run sidralake validate-bi --allow-empty   # omita --allow-empty apos uma carga --mode full
+```
 
 ---
 

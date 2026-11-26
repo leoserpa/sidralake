@@ -60,7 +60,7 @@ Without log scaling and percentile clipping (`normalize_winsorized` in `dbt_proj
 ### Graceful Re-Weighting on Partial Years
 For pre-2022 years (before the active CEMPRE `9509` series) or 2024 (prior to GDP `5938` release), missing pillars remain `NULL` and the weighted average divides strictly by the sum of weights of available pillars, keeping scores bounded on the `[0, 100]` scale.
 
-> **Caution for longitudinal comparisons:** Although re-weighting keeps scores on the `0–100` scale within each year, scores computed from different active pillar subsets (for example, a year without GDP compared against a year with both GDP and CEMPRE) are **not directly comparable** as a consistent year-over-year change. For longitudinal IMS comparisons, compare only years with identical pillar coverage (such as `2022` vs `2023`, or filter `is_ultimo_ano_completo = true` for the latest complete cross-sectional ranking).
+> **Caution for longitudinal comparisons:** Although re-weighting keeps scores on the `0–100` scale within each year, scores computed from different active pillar subsets (for example, a year without GDP compared against a year with both GDP and CEMPRE) are **not directly comparable** as a consistent year-over-year change. For longitudinal IMS comparisons, compare only years with identical pillar coverage (such as `2022` vs `2023`, or filter `is_ultimo_ano_completo = true` for the latest complete cross-sectional ranking). See also [`ADR-002`](../../decisions/ADR-002-ipca-deflation-and-winsorized-ims-scoring.md).
 
 ### Strategic Tier Classification
 Using annual `percent_rank()` over `ims_score_0_100`:
@@ -96,3 +96,27 @@ In `mart_pulso_consumo_macro`, state-level nominal retail revenue and sales volu
   - `PRESSAO_INFLACIONARIA`: flat/positive volume (`>= 0.0%`) coupled with a nominal-vs-volume spread `> +4.0 pp`
   - `ESTABILIDADE`: YoY volume between `-2.0%` and `+2.0%` without severe price spread
   - `RETRACAO`: real volume contraction (`< -2.0%`)
+
+---
+
+## 7. Monthly Services Pulse (`PMS × IPCA`)
+
+In `mart_pulso_servicos_uf`, the same cyclical framework evaluates IBGE's Monthly Services Survey (`SIDRA 5906`, `N3`, base 2022 = 100 across nominal revenue and service volume):
+- **Seasonally adjusted momentum & smoothing**: captures `var_mom_sa_volume_pct` and 3-month / 12-month moving averages over `indice_volume_servicos`.
+- **Spreads and regimes (`regime_servicos`)**: computes `spread_preco_vs_volume_yoy_pp` and `spread_volume_vs_ipca_12m_pp`, classifying each State × Month into `EXPANSAO_REAL`, `PRESSAO_INFLACIONARIA`, `ESTABILIDADE`, `RETRACAO`, or `SEM_DADO`.
+
+---
+
+## 8. Labor Market & Gender Earnings Gap (`PNAD Contínua`)
+
+In `mart_mercado_trabalho_uf`, quarterly state-level labor series (`2018+`) combine formal and informal employment metrics:
+- **Labor underutilization (`SIDRA 4099`)**: `taxa_desocupacao_pct` (`4099`), `taxa_desocupacao_subocupacao_pct` (`4114`), `taxa_desocupacao_forca_potencial_pct` (`4116`), `taxa_subutilizacao_composta_pct` (`4118`), and year-over-year point change `var_yoy_desocupacao_pp`.
+- **Habitual real earnings (`SIDRA 5436`, variable `5933`)**: total, men, and women average real monthly earnings, real YoY wage growth (`var_yoy_rendimento_real_pct`), and `hiato_salarial_genero_pct = ((women - men) / men) * 100.0`.
+
+---
+
+## 9. Municipal Demographics & Official Immediate Regions
+
+In `mart_demografia_municipal`, current municipal demographics are joined strictly against the **2022 Census baseline**:
+- **Strict 2022 Census baseline**: `populacao_censo_2022` filters strictly to `ano_referencia = 2022` (no fallback to later years) when computing `saldo_populacional_desde_2022`, `crescimento_populacional_desde_2022_pct`, and `rank_populacao_uf`.
+- **Strict adherence to IBGE Immediate Regions**: regional peer tables in `/municipio/` filter strictly on `nome_regiao_imediata` (for example, *Amparo-SP* in RGI *Amparo* [5 cities] vs. *Pedreira-SP* in RGI *Campinas* [18 cities], which share only Intermediate Region *Campinas*). See [`ADR-006`](../../decisions/ADR-006-strict-ibge-immediate-region-boundaries.md).

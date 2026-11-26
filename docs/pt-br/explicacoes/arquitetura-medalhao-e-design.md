@@ -10,37 +10,42 @@ Este documento explica o raciocínio por trás da arquitetura **Bronze → Silve
 
 ```mermaid
 flowchart LR
-    subgraph SRC["Fontes Oficiais IBGE"]
+    subgraph SRC["Fontes Oficiais IBGE (12 APIs)"]
         A1["Localidades v1 e CNAE v2"]
         A2["SIDRA v3 Anual (5938, 4714, 6579, 9509, 9418)"]
-        A3["SIDRA v3 Mensal (1737, 8883)"]
+        A3["SIDRA v3 Mensal/Trimestral (1737, 8883, 5906, 4099, 5436)"]
     end
 
     subgraph ING["Ingestao e Barreiras de Qualidade"]
         I1["IBGEAsyncClient (httpx + Semaphore + Tenacity)"]
         I2["Pydantic v2 + Flatten Deterministico"]
-        I3["Pandera Asset Checks (Circuit Breakers)"]
+        I3["Pandera Asset Checks (12 Circuit Breakers)"]
     end
 
     subgraph BRONZE["Camada Bronze (Delta Lake ACID)"]
-        B1["data/bronze/* (Particionado por ano_referencia)"]
+        B1["data/bronze/* (12 tabelas particionadas por ano_referencia)"]
     end
 
     subgraph SILVER["Camada Silver (DuckDB + dbt)"]
-        S1["Staging Views (parse_ibge_value e Deduplicacao)"]
-        S2["Snapshots SCD Type 2 (Municipios e CNAE)"]
-        S3["Intermediate Tables (Populacao, Deflator IPCA, PIB, CEMPRE)"]
+        S1["12 Staging Views (parse_ibge_value e Deduplicacao)"]
+        S2["2 Snapshots SCD Type 2 (Municipios e CNAE)"]
+        S3["4 Intermediate Tables (Populacao, Deflator IPCA, PIB, CEMPRE)"]
     end
 
     subgraph GOLD["Camada Gold (Star Schema + OBTs + Delta)"]
-        G1["Dimensoes e Fatos (Contratos Enforced)"]
-        G2["Marts OBT (IMS, Clusters QL, Pulso PMC)"]
+        G1["5 Dimensoes + 6 Fatos (Contratos Enforced)"]
+        G2["6 Marts OBT (IMS, Clusters QL, PMC, PMS, PNAD, Demografia)"]
         G3["Export ACID Arrow para data/silver e data/gold"]
+    end
+
+    subgraph BI["BI as Code (Evidence.dev + DuckDB-WASM)"]
+        BI1["bi_export.py -> 10 Parquets ZSTD (~5,5 MB)"]
+        BI2["dashboard_guard.py + Chromium E2E -> GitHub Pages"]
     end
 
     SRC --> I1 --> I2 --> B1 --> I3
     I3 --> S1 --> S2 --> G1
-    S1 --> S3 --> G1 --> G2 --> G3
+    S1 --> S3 --> G1 --> G2 --> G3 --> BI1 --> BI2
 ```
 
 ---
@@ -169,3 +174,15 @@ Municípios brasileiros sofrem alterações nominais, emancipações e reorganiz
 2. **Quebra metodológica do CEMPRE em 2022**: o agregado `1685` foi encerrado em 2021 e substituído por `9509` / `9418` a partir de 2022 após revisão metodológica (integração eSocial/RFB). Para evitar falsas tendências de crescimento em séries comparativas, o pipeline usa exclusivamente a **série ativa 2022+** em vez de concatenar séries metodologicamente incompatíveis.
 3. **Preservação semântica de `-`, `..`, `...` e `X`**: converter todos os símbolos do SIDRA indistintamente para `NULL` destruiria a diferença entre **zero exato (`-`)**, **sigilo estatístico (`X`)** e **dado não disponível (`...`)**. Por isso, a Bronze guarda `valor_bruto` bruto como string e a Silver separa `valor_numerico` de `status_valor_ibge`, expondo também `has_sigilo_estatistico` na Gold.
 4. **Campo `unidade` vazio no SIDRA `5938`**: detectado pelo próprio Circuit Breaker Pandera durante a carga real de 2022; relaxamos apenas a obrigatoriedade de comprimento mínimo de `unidade`, mantendo todas as regras estritas sobre valores e chaves.
+
+---
+
+## 6. Registros de Decisão Arquitetural (ADRs)
+
+O detalhamento completo de alternativas consideradas, medições de latência e trade-offs aceitos está documentado em [`docs/decisions/`](../../decisions/README.md):
+
+- [`ADR-001`](../../decisions/ADR-001-local-first-medallion-delta-duckdb-dbt-dagster.md): Stack Medalhão local-first (`Delta Lake`, `DuckDB`, `dbt`, `Polars`, `Pandera`, `Dagster`).
+- [`ADR-003`](../../decisions/ADR-003-evidence-static-bi-zstd-parquet-and-3-layer-guardrails.md): Exportação Parquet ZSTD em `bi_export.py` e guardrails BI em 3 camadas (`dashboard_guard.py` + DuckDB-WASM).
+- [`ADR-004`](../../decisions/ADR-004-dynamic-period-discovery-and-dagster-partitions.md): Descoberta dinâmica de períodos SIDRA e partições Dagster.
+- [`ADR-005`](../../decisions/ADR-005-lightweight-mobile-layout-without-query-wrapper.md): Layout mobile leve via CSS puro sem wrappers de query no desktop.
+- [`ADR-006`](../../decisions/ADR-006-strict-ibge-immediate-region-boundaries.md): Delimitação estrita pelas Regiões Geográficas Imediatas oficiais do IBGE.

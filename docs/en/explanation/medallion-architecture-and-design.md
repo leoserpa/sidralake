@@ -10,37 +10,42 @@ This document explains the architectural rationale behind the **Bronze → Silve
 
 ```mermaid
 flowchart LR
-    subgraph SRC["Official IBGE APIs"]
+    subgraph SRC["Official IBGE APIs (12 APIs)"]
         A1["Localities v1 and CNAE v2"]
         A2["Annual SIDRA v3 (5938, 4714, 6579, 9509, 9418)"]
-        A3["Monthly SIDRA v3 (1737, 8883)"]
+        A3["Monthly/Quarterly SIDRA v3 (1737, 8883, 5906, 4099, 5436)"]
     end
 
     subgraph ING["Ingestion and Quality Gates"]
         I1["IBGEAsyncClient (httpx + Semaphore + Tenacity)"]
         I2["Pydantic v2 + Deterministic Flatten"]
-        I3["Pandera Asset Checks (Circuit Breakers)"]
+        I3["Pandera Asset Checks (12 Circuit Breakers)"]
     end
 
     subgraph BRONZE["Bronze Layer (Delta Lake ACID)"]
-        B1["data/bronze/* (Partitioned by ano_referencia)"]
+        B1["data/bronze/* (12 tables partitioned by ano_referencia)"]
     end
 
     subgraph SILVER["Silver Layer (DuckDB + dbt)"]
-        S1["Staging Views (parse_ibge_value and Deduplication)"]
-        S2["SCD Type 2 Snapshots (Municipalities and CNAE)"]
-        S3["Intermediate Tables (Population, IPCA Deflator, GDP, CEMPRE)"]
+        S1["12 Staging Views (parse_ibge_value and Deduplication)"]
+        S2["2 SCD Type 2 Snapshots (Municipalities and CNAE)"]
+        S3["4 Intermediate Tables (Population, IPCA Deflator, GDP, CEMPRE)"]
     end
 
     subgraph GOLD["Gold Layer (Star Schema + OBTs + Delta)"]
-        G1["Dimensions and Facts (Enforced Contracts)"]
-        G2["OBT Marts (IMS, LQ Clusters, PMC Pulse)"]
+        G1["5 Dimensions + 6 Facts (Enforced Contracts)"]
+        G2["6 OBT Marts (IMS, LQ Clusters, PMC, PMS, PNAD, Demographics)"]
         G3["ACID Arrow Export to data/silver and data/gold"]
+    end
+
+    subgraph BI["BI as Code (Evidence.dev + DuckDB-WASM)"]
+        BI1["bi_export.py -> 10 ZSTD Parquets (~5.5 MB)"]
+        BI2["dashboard_guard.py + Chromium E2E -> GitHub Pages"]
     end
 
     SRC --> I1 --> I2 --> B1 --> I3
     I3 --> S1 --> S2 --> G1
-    S1 --> S3 --> G1 --> G2 --> G3
+    S1 --> S3 --> G1 --> G2 --> G3 --> BI1 --> BI2
 ```
 
 ---
@@ -169,3 +174,15 @@ Brazilian municipalities undergo name updates, new emancipations, and regional b
 2. **CEMPRE 2022 methodological break**: aggregate `1685` ended in 2021 and was replaced by `9509` / `9418` starting in 2022 following eSocial/RFB integration. To prevent artificial discontinuities in growth metrics, the pipeline consumes only the **active 2022+ series** rather than splicing incompatible series.
 3. **Preserving semantics of `-`, `..`, `...`, and `X`**: blindly casting every non-numeric SIDRA symbol to `NULL` conflates an **exact zero (`-`)**, **statistical confidentiality (`X`)**, and **unavailable data (`...`)**. Bronze keeps `valor_bruto` raw as a string while Silver separates `valor_numerico` from `status_valor_ibge`, propagating `has_sigilo_estatistico` to Gold.
 4. **Empty `unidade` strings in SIDRA `5938`**: caught live by the Pandera Circuit Breaker on 2022 GDP data; the contract allows empty/nullable `unidade` strings while keeping strict validation on values and natural keys.
+
+---
+
+## 6. Architecture Decision Records (ADRs)
+
+Full design rationale, alternatives evaluated, and measured trade-offs live in [`docs/decisions/`](../../decisions/README.md):
+
+- [`ADR-001`](../../decisions/ADR-001-local-first-medallion-delta-duckdb-dbt-dagster.md): Local-first Medallion stack (`Delta Lake`, `DuckDB`, `dbt`, `Polars`, `Pandera`, `Dagster`).
+- [`ADR-003`](../../decisions/ADR-003-evidence-static-bi-zstd-parquet-and-3-layer-guardrails.md): ZSTD Parquet export (`bi_export.py`) and 3-layer BI guardrails (`dashboard_guard.py` + DuckDB-WASM).
+- [`ADR-004`](../../decisions/ADR-004-dynamic-period-discovery-and-dagster-partitions.md): Dynamic SIDRA period discovery and Dagster partitions.
+- [`ADR-005`](../../decisions/ADR-005-lightweight-mobile-layout-without-query-wrapper.md): Pure-CSS mobile layout without desktop query wrappers.
+- [`ADR-006`](../../decisions/ADR-006-strict-ibge-immediate-region-boundaries.md): Strict adherence to official IBGE immediate geographic regions.

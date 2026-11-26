@@ -60,7 +60,7 @@ Sem transformação logarítmica e sem cortes em percentis (`normalize_winsorize
 ### Reponderação em Anos Parciais
 Em anos anteriores a 2022 (quando não há a nova série CEMPRE `9509`) ou em 2024 (ainda sem PIB `5938`), os pilares ausentes ficam nulos e o denominador da média ponderada ajusta-se automaticamente para a soma dos pesos dos pilares disponíveis, mantendo a pontuação na escala `0–100`.
 
-> **Atenção para comparações longitudinais:** Embora a reponderação preserve a escala `0–100` dentro de cada ano, pontuações calculadas com combinações diferentes de pilares (por exemplo, um ano sem PIB comparado a um ano com PIB e CEMPRE) **não são diretamente comparáveis** como variação ano contra ano (YoY). Para análises históricas consistentes do Score IMS, compare apenas anos com a mesma cobertura de pilares (como `2022` vs `2023`, ou filtre `is_ultimo_ano_completo = true` para o ranking consolidado).
+> **Atenção para comparações longitudinais:** Embora a reponderação preserve a escala `0–100` dentro de cada ano, pontuações calculadas com combinações diferentes de pilares (por exemplo, um ano sem PIB comparado a um ano com PIB e CEMPRE) **não são diretamente comparáveis** como variação ano contra ano (YoY). Para análises históricas consistentes do Score IMS, compare apenas anos com a mesma cobertura de pilares (como `2022` vs `2023`, ou filtre `is_ultimo_ano_completo = true` para o ranking consolidado). Veja também [`ADR-002`](../../decisions/ADR-002-ipca-deflation-and-winsorized-ims-scoring.md).
 
 ### Classificação em Níveis Estratégicos (*Tiers*)
 Com base em `percent_rank()` anual de `ims_score_0_100`:
@@ -96,3 +96,27 @@ Em `mart_pulso_consumo_macro`, cruzamos receita nominal e volume de vendas por U
   - `PRESSAO_INFLACIONARIA`: volume estagnado/positivo (`>= 0.0%`), porém com spread receita-volume `> +4.0 pp`
   - `ESTABILIDADE`: variação YoY do volume entre `-2.0%` e `+2.0%` sem pressão inflacionária severa
   - `RETRACAO`: queda real de volume (`< -2.0%`)
+
+---
+
+## 7. Pulso Mensal de Serviços (`PMS × IPCA`)
+
+Em `mart_pulso_servicos_uf`, aplicamos a mesma leitura cíclica à Pesquisa Mensal de Serviços (`SIDRA 5906`, `N3`, índice base 2022 = 100 em receita nominal e volume):
+- **Ajuste sazonal e médias móveis**: incorpora variação mês contra mês dessazonalizada (`var_mom_sa_volume_pct`) e médias móveis de 3m/12m sobre `indice_volume_servicos`.
+- **Spreads e regimes (`regime_servicos`)**: calcula `spread_preco_vs_volume_yoy_pp` e `spread_volume_vs_ipca_12m_pp`, classificando cada UF × Mês em `EXPANSAO_REAL`, `PRESSAO_INFLACIONARIA`, `ESTABILIDADE`, `RETRACAO` ou `SEM_DADO` sob o mesmo critério do varejo.
+
+---
+
+## 8. Mercado de Trabalho e Hiato Salarial (`PNAD Contínua`)
+
+Em `mart_mercado_trabalho_uf`, consolidamos séries trimestrais estaduais (`2018+`) da PNAD Contínua abrangendo mercado formal e informal:
+- **Subutilização da força de trabalho (`SIDRA 4099`)**: `taxa_desocupacao_pct` (`4099`), `taxa_desocupacao_subocupacao_pct` (`4114`), `taxa_desocupacao_forca_potencial_pct` (`4116`), `taxa_subutilizacao_composta_pct` (`4118`) e variação interanual `var_yoy_desocupacao_pp`.
+- **Rendimento real habitual (`SIDRA 5436`, variável `5933`)**: médio total, homens e mulheres, além do crescimento real `var_yoy_rendimento_real_pct` e do `hiato_salarial_genero_pct = ((mulheres - homens) / homens) * 100.0`.
+
+---
+
+## 9. Demografia Municipal e Regiões Geográficas Imediatas
+
+Em `mart_demografia_municipal`, consolidamos o perfil populacional corrente dos municípios ativos com **linha de base estrita no Censo Demográfico 2022**:
+- **Sem substituição silenciosa de base**: `populacao_censo_2022` reflete exclusivamente `ano_referencia = 2022` para calcular `saldo_populacional_desde_2022`, `crescimento_populacional_desde_2022_pct` e `rank_populacao_uf`.
+- **Aderência às Regiões Geográficas Imediatas (RGIs)**: comparações regionais no Raio-X Municipal agrupam estritamente por `nome_regiao_imediata` do IBGE (ex.: *Amparo-SP* na RGI *Amparo* com 5 cidades e *Pedreira-SP* na RGI *Campinas* com 18 cidades, embora ambas integrem a Região Intermediária *Campinas*). Detalhes em [`ADR-006`](../../decisions/ADR-006-strict-ibge-immediate-region-boundaries.md).

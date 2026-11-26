@@ -2,11 +2,11 @@
 
 # Referência: Fontes IBGE e Contratos de Dados
 
-Catálogo completo das 9 fontes oficiais do IBGE consumidas pelo pipeline, especificações de extração em `src/ibge_market_intel/ingestion/catalogs.py`, códigos especiais SIDRA e contratos de validação Pydantic/Pandera.
+Catálogo completo das 12 fontes oficiais do IBGE consumidas pelo pipeline, especificações de extração em `src/ibge_market_intel/ingestion/catalogs.py`, códigos especiais SIDRA e contratos de validação Pydantic/Pandera.
 
 ---
 
-## 1. Catálogo das 9 Fontes Oficiais do IBGE
+## 1. Catálogo das 12 Fontes Oficiais do IBGE
 
 | Tabela Bronze | Endpoint / Agregado | Nível Territorial | Variáveis / Campos Extraídos | Classificações | Janela Padrão | Estratégia de Chunking |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |

@@ -362,7 +362,7 @@ def show_insights(*, top_n: int = 10, uf: str | None = None, year: int | None = 
 
 
 def export_bi(*, output_dir: Path | None = None, freshness_file: Path | None = None) -> None:
-    """Exporta marts Gold Delta Lake para Parquet Snappy pronto para o dashboard Evidence.dev."""
+    """Exporta marts Gold Delta Lake para Parquet ZSTD pronto para o dashboard Evidence.dev."""
     settings = get_settings()
     configure_logging(settings.log_level, log_format="console")
     target = output_dir or (settings.project_root / "dashboard" / "parquet_data")
@@ -439,7 +439,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     insights_cmd.add_argument("--year", type=int, default=None, help="Filtra por ano de referencia")
     bi_cmd = sub.add_parser(
         "export-bi",
-        help="Exporta tabelas Gold Delta para Parquet Snappy do dashboard Evidence.dev",
+        help="Exporta tabelas Gold Delta para Parquet ZSTD do dashboard Evidence.dev",
     )
     bi_cmd.add_argument(
         "--output-dir",

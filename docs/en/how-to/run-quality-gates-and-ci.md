@@ -1,12 +1,14 @@
-> 🌐 **Language:** [Português (BR)](../../pt-br/guias-praticos/portoes-de-qualidade-e-ci.md) | **English** · [Index](../README.md)
+> 🌐 **Language:** [Português (BR)](../../pt-br/guias-praticos/portoes-de-qualidade-e-ci.md) | **English** · [Index](../README.md) · [ADRs](../../decisions/README.md)
 
 # How to Run Quality Gates and Troubleshoot CI
 
-This guide explains how to run the exact CI quality gates locally and how to quickly diagnose common pipeline failures.
+This guide explains how to run the exact CI quality gates locally, validate the BI layer under DuckDB-WASM emulation, check documentation links/drift, and diagnose common failures.
 
 ---
 
 ## 1. Run Local Quality Gates
+
+### 1.1 Python & dbt Gates
 
 Run the standard test suite via `Makefile`:
 
@@ -17,14 +19,31 @@ make test
 This target runs sequentially:
 1. `make lint` — `ruff check src tests` and `ruff format --check src tests`
 2. `make typecheck` — `mypy src`
-3. `make test-unit` — `pytest tests/unit -v --cov=ibge_market_intel` (15 unit tests with `respx` and realistic IBGE fixtures)
-4. `make test-integration` — `pytest tests/integration -v` (full offline E2E test covering Delta Lake, `dbt build`, and SCD Type 2)
-5. `make test-dbt` — `dbt parse` + `dbt test --select test_type:unit` (4 standalone dbt SQL unit tests)
+3. `make test-unit` — `pytest tests/unit -v --cov=ibge_market_intel` (`34` unit tests using `respx`, BI guardrails, and realistic IBGE fixtures)
+4. `make test-integration` — `pytest tests/integration -v` (`2` E2E integration tests covering offline Medallion pipeline and live BI checks)
+5. `make test-dbt` — `dbt parse` + `dbt test --select test_type:unit` (`11` standalone dbt SQL unit tests)
 
 To also run the dbt SQL linter (included in `.github/workflows/ci.yml`):
 
 ```bash
 make sql-lint
+```
+
+### 1.2 3-Layer BI Quality Gate (`dashboard/`)
+
+After exporting BI Parquets (`uv run sidralake export-bi`), validate static contracts, all `78` SQL queries under DuckDB-WASM `DOUBLE` coercion emulation, the Evidence.dev build, and headless Chromium E2E checks (`1440×900`, interactive filter cascades, and `390×844` mobile layout):
+
+```bash
+uv run sidralake validate-bi --check-build
+cd dashboard && CHROME_PATH=/usr/bin/google-chrome npm run test:e2e
+```
+
+### 1.3 Documentation Links, ADRs & Drift Check
+
+```bash
+make check-docs
+# Strict mode fails if any mapped doc is stale relative to its source code:
+uv run python scripts/check_doc_drift.py --strict-drift
 ```
 
 ---
@@ -43,10 +62,10 @@ make sql-lint
 
 ### 2.2 Broken dbt Enforced Model Contract
 
-**Symptom:** `dbt build` fails on a `dim_*` or `fct_*` model with `Contract Error: column mismatch` or `data_type mismatch`.
+**Symptom:** `dbt build` fails on a `dim_*`, `fct_*`, or `mart_*` model with `Contract Error: column mismatch` or `data_type mismatch`.
 
 **Diagnosis and fix:**
-- Compare the final `SELECT` in `dbt_project/models/gold/dimensions/` or `facts/` against the schema declaration in `dbt_project/models/gold/_gold.yml`.
+- Compare the final `SELECT` in `dbt_project/models/gold/` against the schema declaration in `dbt_project/models/gold/_gold.yml`.
 - Models with `contract: { enforced: true }` require explicit `cast(... as <type>)` expressions matching exact column names and types (`varchar`, `integer`, `bigint`, `double`, `date`, `timestamp`, `boolean`) in `_gold.yml`.
 - Do not disable `enforced: true`; align the SQL output or make a deliberate, documented contract update.
 
@@ -73,3 +92,11 @@ make sql-lint
   ```bash
   IBGE_DUCKDB_PATH=/tmp/ibge_sandbox.duckdb uv run dbt parse --project-dir dbt_project --profiles-dir dbt_project
   ```
+
+### 2.5 BI Guardrail Failure (`validate-bi` or `test:e2e`)
+
+**Symptom:** failure reported by `dashboard_guard.py` (year `.0` formatting, `100x` `_pct` scaling, broken `Dropdown` error badge, or mobile card overflow at `390px`).
+
+**Diagnosis and fix:**
+- Ensure integer IDs/years are explicitly cast cleanly against DuckDB-WASM `DOUBLE` coercion (`ADR-003`).
+- Follow the BI HTML/CSS invariants in `AGENTS.md` and `ADR-005` (`.sl-chart-head` HTML headers, `minmax(0, 1fr)` grids, `min-inline-size: 0`, and left-aligned mobile menu button).

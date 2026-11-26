@@ -1,4 +1,4 @@
-.PHONY: setup lint format typecheck sql-lint test test-unit test-integration test-dbt \
+.PHONY: setup lint format typecheck sql-lint check-docs test test-unit test-integration test-dbt \
         dbt-deps dbt-parse dbt-build dbt-docs dagster-dev materialize-smoke materialize-full \
         delta-maintenance inspect-gold
 
@@ -21,6 +21,9 @@ typecheck:
 
 sql-lint:
 	uv run sqlfluff lint $(DBT_DIR)/models $(DBT_DIR)/macros $(DBT_DIR)/tests
+
+check-docs:
+	uv run python scripts/check_doc_drift.py
 
 test-unit:
 	uv run pytest tests/unit -v --cov=ibge_market_intel

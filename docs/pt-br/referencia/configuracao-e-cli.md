@@ -1,14 +1,14 @@
-> 🌐 **Idioma:** **Português (BR)** | [English](../../en/reference/configuration-and-cli.md) · [Índice](../README.md)
+> 🌐 **Idioma:** **Português (BR)** | [English](../../en/reference/configuration-and-cli.md) · [Índice](../README.md) · [ADRs](../../decisions/README.md)
 
 # Referência: Configuração, CLI e Ambiente
 
-Especificação técnica dos comandos CLI, alvos do `Makefile`, variáveis de ambiente (`PipelineSettings`), perfis do `dbt-duckdb` e pipeline de Integração Contínua (CI).
+Especificação técnica dos comandos CLI, alvos do `Makefile`, variáveis de ambiente (`PipelineSettings`), perfis do `dbt-duckdb` e workflows CI/Pages.
 
 ---
 
 ## 1. CLI `sidralake` (e alias `ibge-pipeline`)
 
-Definida em `src/ibge_market_intel/cli.py` e exposta via `pyproject.toml` (`[project.scripts]`).
+Definida em [`src/ibge_market_intel/cli.py`](../../../src/ibge_market_intel/cli.py) e registrada em `pyproject.toml` (`[project.scripts]`).
 
 ```bash
 uv run sidralake <subcomando> [opcoes]
@@ -20,14 +20,15 @@ uv run sidralake <subcomando> [opcoes]
 | `sidralake maintain` | — | Percorre `data/bronze/`, `data/silver/` e `data/gold/` e executa `OPTIMIZE` (`compact()`) e `VACUUM` (`retention_hours=168`, `dry_run=False`) em cada tabela Delta Lake. |
 | `sidralake inspect` | — | Executa 6 consultas analíticas de verificação diretamente no DuckDB e no Delta Lake Gold (Top 15 Score IMS, distribuição por Tier, validação de *Boa Esperança do Norte*, Top 10 Clusters CNAE por QL, pulso PMC × IPCA e versões `_delta_log`). |
 | `sidralake insights` | `--top N`, `--uf SIGLA`, `--year ANO` | Executa consultas analíticas *one-shot* via **Polars Lazy API (`pl.scan_delta`)** diretamente nos Data Marts Delta Gold (Top municípios por IMS, maior CAGR real em 3 anos, liderança setorial CNAE e pulso do varejo por regime de consumo). |
-| `sidralake export-bi` | `--output-dir PATH`, `--freshness-file PATH` | Exporta os Data Marts e Fatos Gold + dimensões correntes para Parquet Snappy (sem colunas `_` de auditoria) pronto para o dashboard **Evidence.dev** (`dashboard/parquet_data/`) e opcionalmente grava o manifesto JSON de frescor. |
-| `sidralake test` | — | Roda toda a bateria de qualidade localmente (`ruff`, `mypy --strict`, `pytest` unitário + E2E, `dbt parse` e os 10 testes unitários SQL do dbt). |
+| `sidralake export-bi` | `--output-dir PATH`, `--freshness-file PATH` | Exporta as 10 tabelas BI (`BI_GOLD_TABLES`) em Parquet **ZSTD** (`dashboard/parquet_data/`), filtrando `is_current` em `dim_geografia`/`dim_cnae`, removendo colunas `_`, `sk_*` e SCD2 técnicas, ordenando por `("ano_referencia", "data_referencia", "sigla_uf")` e gravando opcionalmente o manifesto JSON de frescor. |
+| `sidralake validate-bi` | `--parquet-dir PATH`, `--check-build`, `--build-dir PATH`, `--allow-empty` | Executa contratos estáticos do dashboard (`dashboard_guard.py`), valida as **78 queries SQL** sob emulação de coerção `DOUBLE` do DuckDB-WASM (`--allow-empty` aceita 0 linhas em modo smoke) e, com `--check-build`, verifica o artefato estático em `dashboard/build/`. |
+| `sidralake test` | — | Roda toda a bateria de qualidade localmente (`ruff`, `mypy --strict`, `pytest` unitário + E2E, `dbt parse` e os `11` testes unitários SQL do dbt). |
 
 ---
 
 ## 2. Alvos do `Makefile`
 
-Definidos em `Makefile`:
+Definidos em [`Makefile`](../../../Makefile):
 
 | Alvo | Comando Executado | Descrição |
 | :--- | :--- | :--- |
@@ -36,13 +37,14 @@ Definidos em `Makefile`:
 | `make format` | `ruff format src tests` + `ruff check --fix src tests` | Formata e corrige automaticamente código Python. |
 | `make typecheck` | `uv run mypy src` | Checagem estática de tipos em `src/`. |
 | `make sql-lint` | `uv run sqlfluff lint dbt_project/models dbt_project/macros dbt_project/tests` | Linter SQL com dialeto `duckdb` e templater `dbt`. |
-| `make test-unit` | `uv run pytest tests/unit -v --cov=ibge_market_intel` | Executa 15 testes unitários Python com cobertura. |
-| `make test-integration` | `uv run pytest tests/integration -v` | Executa o teste de integração E2E offline completo. |
-| `make test-dbt` | `dbt parse` + `dbt test --select test_type:unit` | Valida o parsing do projeto e executa os 4 testes unitários SQL declarados em YAML (`unit_tests:` em `_intermediate.yml` e `_gold.yml`). **Não** executa os testes singulares em `dbt_project/tests/`; para rodá-los após construir os modelos, execute `uv run dbt test --select test_type:singular --project-dir dbt_project --profiles-dir dbt_project` (ou `make dbt-build`). |
+| `make check-docs` | `uv run python scripts/check_doc_drift.py` | Valida links Markdown relativos, conformidade de ADRs e drift de documentação via Git. |
+| `make test-unit` | `uv run pytest tests/unit -v --cov=ibge_market_intel` | Executa `34` testes unitários Python com cobertura. |
+| `make test-integration` | `uv run pytest tests/integration -v` | Executa `2` testes de integração E2E (pipeline offline + dados BI ao vivo quando aplicável). |
+| `make test-dbt` | `dbt parse` + `dbt test --select test_type:unit` | Valida o parsing do projeto e executa os `11` testes unitários SQL declarados em YAML (`unit_tests:` em `_intermediate.yml` e `_gold.yml`). **Não** executa os testes singulares em `dbt_project/tests/`; para rodá-los após construir os modelos, execute `uv run dbt test --select test_type:singular --project-dir dbt_project --profiles-dir dbt_project` (ou `make dbt-build`). |
 | `make test` | `lint` + `typecheck` + `test-unit` + `test-integration` + `test-dbt` | Executa toda a suíte padrão de qualidade. |
 | `make dbt-deps` | `uv run dbt deps --project-dir dbt_project --profiles-dir dbt_project` | Instala pacotes dbt (`packages.yml`). |
 | `make dbt-parse` | `uv run dbt parse ...` | Compila o `manifest.json` sem executar queries. |
-| `make dbt-build` | `uv run dbt build ...` | Executa snapshots, modelos Silver/Gold, testes de dados e unit tests. |
+| `make dbt-build` | `uv run dbt build ...` | Executa snapshots, modelos Silver/Gold, `193` testes de dados e `11` unit tests. |
 | `make dbt-docs` | `dbt docs generate` + `dbt docs serve --port 8080` | Gera e serve o catálogo interativo do dbt Docs na porta `8080`. |
 | `make dagster-dev` | `DAGSTER_HOME="$(CURDIR)/.dagster" uv run dagster dev` | Sobe a Dagster UI e daemon local. |
 | `make materialize-smoke` | `uv run ibge-pipeline run --mode smoke` | Carga rápida SP/MT ponta a ponta. |
@@ -54,7 +56,7 @@ Definidos em `Makefile`:
 
 ## 3. Variáveis de Ambiente (`PipelineSettings`)
 
-Carregadas via `pydantic-settings` (`env_prefix="IBGE_"`, arquivo opcional `.env` em UTF-8) em `src/ibge_market_intel/config.py`:
+Carregadas via `pydantic-settings` (`env_prefix="IBGE_"`, arquivo opcional `.env` em UTF-8) em [`src/ibge_market_intel/config.py`](../../../src/ibge_market_intel/config.py):
 
 | Variável de Ambiente | Tipo | Padrão | Descrição / Restrições |
 | :--- | :--- | :--- | :--- |
@@ -105,7 +107,9 @@ Carregadas via `pydantic-settings` (`env_prefix="IBGE_"`, arquivo opcional `.env
 
 ---
 
-## 5. Pipeline de CI (`.github/workflows/ci.yml`)
+## 5. Workflows no GitHub Actions
+
+### 5.1 Pipeline de CI ([`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml))
 
 Disparado em `push` (`main`, `master`) e em todo `pull_request` no runner `ubuntu-latest`:
 
@@ -113,6 +117,16 @@ Disparado em `push` (`main`, `master`) e em todo `pull_request` no runner `ubunt
 2. Executa `uv sync --dev` e `dbt deps`.
 3. `ruff check src tests` e `ruff format --check src tests`.
 4. `mypy src`.
-5. `dbt parse` e `dbt test --select test_type:unit`.
+5. `dbt parse` e `dbt test --select test_type:unit` (`11` unit tests SQL).
 6. `sqlfluff lint dbt_project/models dbt_project/macros dbt_project/tests`.
 7. `pytest tests -v --cov=ibge_market_intel`.
+
+### 5.2 Build & Deploy Contínuo do BI ([`.github/workflows/pages.yml`](../../../.github/workflows/pages.yml))
+
+Disparado em `push` para `main` (quando `dashboard/**`, `dbt_project/**`, `src/ibge_market_intel/**` ou `pages.yml` mudam), por agendamento mensal (`0 11 16 * *`, dia 16 após divulgações IPCA/PMC/PMS) ou manualmente via `workflow_dispatch` (`mode: full | smoke`):
+
+1. Materializa todo o Lakehouse via `uv run sidralake run --mode "$SIDRALAKE_MODE"` e exporta os 10 Parquets ZSTD + `.github/last_data_refresh.json` via `uv run sidralake export-bi --freshness-file .github/last_data_refresh.json`.
+2. Roda o portão pré-build `uv run sidralake validate-bi` e `pytest tests/unit/test_dashboard_integrity.py tests/integration/test_dashboard_live_data.py`.
+3. Compila o site estático Evidence.dev (`npm install && npm run sources:strict && npm run build && touch build/.nojekyll`).
+4. Roda a auditoria pós-build `uv run sidralake validate-bi --check-build` e os testes E2E em Chromium headless (`npm --prefix dashboard run test:e2e`: 9 rotas `1440×900`, filtros interativos e viewport mobile `390×844`).
+5. Publica `dashboard/build` no GitHub Pages (`deploy`) e, em execuções agendadas (`record-freshness`), commita `.github/last_data_refresh.json` com `[skip ci]`. Veja [`ADR-004`](../../decisions/ADR-004-dynamic-period-discovery-and-dagster-partitions.md).

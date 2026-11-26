@@ -2,11 +2,11 @@
 
 # Reference: IBGE Sources and Data Contracts
 
-Complete catalog of the 9 official IBGE data sources ingested by the pipeline, extraction specifications in `src/ibge_market_intel/ingestion/catalogs.py`, SIDRA special codes, and Pydantic/Pandera data contracts.
+Complete catalog of the 12 official IBGE data sources ingested by the pipeline, extraction specifications in `src/ibge_market_intel/ingestion/catalogs.py`, SIDRA special codes, and Pydantic/Pandera data contracts.
 
 ---
 
-## 1. Catalog of the 9 Official IBGE Sources
+## 1. Catalog of the 12 Official IBGE Sources
 
 | Bronze Table | Endpoint / Aggregate | Territorial Level | Extracted Variables / Fields | Classifications | Default Window | Chunking Strategy |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
